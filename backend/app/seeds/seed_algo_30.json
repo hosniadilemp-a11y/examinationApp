@@ -1,0 +1,272 @@
+[
+  {
+    "ordering": 1,
+    "type": "boolean",
+    "prompt_markdown": "Dans la recherche dichotomique (binaire), la liste ou le tableau d'entrée doit obligatoirement être préalablement trié.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 2,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la complexité asymptotique temporelle dans le pire des cas de l'algorithme du **tri fusion (Merge Sort)** pour un tableau de $n$ éléments ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"O(n)\"}, {\"id\": \"b\", \"text\": \"O(n log n)\"}, {\"id\": \"c\", \"text\": \"O(n\\u00b2)\"}, {\"id\": \"d\", \"text\": \"O(log n)\"}]",
+    "correct_answers_json": "\"b\""
+  },
+  {
+    "ordering": 3,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles sont les conditions indispensables pour qu'une fonction récursive termine correctement sans provoquer de dépassement de pile (*stack overflow*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Pr\\u00e9sence d'au moins un cas de base (condition d'arr\\u00eat)\"}, {\"id\": \"b\", \"text\": \"L'appel r\\u00e9cursif doit converger strictement vers le cas de base\"}, {\"id\": \"c\", \"text\": \"La fonction doit obligatoirement \\u00eatre ex\\u00e9cut\\u00e9e en multithreading\"}, {\"id\": \"d\", \"text\": \"La m\\u00e9moire vive de la machine doit \\u00eatre sup\\u00e9rieure \\u00e0 32 Go\"}]",
+    "correct_answers_json": "[\"a\", \"b\"]"
+  },
+  {
+    "ordering": 4,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel terme désigne la structure de données linéaire fonctionnant selon le principe **Dernier Entré, Premier Sorti (LIFO)** ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"pile\", \"stack\", \"une pile\", \"la pile\"]"
+  },
+  {
+    "ordering": 5,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque structure de données à sa propriété d'accès caractéristique :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Pile\", \"File\", \"Tableau statique\", \"Table de hachage\"], \"right\": [\"LIFO (Last In First Out)\", \"FIFO (First In First Out)\", \"Acc\\u00e8s par index O(1)\", \"Acc\\u00e8s par clef en temps moyen O(1)\"]}",
+    "correct_answers_json": "{\"Pile\": \"LIFO (Last In First Out)\", \"File\": \"FIFO (First In First Out)\", \"Tableau statique\": \"Acc\\u00e8s par index O(1)\", \"Table de hachage\": \"Acc\\u00e8s par clef en temps moyen O(1)\"}"
+  },
+  {
+    "ordering": 6,
+    "type": "boolean",
+    "prompt_markdown": "Question 6 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 7,
+    "type": "single_choice",
+    "prompt_markdown": "Question 7 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 8,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 8 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 9,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 9 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 10,
+    "type": "matching",
+    "prompt_markdown": "Question 10 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 11,
+    "type": "boolean",
+    "prompt_markdown": "Question 11 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 12,
+    "type": "single_choice",
+    "prompt_markdown": "Question 12 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 13,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 13 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 14,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 14 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 15,
+    "type": "matching",
+    "prompt_markdown": "Question 15 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 16,
+    "type": "boolean",
+    "prompt_markdown": "Question 16 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 17,
+    "type": "single_choice",
+    "prompt_markdown": "Question 17 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 18,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 18 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 19,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 19 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 20,
+    "type": "matching",
+    "prompt_markdown": "Question 20 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 21,
+    "type": "boolean",
+    "prompt_markdown": "Question 21 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 22,
+    "type": "single_choice",
+    "prompt_markdown": "Question 22 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 23,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 23 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 24,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 24 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 25,
+    "type": "matching",
+    "prompt_markdown": "Question 25 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 26,
+    "type": "boolean",
+    "prompt_markdown": "Question 26 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 27,
+    "type": "single_choice",
+    "prompt_markdown": "Question 27 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 28,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 28 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 29,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 29 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 30,
+    "type": "matching",
+    "prompt_markdown": "Question 30 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  }
+]

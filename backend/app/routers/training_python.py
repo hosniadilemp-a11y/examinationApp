@@ -1,0 +1,591 @@
+import json
+import random
+import uuid
+from typing import List, Optional, Dict, Any
+from datetime import datetime, timezone
+from pydantic import BaseModel, ConfigDict
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from backend.app.database import get_db
+from backend.app.models import User, TrainingAttempt, ChapterProgress
+from backend.app.dependencies import get_current_user
+from backend.app.services.grading import evaluate_answer
+from backend.app.services.training_service import (
+    load_curriculum,
+    list_chapters_with_progress,
+    get_chapter_exercises,
+    get_progression_stats,
+    get_topic_historical_averages,
+    get_level,
+    build_progression_state,
+    calculate_gamification,
+    PASSING_MARK
+)
+
+router = APIRouter(prefix="/api/training/python", tags=["Entraînement Évolutif Python"])
+
+# Schémas Pydantic
+class ChapterSummary(BaseModel):
+    id: str
+    title: str
+    order: int
+    description: str
+    mcq_count: int
+    coding_count: int
+    status: str
+    best_mark: float
+    completed_exercises: int
+    total_exercises: int
+
+class SessionGenerationRequest(BaseModel):
+    topics: Optional[List[str]] = None
+    difficulties: Optional[List[str]] = None
+    target_topic: Optional[str] = None
+    target_difficulty: Optional[str] = None
+    count: int = 10
+    assessment_type: str = "training"  # 'theoretical' | 'practical' | 'training' | 'evolution'
+
+class SubmitAnswerItem(BaseModel):
+    id: Any
+    type: str  # 'mcq' | 'coding' | 'boolean' | 'single_choice' | 'multi_choice' | 'fill_blank' | 'matching'
+    topic: str
+    difficulty: Optional[str] = "medium"
+    student_answer: Any  # option ID, boolean, text, dict, or code string
+    hints_used: Optional[int] = 0
+    is_correct: Optional[bool] = None  # evaluated by client (Pyodide) for coding, or server for MCQ
+
+class SessionSubmitRequest(BaseModel):
+    assessment_type: str = "training"
+    selected_topics: List[str]
+    selected_difficulties: List[str]
+    target_topic: Optional[str] = None
+    target_difficulty: Optional[str] = None
+    answers: List[SubmitAnswerItem]
+
+@router.get("/progression")
+def get_progression(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Retourne l'état de déblocage pédagogique complet et les 68 badges de gamification (XP)."""
+    prog = build_progression_state(current_user.id, db)
+    gamif = calculate_gamification(current_user.id, db)
+    return {
+        "progression": prog,
+        "gamification": gamif
+    }
+
+@router.get("/chapters", response_model=List[ChapterSummary])
+def get_chapters(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Liste tous les chapitres Python avec les métriques de progression de l'étudiant."""
+    return list_chapters_with_progress(current_user.id, db)
+
+@router.get("/chapters/{chapter_id}")
+def get_chapter(
+    chapter_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Détails et exercices d'un chapitre spécifique."""
+    details = get_chapter_exercises(chapter_id)
+    if not details:
+        raise HTTPException(status_code=404, detail=f"Chapitre '{chapter_id}' introuvable.")
+    return details
+
+@router.post("/generate-session")
+def generate_training_session(
+    payload: SessionGenerationRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Génère une série d'entraînement adaptée au niveau et aux filtres choisis."""
+    curriculum = load_curriculum()
+    all_chapters = curriculum.get("chapters", [])
+    
+    selected_topics = payload.topics or ([payload.target_topic] if payload.target_topic else [c["id"] for c in all_chapters])
+    selected_difficulties = payload.difficulties or ([payload.target_difficulty] if payload.target_difficulty else ["easy", "medium", "hard", "very_hard"])
+    
+    # Collecte des items éligibles avec typage précis
+    pool_mcq = []
+    pool_coding = []
+    
+    for ch in all_chapters:
+        if ch["id"] in selected_topics or ch["title"] in selected_topics:
+            for m in ch.get("mcq_questions", []):
+                diff = m.get("difficulty", "medium").lower()
+                if diff in selected_difficulties:
+                    raw_type = m.get("type", "mcq")
+                    pts = float(m.get("points", 1.0))
+                    
+                    if raw_type == "yesno":
+                        pool_mcq.append({
+                            "id": m["id"],
+                            "raw_type": "yesno",
+                            "type": "boolean",
+                            "topic": ch["title"],
+                            "topic_id": ch["id"],
+                            "difficulty": diff,
+                            "prompt_markdown": m.get('text', ''),
+                            "options": [
+                                {"id": "true", "text": "Vrai"},
+                                {"id": "false", "text": "Faux"}
+                            ],
+                            "points": pts
+                        })
+                    elif raw_type == "intruder":
+                        raw_opts = m.get("options", [])
+                        opts_list = [{"id": str(idx), "text": str(opt)} for idx, opt in enumerate(raw_opts)]
+                        shuffled_opts = list(opts_list)
+                        random.shuffle(shuffled_opts)
+                        pool_mcq.append({
+                            "id": m["id"],
+                            "raw_type": "intruder",
+                            "type": "single_choice",
+                            "topic": ch["title"],
+                            "topic_id": ch["id"],
+                            "difficulty": diff,
+                            "prompt_markdown": m.get('text', ''),
+                            "options": shuffled_opts,
+                            "points": pts
+                        })
+                    elif raw_type == "simple_blank":
+                        code_snippet = m.get("code", "")
+                        prompt_md = m.get('text', '')
+                        if code_snippet:
+                            prompt_md += f"\n\n```python\n{code_snippet}\n```"
+                        pool_mcq.append({
+                            "id": m["id"],
+                            "raw_type": "simple_blank",
+                            "type": "fill_blank",
+                            "topic": ch["title"],
+                            "topic_id": ch["id"],
+                            "difficulty": diff,
+                            "prompt_markdown": prompt_md,
+                            "options": [],
+                            "points": pts
+                        })
+                    elif raw_type == "matching":
+                        pairs = m.get("pairs", {})
+                        left_items = list(pairs.keys())
+                        right_items = list(pairs.values())
+                        random.shuffle(right_items)
+                        pool_mcq.append({
+                            "id": m["id"],
+                            "raw_type": "matching",
+                            "type": "matching",
+                            "topic": ch["title"],
+                            "topic_id": ch["id"],
+                            "difficulty": diff,
+                            "prompt_markdown": m.get('text', ''),
+                            "options": {"left": left_items, "right": right_items},
+                            "points": pts
+                        })
+                    else:  # mcq
+                        raw_opts = m.get("options", [])
+                        opts_list = [{"id": str(idx), "text": str(opt)} for idx, opt in enumerate(raw_opts)]
+                        shuffled_opts = list(opts_list)
+                        random.shuffle(shuffled_opts)
+                        is_multi = len(m.get("correct", [])) > 1
+                        pool_mcq.append({
+                            "id": m["id"],
+                            "raw_type": "mcq",
+                            "type": "multi_choice" if is_multi else "single_choice",
+                            "topic": ch["title"],
+                            "topic_id": ch["id"],
+                            "difficulty": diff,
+                            "prompt_markdown": m.get('text', ''),
+                            "options": shuffled_opts,
+                            "points": pts
+                        })
+
+            for c in ch.get("coding_exercises", []):
+                diff = c.get("difficulty", "medium").lower()
+                if diff in selected_difficulties:
+                    pts = 2.0 if diff == "easy" else (3.0 if diff == "medium" else (4.0 if diff == "hard" else 5.0))
+                    pool_coding.append({
+                        "id": c["id"],
+                        "raw_type": "coding",
+                        "type": "coding",
+                        "topic": ch["title"],
+                        "topic_id": ch["id"],
+                        "difficulty": diff,
+                        "title": c.get("title", ""),
+                        "prompt_markdown": f"### {c.get('title', '')}\n\n{c.get('description', '')}\n\n*Écrivez votre fonction/script Python ci-dessous et testez son exécution locale :*",
+                        "description": c.get("description", ""),
+                        "starter_code": c.get("starter_code", ""),
+                        "public_tests": c.get("public_tests", []),
+                        "hint1": c.get("hint1", ""),
+                        "hint2": c.get("hint2", ""),
+                        "points": pts
+                    })
+                    
+    random.shuffle(pool_mcq)
+    random.shuffle(pool_coding)
+    
+    chosen = []
+    time_limit_seconds = 900  # Default 15 min
+    
+    primary_diff = selected_difficulties[0] if len(selected_difficulties) == 1 else "medium"
+    
+    if payload.assessment_type == "theoretical":
+        # Mode théorique : QCM uniquement (10 à 20 questions, 15 min)
+        target_count = min(max(payload.count, 2), len(pool_mcq) or 10)
+        chosen = pool_mcq[:target_count]
+        time_limit_seconds = 15 * 60  # 15 minutes
+    elif payload.assessment_type in ("practical", "coding"):
+        # Mode pratique : Coding labs uniquement selon règles training_logic.txt
+        if primary_diff == "easy":
+            target_count = 3
+            time_limit_seconds = 30 * 60  # 30 min (10 min / q)
+        elif primary_diff == "medium":
+            target_count = 2
+            time_limit_seconds = 20 * 60  # 20 min (10 min / q)
+        else:
+            target_count = 1
+            time_limit_seconds = 10 * 60  # 10 min
+        
+        target_count = min(target_count, len(pool_coding) or target_count)
+        chosen = pool_coding[:target_count]
+    else:
+        # Mode mixte (évolution / entraînement standard)
+        target_count = min(max(payload.count, 2), 30)
+        half = target_count // 2
+        chosen.extend(pool_coding[:half])
+        chosen.extend(pool_mcq[:(target_count - len(chosen))])
+        if len(chosen) < target_count:
+            remaining_coding = [c for c in pool_coding if c not in chosen]
+            chosen.extend(remaining_coding[:(target_count - len(chosen))])
+        if len(chosen) < target_count:
+            remaining_mcq = [m for m in pool_mcq if m not in chosen]
+            chosen.extend(remaining_mcq[:(target_count - len(chosen))])
+        time_limit_seconds = 20 * 60
+
+    random.shuffle(chosen)
+    
+    # Numérotation ordonnée
+    for idx, item in enumerate(chosen, start=1):
+        item["ordering"] = idx
+    
+    return {
+        "assessment_type": payload.assessment_type,
+        "selected_topics": selected_topics,
+        "selected_difficulties": selected_difficulties,
+        "target_topic": payload.target_topic or (selected_topics[0] if len(selected_topics) == 1 else None),
+        "target_difficulty": payload.target_difficulty or (selected_difficulties[0] if len(selected_difficulties) == 1 else None),
+        "time_limit_seconds": time_limit_seconds,
+        "questions_count": len(chosen),
+        "items": chosen
+    }
+
+@router.post("/submit-session")
+def submit_training_session(
+    payload: SessionSubmitRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Soumet les réponses d'un entraînement, calcule la note sur 20 selon training_logic.txt."""
+    curriculum = load_curriculum()
+    
+    # Snapshot gamification initiale pour détecter nouveaux badges débloqués
+    prev_gamif = calculate_gamification(current_user.id, db)
+    prev_unlocked = set(m["id"] for m in prev_gamif["all_milestones"] if m["unlocked"])
+    
+    # Cartographie exhaustive des questions et exercices par ID
+    all_curriculum_items = {}
+    for ch in curriculum.get("chapters", []):
+        for m in ch.get("mcq_questions", []):
+            all_curriculum_items[str(m["id"])] = (m, ch)
+        for c in ch.get("coding_exercises", []):
+            all_curriculum_items[str(c["id"])] = (c, ch)
+            
+    total_items = len(payload.answers)
+    if total_items == 0:
+        raise HTTPException(status_code=400, detail="Aucune réponse fournie.")
+        
+    total_awarded_points = 0.0
+    total_max_points = 0.0
+    correct_count = 0
+    total_hints = 0
+    topic_scores: Dict[str, Dict[str, float]] = {}
+    detailed_feedback = []
+    
+    for ans in payload.answers:
+        topic = ans.topic
+        if topic not in topic_scores:
+            topic_scores[topic] = {"awarded": 0.0, "max": 0.0, "correct": 0, "total": 0}
+        topic_scores[topic]["total"] += 1
+        
+        is_item_correct = False
+        solution_info = None
+        user_answer_display = ""
+        awarded_pts = 0.0
+        
+        item_entry = all_curriculum_items.get(str(ans.id))
+        if not item_entry:
+            detailed_feedback.append({
+                "id": ans.id,
+                "type": ans.type,
+                "topic": topic,
+                "is_correct": False,
+                "awarded_points": 0.0,
+                "max_points": 1.0,
+                "user_answer": str(ans.student_answer or ""),
+                "solution": "N/A",
+                "explanation": "Question non répertoriée dans le cursus."
+            })
+            continue
+
+        raw_item, ch_info = item_entry
+        item_raw_type = raw_item.get("type", ans.type)
+        
+        if item_raw_type == "coding":
+            diff = ans.difficulty or raw_item.get("difficulty", "medium")
+            max_pts = 2.0 if diff == "easy" else (3.0 if diff == "medium" else (4.0 if diff == "hard" else 5.0))
+            hints_used = ans.hints_used or 0
+            total_hints += hints_used
+            hint_mult = 1.0 if hints_used == 0 else (0.5 if hints_used == 1 else 0.0)
+
+            if ans.is_correct is True:
+                is_item_correct = True
+                awarded_pts = max_pts * hint_mult
+            elif ans.student_answer and raw_item.get("solution"):
+                clean_student = str(ans.student_answer).strip()
+                clean_sol = str(raw_item.get("solution", "")).strip()
+                if clean_student == clean_sol:
+                    is_item_correct = True
+                    awarded_pts = max_pts * hint_mult
+            solution_info = raw_item.get("solution", "")
+            user_answer_display = ans.student_answer or "(Code non soumis)"
+            explanation = "✅ Exercice validé avec succès !" if is_item_correct else "Solution de référence : voir corrigé ci-dessous."
+        else:
+            max_pts = float(raw_item.get("points", 1.0))
+            if item_raw_type in ("yesno", "boolean"):
+                q_eval_type = "boolean"
+                correct_ref = raw_item.get("correct")
+                if correct_ref is None and "correct_answers_json" in raw_item:
+                    correct_ref = raw_item["correct_answers_json"]
+                solution_info = "Vrai" if str(correct_ref).lower() in ("true", "1", "vrai") else "Faux"
+                user_answer_display = "Vrai" if ans.student_answer in (True, 'true', 'True', 1, '1') else ("Faux" if ans.student_answer in (False, 'false', 'False', 0, '0') else str(ans.student_answer or "Non répondu"))
+
+            elif item_raw_type in ("simple_blank", "fill_blank"):
+                q_eval_type = "fill_blank"
+                correct_ref = raw_item.get("answer") or raw_item.get("correct") or raw_item.get("correct_answers_json", "")
+                solution_info = str(correct_ref)
+                user_answer_display = str(ans.student_answer or "Non répondu")
+
+            elif item_raw_type == "matching":
+                q_eval_type = "matching"
+                correct_ref = raw_item.get("pairs") or raw_item.get("correct_answers_json", {})
+                if isinstance(correct_ref, str):
+                    try: correct_ref = json.loads(correct_ref)
+                    except: pass
+                solution_info = ", ".join(f"{k} ➔ {v}" for k, v in correct_ref.items()) if isinstance(correct_ref, dict) else str(correct_ref)
+                if isinstance(ans.student_answer, dict):
+                    user_answer_display = ", ".join(f"{k} ➔ {v}" for k, v in ans.student_answer.items())
+                else:
+                    user_answer_display = str(ans.student_answer or "Non répondu")
+
+            elif item_raw_type in ("multi_choice",) or (item_raw_type == "mcq" and isinstance(raw_item.get("correct"), list) and len(raw_item.get("correct", [])) > 1):
+                q_eval_type = "multi_choice"
+                opts = raw_item.get("options", [])
+                correct_list = raw_item.get("correct", [])
+                correct_ref = [str(c) for c in correct_list]
+                if isinstance(opts, list) and opts and isinstance(opts[0], dict):
+                    opt_dict = {str(o.get("id")): o.get("text", "") for o in opts}
+                    solution_info = ", ".join(opt_dict.get(str(c), str(c)) for c in correct_list)
+                    if isinstance(ans.student_answer, list):
+                        user_answer_display = ", ".join(opt_dict.get(str(c), str(c)) for c in ans.student_answer)
+                    else:
+                        user_answer_display = str(ans.student_answer or "Non répondu")
+                elif isinstance(opts, list) and opts and isinstance(opts[0], str):
+                    solution_info = ", ".join(opts[int(c)] for c in correct_list if str(c).isdigit() and 0 <= int(c) < len(opts))
+                    if isinstance(ans.student_answer, list):
+                        user_answer_display = ", ".join(opts[int(c)] for c in ans.student_answer if str(c).isdigit() and 0 <= int(c) < len(opts))
+                    else:
+                        user_answer_display = str(ans.student_answer or "Non répondu")
+                else:
+                    solution_info = str(correct_ref)
+                    user_answer_display = str(ans.student_answer or "Non répondu")
+
+            else:  # single_choice, intruder, or simple mcq
+                q_eval_type = "single_choice"
+                opts = raw_item.get("options", [])
+                c_val = raw_item.get("correct", 0)
+                if isinstance(c_val, list):
+                    c_val = c_val[0] if c_val else 0
+                correct_ref = str(c_val)
+                if isinstance(opts, list) and opts and isinstance(opts[0], dict):
+                    opt_dict = {str(o.get("id")): o.get("text", "") for o in opts}
+                    solution_info = opt_dict.get(str(c_val), str(c_val))
+                    user_answer_display = opt_dict.get(str(ans.student_answer), str(ans.student_answer or "Non répondu"))
+                elif isinstance(opts, list) and opts and isinstance(opts[0], str):
+                    try:
+                        c_idx = int(c_val)
+                        solution_info = opts[c_idx] if 0 <= c_idx < len(opts) else str(c_val)
+                    except Exception:
+                        solution_info = str(c_val)
+                    try:
+                        u_idx = int(ans.student_answer)
+                        user_answer_display = opts[u_idx] if 0 <= u_idx < len(opts) else str(ans.student_answer)
+                    except Exception:
+                        user_answer_display = str(ans.student_answer or "Non répondu")
+                else:
+                    solution_info = str(correct_ref)
+                    user_answer_display = str(ans.student_answer or "Non répondu")
+
+            awarded_pts, is_item_correct, _ = evaluate_answer(
+                q_type=q_eval_type,
+                user_answer=ans.student_answer,
+                correct_answers=correct_ref,
+                points=max_pts,
+                negative_penalty=0.0
+            )
+            explanation = raw_item.get("explanation") or ("✅ Réponse exacte !" if is_item_correct else f"Corrigé attendu : {solution_info}")
+
+        total_awarded_points += awarded_pts
+        total_max_points += max_pts
+
+        if is_item_correct:
+            correct_count += 1
+            topic_scores[topic]["correct"] += 1
+        topic_scores[topic]["awarded"] += awarded_pts
+        topic_scores[topic]["max"] += max_pts
+
+        detailed_feedback.append({
+            "id": ans.id,
+            "type": item_raw_type,
+            "topic": topic,
+            "prompt_text": raw_item.get("text") or raw_item.get("title") or "",
+            "is_correct": is_item_correct,
+            "awarded_points": round(awarded_pts, 2),
+            "max_points": round(max_pts, 2),
+            "user_answer": user_answer_display,
+            "solution": solution_info,
+            "explanation": explanation
+        })
+        
+    final_mark = round((total_awarded_points / total_max_points) * 20.0, 2) if total_max_points > 0 else 0.0
+    percentage = round((total_awarded_points / total_max_points) * 100.0, 1) if total_max_points > 0 else 0.0
+    passed = final_mark >= PASSING_MARK
+    
+    # Calcul des notes par sujet normalisées sur 20
+    topic_marks = {}
+    for t, scores in topic_scores.items():
+        t_mark = round((scores["awarded"] / scores["max"]) * 20.0, 2) if scores["max"] > 0 else 0.0
+        topic_marks[t] = t_mark
+        
+    # Enregistrement dans l'historique
+    attempt = TrainingAttempt(
+        user_id=current_user.id,
+        assessment_type=payload.assessment_type,
+        selected_topics_json=json.dumps(payload.selected_topics),
+        selected_difficulties_json=json.dumps(payload.selected_difficulties),
+        target_topic=payload.target_topic or (payload.selected_topics[0] if len(payload.selected_topics) == 1 else None),
+        target_difficulty=payload.target_difficulty or (payload.selected_difficulties[0] if len(payload.selected_difficulties) == 1 else None),
+        passed=passed,
+        final_mark=final_mark,
+        percentage=percentage,
+        total_questions=total_items,
+        correct_count=correct_count,
+        hints_used=total_hints,
+        topic_marks_json=json.dumps(topic_marks)
+    )
+    db.add(attempt)
+    db.commit()
+    
+    # Calcul de la nouvelle gamification et des nouveaux badges
+    new_gamif = calculate_gamification(current_user.id, db)
+    new_badges = [m for m in new_gamif["all_milestones"] if m["unlocked"] and m["id"] not in prev_unlocked]
+    level_up = new_gamif["level"] > prev_gamif["level"]
+    
+    # Récupérer l'historique complet pour stats
+    history_records = db.query(TrainingAttempt).filter(TrainingAttempt.user_id == current_user.id).order_by(TrainingAttempt.created_at.asc()).all()
+    history_list = [{
+        "final_mark": h.final_mark,
+        "assessment_type": h.assessment_type,
+        "topic_marks": json.loads(h.topic_marks_json) if h.topic_marks_json else {},
+        "created_at": h.created_at.isoformat()
+    } for h in history_records]
+    
+    progression = get_progression_stats(history_list, history_list[-1])
+    topic_rankings = get_topic_historical_averages(history_list)
+    
+    # Mettre à jour les chapitres correspondants
+    for topic_id in payload.selected_topics:
+        ch_prog = db.query(ChapterProgress).filter(
+            ChapterProgress.user_id == current_user.id,
+            ChapterProgress.chapter_id == topic_id
+        ).first()
+        if not ch_prog:
+            ch_prog = ChapterProgress(
+                user_id=current_user.id,
+                chapter_id=topic_id,
+                status="completed" if passed else "in_progress",
+                best_mark=final_mark,
+                completed_exercises=correct_count
+            )
+            db.add(ch_prog)
+        else:
+            if final_mark > ch_prog.best_mark:
+                ch_prog.best_mark = final_mark
+            if passed:
+                ch_prog.status = "completed"
+            ch_prog.completed_exercises += correct_count
+    db.commit()
+    
+    return {
+        "final_mark": final_mark,
+        "percentage": percentage,
+        "passed": passed,
+        "passing_mark": PASSING_MARK,
+        "total_questions": total_items,
+        "correct_count": correct_count,
+        "progression": progression,
+        "topic_marks": topic_marks,
+        "topic_rankings": topic_rankings,
+        "feedback": detailed_feedback,
+        "gamification": new_gamif,
+        "new_badges": new_badges,
+        "level_up": level_up
+    }
+
+@router.get("/history")
+def get_training_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Retourne l'historique d'entraînement de l'étudiant avec courbe d'évolution et badges de niveau."""
+    history_records = db.query(TrainingAttempt).filter(TrainingAttempt.user_id == current_user.id).order_by(TrainingAttempt.created_at.asc()).all()
+    if not history_records:
+        return {
+            "attempts": [],
+            "stats": None,
+            "topic_rankings": {},
+            "marks_history": []
+        }
+        
+    history_list = [{
+        "id": h.id,
+        "assessment_type": h.assessment_type,
+        "final_mark": h.final_mark,
+        "percentage": h.percentage,
+        "correct_count": h.correct_count,
+        "total_questions": h.total_questions,
+        "topic_marks": json.loads(h.topic_marks_json) if h.topic_marks_json else {},
+        "created_at": h.created_at.isoformat()
+    } for h in history_records]
+    
+    latest = history_list[-1]
+    progression = get_progression_stats(history_list, latest)
+    topic_rankings = get_topic_historical_averages(history_list)
+    marks_history = [h["final_mark"] for h in history_list]
+    
+    return {
+        "attempts": history_list,
+        "stats": progression,
+        "topic_rankings": topic_rankings,
+        "marks_history": marks_history
+    }

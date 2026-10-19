@@ -1,0 +1,8 @@
+Rôle	Identifiant	Mot de passe	Détails / Spécialité
+Administrateur	admin	admin123	Super Administrateur
+Enseignant	prof_martin	prof123	Enseignant Référent (Tous modules)
+Étudiant (Dev IA)	etu_dev1 à etu_dev4	StudentDev1! à StudentDev4!	DEV-IA
+Étudiant (SysAdmin)	etu_sys1 à etu_sys4	StudentSys1! à StudentSys4!	SYS-ADMIN
+Étudiant (CyberSec)	etu_sec1 à etu_sec4	StudentSec1! à StudentSec4!	CYBER-SEC
+Étudiant (Défaut)	etudiant1	etudiant123	DEV-IA / GRP-1
+Étudiant (Défaut)	etudiant1	etudiant123	DEV-IA / GRP-1

@@ -1,0 +1,88 @@
+{
+  "module_code": "PYTHON_INIT",
+  "title": "Examen Officiel : Programmation Python Fondamentale",
+  "instructions": "Épreuve officielle sur poste individuel. Durée : 45 minutes. Calculatrice et documents interdits.",
+  "duration_minutes": 45,
+  "global_points": 20.0,
+  "navigation_mode": "free",
+  "shuffle_questions": true,
+  "shuffle_options": true,
+  "partial_credit_enabled": true,
+  "default_negative_penalty": 0.5,
+  "group_ids": ["DEV-IA"],
+  "questions": [
+    {
+      "ordering": 1,
+      "type": "boolean",
+      "prompt_markdown": "En Python, les dictionnaires (`dict`) sont des structures de données mutables.",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    },
+    {
+      "ordering": 2,
+      "type": "single_choice",
+      "prompt_markdown": "Que renvoie l'expression suivante en Python ?\n\n```python\nlen(set([1, 2, 2, 3, 3, 3]))\n```",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"6\"}, {\"id\": \"1\", \"text\": \"3\"}, {\"id\": \"2\", \"text\": \"1\"}, {\"id\": \"3\", \"text\": \"TypeError\"}]",
+      "correct_answers_json": "[1]"
+    },
+    {
+      "ordering": 3,
+      "type": "multi_choice",
+      "prompt_markdown": "Parmi les types de données suivants, lesquels sont **immutables** en Python ?",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"tuple\"}, {\"id\": \"1\", \"text\": \"list\"}, {\"id\": \"2\", \"text\": \"str\"}, {\"id\": \"3\", \"text\": \"int\"}, {\"id\": \"4\", \"text\": \"dict\"}]",
+      "correct_answers_json": "[0, 2, 3]"
+    },
+    {
+      "ordering": 4,
+      "type": "fill_blank",
+      "prompt_markdown": "Quel mot-clé permet de déclarer une fonction anonyme en une seule ligne en Python ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"lambda\"]"
+    },
+    {
+      "ordering": 5,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque méthode spéciale dunder à son rôle usuel :",
+      "points": 4.0,
+      "negative_penalty": 0.0,
+      "options_json": "{\"left\": [\"__init__\", \"__str__\", \"__len__\", \"__eq__\"], \"right\": [\"Initialisation de l'instance\", \"Représentation textuelle conviviale\", \"Calcul de la taille / longueur\", \"Comparaison d'égalité ==\"]}",
+      "correct_answers_json": "{\"__init__\": \"Initialisation de l'instance\", \"__str__\": \"Représentation textuelle conviviale\", \"__len__\": \"Calcul de la taille / longueur\", \"__eq__\": \"Comparaison d'égalité ==\"}"
+    },
+    {
+      "ordering": 6,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle est la complexité temporelle moyenne d'une recherche d'élément (`x in s`) dans un `set` Python contenant $n$ éléments ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"O(1)\"}, {\"id\": \"1\", \"text\": \"O(n)\"}, {\"id\": \"2\", \"text\": \"O(log n)\"}, {\"id\": \"3\", \"text\": \"O(n log n)\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 7,
+      "type": "fill_blank",
+      "prompt_markdown": "Dans un bloc `try ... except`, quel bloc facultatif est garanti de s'exécuter qu'une exception soit levée ou non ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"finally\"]"
+    },
+    {
+      "ordering": 8,
+      "type": "boolean",
+      "prompt_markdown": "En Python, l'opérateur `is` teste l'identité en mémoire (`id(a) == id(b)`), tandis que l'opérateur `==` teste l'égalité de valeur.",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    }
+  ]
+}
+

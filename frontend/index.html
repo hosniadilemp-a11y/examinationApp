@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plateforme d'Examen et Tests de Niveau LAN</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/vendor/codemirror/codemirror.min.css" />
+  <link rel="stylesheet" href="/vendor/codemirror/theme/dracula.min.css" />
+  <style>
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #modal-admin-bulletin,
+      #modal-admin-bulletin .modal-box,
+      #printable-bulletin-area,
+      #printable-bulletin-area * {
+        visibility: visible !important;
+      }
+      #modal-admin-bulletin {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: #ffffff !important;
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      #modal-admin-bulletin .modal-box {
+        position: static !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      #printable-bulletin-area {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- En-tête Global -->
+    <header class="app-header">
+      <div class="brand-badge">
+        <div class="brand-icon">Q</div>
+        <span>Exam<span class="text-gradient">Platform</span></span>
+      </div>
+
+      <div class="user-badge" id="header-user-info" style="display: none;">
+        <span class="user-tag" id="header-user-group">Spécialité</span>
+        <span style="font-weight: 600;" id="header-user-name">Utilisateur</span>
+        <button id="btn-logout" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+          Déconnexion
+        </button>
+      </div>
+    </header>
+
+    <!-- Barre de Navigation Contextuelle par Rôle -->
+    <nav id="app-role-nav" class="role-nav-bar" style="display: none;">
+      <!-- Injecté dynamiquement par app.js selon le rôle (Étudiant, Enseignant, Administrateur) -->
+    </nav>
+
+    <!-- Bannière d'Alerte Réseau (Tolérance aux coupures) -->
+    <div id="banner-offline" class="network-banner">
+      ⚠️ Connexion au serveur local momentanément interrompue. Vos réponses sont sauvegardées localement. Continuez votre épreuve sans quitter le plein écran.
+    </div>
+
+    <!-- Bannière Flottante Avertissements Anti-Triche (Protocole 4 Avertissements) -->
+    <div id="warning-toast" class="warning-toast" style="display: none;"></div>
+
+    <!-- 1. VUE : CONNEXION -->
+    <main id="view-login" class="view active">
+      <div class="login-wrapper">
+        <div class="login-card">
+          <h2>Connexion</h2>
+          <p>Plateforme d'évaluation continue & d'examen en réseau local.</p>
+
+          <div id="login-error" style="display:none; color:var(--danger); background:rgba(239,68,68,0.1); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:0.85rem;"></div>
+
+          <form id="form-login">
+            <div class="form-group">
+              <label for="input-username">Identifiant / Matricule</label>
+              <input type="text" id="input-username" class="form-control" required placeholder="Ex: etudiant1, prof_martin, admin" autocomplete="username" />
+            </div>
+
+            <div class="form-group">
+              <label for="input-password">Mot de passe</label>
+              <input type="password" id="input-password" class="form-control" required placeholder="••••••••" autocomplete="current-password" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+              Se Connecter ➔
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- 2. VUE : TABLEAU DE BORD ÉTUDIANT (ENRICHI & SYNTHÉTIQUE) -->
+    <main id="view-dashboard" class="view">
+      <div class="dashboard-container">
+        
+        <!-- Bannière Profil & Niveau Global de l'Étudiant -->
+        <section class="student-hero-banner" id="student-hero-banner" style="display: none;">
+          <div class="hero-profile-info">
+            <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
+              Espace Performance Étudiant
+            </div>
+            <h2 id="dash-student-welcome" style="font-size: 1.5rem; color: #fff;">Bienvenue</h2>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div class="level-badge-large" id="dash-level-badge">
+                <span id="dash-level-text">Niveau 1 — Grand Débutant</span>
+              </div>
+              <span style="font-size: 0.85rem; color: #93c5fd;" id="dash-fund-avg-text">
+                Moyenne 4 Piliers : 0.00 / 20
+              </span>
+            </div>
+            <div class="level-progress-track">
+              <div class="level-progress-bar" id="dash-level-bar" style="width: 12.5%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+              <span>Niveau 1 (Débutant)</span>
+              <span>Niveau 4 (Junior)</span>
+              <span>Niveau 8 (Expert)</span>
+            </div>
+
+            <!-- Grille de Synthèse des 4 Piliers Fondamentaux (Niveau par test & global) -->
+            <div class="pillars-level-summary" id="dash-pillars-summary">
+              <!-- Injecté dynamiquement par app.js -->
+            </div>
+          </div>
+
+          <div class="student-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-val" id="dash-kpi-fund-avg">0.0</div>
+              <div class="kpi-label">Moyenne Piliers</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="dash-kpi-overall-avg">0.0</div>
+              <div class="kpi-label">Moyenne Globale</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="dash-kpi-success-rate">0%</div>
+              <div class="kpi-label">Taux Réussite</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-val" id="dash-kpi-validated-count">0/4</div>
+              <div class="kpi-label">Modules Validés</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Boutons d'Accès Rapide Dashboard -->
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;" id="box-btn-view-stats">
+          <button id="btn-open-student-bulletin" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+            <span>📑</span> Mon Bulletin Officiel ➔
+          </button>
+          <button id="btn-open-training-center" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+            <span>🐍</span> Centre d'Entraînement Python ➔
+          </button>
+        </div>
+
+        <!-- Section Examens Officiels Programmés -->
+        <div class="section-header">
+          <h3>📋 Examens Officiels Programmés</h3>
+        </div>
+        <div class="card-grid" id="official-exams-grid">
+          <!-- Injecté dynamiquement par app.js -->
+        </div>
+
+        <!-- Section Tests de Niveau par Module (Piliers du Cursus) -->
+        <div class="section-header" style="margin-top: 36px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="margin: 0;">🎯 Tests de Niveau par Module (Piliers du Cursus)</h3>
+            <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">
+              Épreuves hebdomadaires permanentes (30 questions). Format Examen 1 Q/Page • Autres onglets autorisés.
+            </p>
+          </div>
+          <button id="btn-open-practice-history" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+            <span>📜</span> Historique de Tous les Tests de Niveau
+          </button>
+        </div>
+        <div class="card-grid" id="practice-modules-grid">
+          <!-- Injecté dynamiquement par app.js (ALGO, PYTHON, CRYPTO, LINUX) -->
+        </div>
+
+        <!-- Section Centre d'Entraînement Python (Bouton d'accès unique au Centre dédié) -->
+        <div style="margin-top: 36px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: var(--radius-lg); padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+          <div style="max-width: 680px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+              <span style="font-size:1.6rem;">🐍</span>
+              <h3 style="font-size:1.25rem; margin:0; color:#fff;">Centre d'Entraînement Python (Théorique & Pratique)</h3>
+            </div>
+            <p style="color:var(--text-secondary); margin:0; font-size:0.92rem; line-height:1.5;">
+              Développez vos compétences étape par étape à travers 10 chapitres pédagogiques, débloquez les 4 niveaux de difficulté (note de passage ≥ 14/20), remportez les 68 badges d'XP et exécutez votre code dans un terminal interactif sécurisé.
+            </p>
+          </div>
+          <button id="btn-open-dedicated-python-training" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700; font-size: 0.95rem; white-space: nowrap;">
+            🚀 Accéder au Centre d'Entraînement Python ➔
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 3. VUE : STATISTIQUES & BILAN COMPLET DES PERFORMANCES ÉTUDIANT -->
+    <main id="view-stats" class="view">
+      <div class="dashboard-container">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div>
+            <h2>📊 Statistiques & Performance Académique</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Bilan exhaustif des évaluations officielles et tests de niveau par module.
+            </p>
+          </div>
+          <button id="btn-stats-back-dash" class="btn btn-secondary">
+            ← Revenir au Tableau de Bord
+          </button>
+        </div>
+
+        <!-- Bilan des 4 Modules Fondamentaux (Déterminant du Niveau 1 à 8) -->
+        <div class="section-header">
+          <h3>🎯 Niveau sur les 4 Examens Fondamentaux (Piliers du Cursus)</h3>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+          Votre niveau global (de Grand Débutant à Expert) est calculé sur la moyenne de vos meilleures notes obtenues sur ces 4 épreuves fondamentales :
+        </p>
+
+        <div class="fundamental-grid" id="stats-fundamental-grid">
+          <!-- Injecté dynamiquement : ALGO, PYTHON_INIT, CRYPTO, LINUX_ADMIN -->
+        </div>
+
+        <!-- Échelle des Niveaux (1 à 8) -->
+        <div class="section-header">
+          <h3>🎖️ Échelle de Progression des Niveaux (1 à 8)</h3>
+        </div>
+        <div class="level-ladder-grid" id="stats-level-ladder">
+          <!-- Injecté dynamiquement avec mise en surbrillance du niveau actif -->
+        </div>
+
+        <!-- Tableau Détaillé par Module -->
+        <div class="section-header">
+          <h3>📋 Tableau Exhaustif des Performances par Module</h3>
+        </div>
+        <div class="stats-table-wrapper">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Code Module</th>
+                <th>Intitulé du Module</th>
+                <th>Type</th>
+                <th>Meilleure Note</th>
+                <th>Moyenne</th>
+                <th>Évaluations</th>
+                <th>Statut</th>
+                <th>Maîtrise</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="stats-modules-table-body">
+              <!-- Injecté dynamiquement -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Historique Chronologique Récent -->
+        <div class="section-header">
+          <h3>🕒 Historique Chronologique des Évaluations</h3>
+        </div>
+        <div class="stats-table-wrapper">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Date & Heure</th>
+                <th>Type d'Épreuve</th>
+                <th>Module / Épreuve</th>
+                <th>Note Obtenue</th>
+                <th>Résultat</th>
+              </tr>
+            </thead>
+            <tbody id="stats-timeline-table-body">
+              <!-- Injecté dynamiquement -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 4. VUE : CENTRE D'ENTRAÎNEMENT PYTHON DÉDIÉ (THÉORIQUE & PRATIQUE) -->
+    <main id="view-python" class="view">
+      <div class="dashboard-container">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2>🐍 Centre d'Entraînement Python (Théorique & Pratique)</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Progression par maîtrise selon le cursus officiel : déblocage pas à pas, note minimale de passage fixée à 14/20, 68 badges de compétences et sandbox de code en local.
+            </p>
+          </div>
+          <button id="btn-python-back-dash" class="btn btn-secondary">
+            ← Revenir au Tableau de Bord
+          </button>
+        </div>
+
+        <!-- 1. Deux Grandes Cartes de Sélection : Pratique vs Théorique -->
+        <div class="assessment-type-grid">
+          <!-- Carte 1 : Laboratoire Pratique -->
+          <div class="type-selection-card active-practical" id="card-select-practical">
+            <div class="type-card-active-indicator">
+              <span class="indicator-dot"></span>
+              <span class="indicator-text" id="status-practical">✓ ACTIF</span>
+            </div>
+            
+            <div class="type-card-icon-wrapper practical">
+              <span class="type-card-big-icon">💻</span>
+            </div>
+            
+            <div class="type-card-body">
+              <div class="type-card-header">
+                <div>
+                  <span class="type-card-badge badge-practical">⚡ Code Sandbox Pyodide</span>
+                  <h3 class="type-card-title">Laboratoire Pratique</h3>
+                </div>
+              </div>
+              <p class="type-card-desc">
+                Résolvez des défis de code réels en Python dans votre navigateur. Exécution 100% locale sans installation, tests unitaires en temps réel et indices progressifs.
+              </p>
+              <div class="type-card-meta">
+                <span class="type-card-meta-pill">⚡ 100% Client / Pyodide</span>
+                <span class="type-card-meta-pill">🧪 Tests unitaires automatiques</span>
+                <span class="type-card-meta-pill">💡 Indices adaptatifs</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carte 2 : Quiz Théorique -->
+          <div class="type-selection-card" id="card-select-theoretical">
+            <div class="type-card-active-indicator">
+              <span class="indicator-dot"></span>
+              <span class="indicator-text" id="status-theoretical">○ CHOISIR</span>
+            </div>
+            
+            <div class="type-card-icon-wrapper theoretical">
+              <span class="type-card-big-icon">📖</span>
+            </div>
+            
+            <div class="type-card-body">
+              <div class="type-card-header">
+                <div>
+                  <span class="type-card-badge badge-theoretical">⏱️ QCM Chronométré</span>
+                  <h3 class="type-card-title">Quiz Théorique</h3>
+                </div>
+              </div>
+              <p class="type-card-desc">
+                10 questions chronométrées pour consolider vos acquis théoriques : syntaxe, structures de données, logique booléenne et pièges classiques.
+              </p>
+              <div class="type-card-meta">
+                <span class="type-card-meta-pill">📚 10 Questions QCM</span>
+                <span class="type-card-meta-pill">⏱️ 15 minutes chrono</span>
+                <span class="type-card-meta-pill">⌨️ Touches ← et →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Studio de Configuration & Personnalisation de la Session -->
+        <div class="training-customization-studio">
+          
+          <div class="studio-header">
+            <div>
+              <span class="studio-super-title">⚙️ CONFIGURATION & PERSONNALISATION</span>
+              <h3 class="studio-main-title">Paramètres de la Séance d'Entraînement</h3>
+            </div>
+            
+            <div class="segmented-control mode-switcher">
+              <button type="button" class="segmented-control-btn active" id="btn-mode-guided">
+                <span class="mode-icon">▶</span>
+                <span class="mode-text">Progression Guidée <small style="opacity:0.75;">(Auto)</small></span>
+              </button>
+              <button type="button" class="segmented-control-btn" id="btn-mode-custom">
+                <span class="mode-icon">⚙️</span>
+                <span class="mode-text">Mode Personnalisé <small style="opacity:0.75;">(Libre)</small></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Volet A : Mode Guidé (Actif par défaut) -->
+          <div id="panel-mode-guided" class="studio-panel-content active">
+            <div class="guided-step-card">
+              <div class="guided-step-icon">🎯</div>
+              <div class="guided-step-info">
+                <div class="guided-step-tag">PROCHAINE ÉTAPE RECOMMANDÉE DU CURSUS</div>
+                <div class="guided-step-title" id="guided-step-title">
+                  Chapitre 01 : Bases de Python & Syntaxe
+                </div>
+                <div class="guided-step-meta" id="guided-step-meta">
+                  Difficulté : Facile • Seuil de passage : 14/20 pour débloquer la suite
+                </div>
+              </div>
+              <div class="guided-step-status-chip">
+                ▶ Étape Active
+              </div>
+            </div>
+          </div>
+
+          <!-- Volet B : Mode Personnalisé (Sélecteur Interactif de Chapitre et de Palier) -->
+          <div id="panel-mode-custom" class="studio-panel-content">
+            <div class="custom-configurator-grid">
+              
+              <!-- Étape 1 : Choisir le Chapitre -->
+              <div class="config-group">
+                <label class="config-label" for="select-custom-topic">
+                  <span class="config-step-num">1</span>
+                  <span>Choisir le Chapitre d'Étude :</span>
+                </label>
+                <div class="custom-select-wrapper">
+                  <select id="select-custom-topic" class="custom-select">
+                    <!-- Rempli dynamiquement avec les 10 chapitres -->
+                  </select>
+                </div>
+                <div class="config-help-text">
+                  Astuce : Vous pouvez aussi cliquer directement sur un palier dans la matrice ci-dessous.
+                </div>
+              </div>
+
+              <!-- Étape 2 : Choisir la Difficulté -->
+              <div class="config-group">
+                <label class="config-label">
+                  <span class="config-step-num">2</span>
+                  <span>Choisir le Palier de Difficulté :</span>
+                </label>
+                <div class="difficulty-picker-row" id="custom-diff-picker-row">
+                  <button type="button" class="diff-picker-btn active" data-diff="easy" id="diff-btn-easy">
+                    <span class="diff-picker-icon">🟢</span>
+                    <span class="diff-picker-label">Facile</span>
+                    <span class="diff-picker-sub">Initiation</span>
+                  </button>
+                  <button type="button" class="diff-picker-btn" data-diff="medium" id="diff-btn-medium">
+                    <span class="diff-picker-icon">🟡</span>
+                    <span class="diff-picker-label">Moyen</span>
+                    <span class="diff-picker-sub">Consolidation</span>
+                  </button>
+                  <button type="button" class="diff-picker-btn" data-diff="hard" id="diff-btn-hard">
+                    <span class="diff-picker-icon">🟠</span>
+                    <span class="diff-picker-label">Difficile</span>
+                    <span class="diff-picker-sub">Approfondi</span>
+                  </button>
+                  <button type="button" class="diff-picker-btn" data-diff="expert" id="diff-btn-expert">
+                    <span class="diff-picker-icon">🔴</span>
+                    <span class="diff-picker-label">Expert</span>
+                    <span class="diff-picker-sub">Maîtrise</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Avis en cas de sélection d'un palier verrouillé -->
+            <div id="custom-lock-notice" class="custom-lock-notice" style="display: none;">
+              <span>⚠️</span>
+              <span id="custom-lock-notice-text">
+                Ce palier est verrouillé. Vous devez valider le palier précédent avec une note ≥ 14/20 pour débloquer votre score.
+              </span>
+            </div>
+          </div>
+
+          <!-- Lancement : Récapitulatif & GRAND BOUTON DÉMARRER -->
+          <div class="studio-launch-bar">
+            <div class="launch-summary-box">
+              <span class="launch-summary-label">Session configurée :</span>
+              <div class="launch-summary-text" id="launch-summary-text">
+                💻 Laboratoire Pratique • Chapitre 01 : Bases de Python & Syntaxe • Palier Facile
+              </div>
+            </div>
+            
+            <button id="btn-start-curriculum-training" class="btn btn-primary btn-hero-start">
+              <span class="btn-hero-icon">🚀</span>
+              <span class="btn-hero-text" id="btn-hero-main-text">Commencer l'Entraînement Pratique ➔</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Matrice du Cursus : 10 Chapitres & 4 Tiers de Difficulté -->
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <h3 style="margin: 0;">📚 Progression Pédagogique (10 Chapitres Fondamentaux)</h3>
+          <span style="font-size: 0.82rem; color: var(--text-muted);">
+            Légende : <span class="diff-chip completed" style="padding: 2px 8px; font-size: 0.75rem;">✓ Validé (≥ 14/20)</span> 
+            <span class="diff-chip current" style="padding: 2px 8px; font-size: 0.75rem;">▶ En Cours</span> 
+            <span class="diff-chip unlocked" style="padding: 2px 8px; font-size: 0.75rem;">◆ Débloqué</span> 
+            <span class="diff-chip locked" style="padding: 2px 8px; font-size: 0.75rem;">🔒 Verrouillé</span>
+          </span>
+        </div>
+
+        <div id="python-curriculum-container" style="margin-bottom: 36px;">
+          <!-- Injecté dynamiquement par app.js (10 chapitres avec puces de difficulté) -->
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 5. VUE : TERMINAL D'EXAMEN & TEST DE NIVEAU UNIFIÉ (1 QUESTION / PAGE + CLAVIER) -->
+    <main id="view-exam" class="view">
+      <div class="exam-layout">
+        
+        <!-- Colonne Principale : Question Active -->
+        <section class="exam-main">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+            <h2 id="exam-active-title" style="font-size: 1.4rem;">Examen en cours</h2>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <button id="btn-toggle-fullscreen" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+                <span>⛶</span> Plein Écran
+              </button>
+              <button id="btn-exam-quit" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: none;">
+                ✕ Quitter le Test
+              </button>
+              <div class="user-tag" id="exam-mode-badge" style="background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: var(--success);">
+                ● Session Sécurisée
+              </div>
+            </div>
+          </div>
+
+          <div id="exam-question-container">
+            <!-- Rendu de la question active par exam-runner.js -->
+          </div>
+
+          <!-- Barre de Navigation Question & Raccourcis Clavier -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 24px; border-top: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button id="btn-exam-prev" class="btn btn-secondary">
+                ← Précédent (Flèche Gauche)
+              </button>
+              <button id="btn-exam-next" class="btn btn-primary">
+                Suivant (Flèche Droite) ➔
+              </button>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+              Astuce : Utilisez les flèches ← et → du clavier pour naviguer.
+            </span>
+          </div>
+        </section>
+
+        <!-- Barre Latérale : Chronomètre & Palette Interactive -->
+        <aside class="exam-sidebar">
+          <div class="timer-box" id="exam-timer-box">
+            <div class="timer-label">Temps Restant</div>
+            <div class="timer-digits" id="exam-timer-digits">00:00</div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+            <h4 style="font-size: 0.95rem; color: var(--text-secondary);">
+              Palette des Questions
+            </h4>
+          </div>
+
+          <!-- Légende claire des couleurs -->
+          <div class="palette-legend">
+            <div class="legend-item"><span class="legend-indicator legend-answered"></span> Répondue (Vert)</div>
+            <div class="legend-item"><span class="legend-indicator legend-unanswered"></span> Non répondue (Vide)</div>
+            <div class="legend-item"><span class="legend-indicator legend-flagged"></span> 🚩 Relecture</div>
+          </div>
+
+          <div class="palette-grid" id="exam-palette-grid">
+            <!-- Boutons de questions injectés dynamiquement -->
+          </div>
+
+          <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--card-border);">
+            <button class="btn btn-danger" style="width: 100%;" onclick="window.activeExamRunner && window.activeExamRunner.showSubmitConfirmationModal()">
+              Terminer & Soumettre
+            </button>
+          </div>
+        </aside>
+
+      </div>
+    </main>
+
+    <!-- NOUVELLE VUE : SALLE D'ATTENTE INTERACTIVE ÉTUDIANT (REV-25) -->
+    <main id="view-waiting-room" class="view">
+      <div class="dashboard-container" style="max-width: 750px; text-align: center; padding: 50px 20px;">
+        <div class="waiting-pulse-icon" style="margin-bottom: 20px;">⏳</div>
+        <h2 id="waiting-room-exam-title" style="margin-bottom: 10px; color: #60a5fa; font-size: 1.6rem;">Cryptographie Fondamentale</h2>
+        <div style="margin-bottom: 24px;">
+          <span class="user-tag" id="waiting-room-room-tag" style="font-size: 0.95rem; padding: 6px 16px; background: rgba(59,130,246,0.15); color: #93c5fd; font-weight:700;">
+            🏢 Salle : SALLE-TP-1
+          </span>
+        </div>
+        <div style="background: var(--bg-surface); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 32px 24px; margin-bottom: 28px; box-shadow: var(--shadow-md);">
+          <h3 style="color: var(--text-primary); margin-top: 0; margin-bottom: 12px; font-size: 1.3rem;">⏳ En Attente du Départ Officiel</h3>
+          <p style="color: var(--text-secondary); font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px;">
+            Vous êtes bien connecté et inscrit sur le registre d'examen.<br/>
+            Votre poste est prêt. L'épreuve et le chronomètre se déclencheront <strong>automatiquement et de manière synchronisée</strong> dès que l'enseignant aura validé le départ pour la salle.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 24px; font-size: 0.92rem; color: var(--text-muted); font-family: var(--font-mono); border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+            <span id="waiting-room-duration">⏱️ Durée : 45 min</span>
+            <span id="waiting-room-status" style="color: #10b981;">🟢 Statut : Poste Connecté</span>
+          </div>
+        </div>
+        <button id="btn-waiting-room-leave" class="btn btn-secondary" style="padding: 10px 24px;">
+          ✕ Quitter la Salle d'Attente
+        </button>
+      </div>
+    </main>
+
+    <!-- 6. VUE : ÉCRAN DE RÉSULTAT & SCORE IMMÉDIAT -->
+    <main id="view-score" class="view">
+      <div class="dashboard-container" style="max-width: 1000px; text-align: center; padding: 40px 20px;">
+        <h2 id="score-title" style="margin-bottom: 16px;">Résultat d'Épreuve</h2>
+        <div style="font-size: 3.5rem; font-weight: 800; font-family: var(--font-mono); color: #60a5fa; margin-bottom: 8px;" id="score-grade">
+          0.0 / 20
+        </div>
+        <p id="score-percentage" style="color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem;"></p>
+
+        <div id="score-detailed-breakdown" style="text-align: left; margin-bottom: 36px; width:100%;"></div>
+
+        <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+          <button id="btn-score-back-dashboard" class="btn btn-primary" style="padding: 10px 24px;">
+            Retourner au Tableau de Bord ➔
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 7. VUE DÉDIÉE : ENSEIGNANT / GESTION DES EXAMENS (REV-13, REV-15) -->
+    <main id="view-teacher" class="view">
+      <div class="dashboard-container" style="max-width: 1140px;">
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div>
+            <h2>🖥️ Espace Enseignant & Gestion des Épreuves</h2>
+            <p style="color: var(--text-secondary); margin-top:4px;">
+              Gérez vos examens par spécialité (DEV-IA, SYS-ADMIN, CYBER-SEC), chargez des modèles officiels et lancez la surveillance de salle en direct.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btn-open-create-exam-modal" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); font-weight:600;">
+              <span>➕</span> Nouvel Examen Sur-Mesure
+            </button>
+            <button id="btn-load-template-modal" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:6px;">
+              <span>📥</span> Charger un Modèle Officiel (JSON)
+            </button>
+            <label for="input-import-exam-file" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0;">
+              <span>📁</span> Importer un Examen (JSON)
+            </label>
+            <input type="file" id="input-import-exam-file" accept=".json" style="display:none;" />
+            <label for="input-import-exam-package-file" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:0; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;">
+              <span>📦</span> Importer Package (.exam.zip)
+            </label>
+            <input type="file" id="input-import-exam-package-file" accept=".zip" style="display:none;" />
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <h3 style="margin-bottom:14px; color:var(--text-primary); font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+            <span>📋</span> Examens Créés & Disponibles (Statut : Prêt)
+          </h3>
+          <div id="teacher-exams-list" class="card-grid">
+            <!-- Liste dynamique des examens -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- NOUVELLE VUE : SALLE DE SURVEILLANCE & MONITORING EN DIRECT (REV-16) -->
+    <main id="view-proctor-live" class="view">
+      <div class="dashboard-container" style="max-width: 1240px; padding: 24px;">
+        <!-- Header Proctoring -->
+        <div class="proctor-header-box" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; background:var(--bg-surface); padding:18px 24px; border-radius:var(--radius-lg); border:1px solid var(--card-border); margin-bottom:20px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+              <button id="btn-proctor-back" class="btn btn-secondary" style="padding:4px 10px; font-size:0.85rem;">
+                ⬅️ Retour aux Examens
+              </button>
+              <h2 id="proctor-exam-title" style="font-size:1.3rem; color:var(--text-primary); margin:0;">Examen en Direct</h2>
+              <span id="proctor-session-status-badge" class="badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid #f59e0b; font-weight:700; padding:4px 10px; border-radius:12px;">⏳ En attente</span>
+            </div>
+            <div style="font-size:0.88rem; color:var(--text-secondary); display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+              <span>🏢 Salle : <strong id="proctor-room-id" style="color:var(--text-primary);">SALLE-TP-1</strong></span>
+              <span>⏱️ Durée : <strong id="proctor-duration">45 min</strong></span>
+              <span>👥 Inscrits : <strong id="proctor-enrolled-count" style="color:var(--text-primary);">0</strong></span>
+              <div id="proctor-timer-card" style="display:inline-flex; align-items:center; gap:8px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.4); padding:4px 12px; border-radius:12px; color:#818cf8; font-weight:700;">
+                <span>⏱️ Chronomètre Session :</span>
+                <span id="proctor-session-timer" style="font-family:monospace; font-size:1.15rem; color:#a5b4fc;">--:--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Commandes Collectives de la Salle -->
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button id="btn-proctor-launch-all" class="btn btn-primary" style="padding:10px 18px; font-weight:700; background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+              🚀 Lancer l'Épreuve pour la Salle
+            </button>
+            <button id="btn-proctor-close-all" class="btn btn-danger" style="padding:10px 16px; font-weight:700; background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-color:#dc2626;">
+              🛑 Clôturer l'Épreuve
+            </button>
+            <button id="btn-proctor-extend-all" class="btn btn-secondary" style="padding:10px 16px; font-weight:600;">
+              ⏱️ +5 Min (Tous)
+            </button>
+            <button id="btn-proctor-export-results-zip" class="btn btn-secondary" style="padding:10px 14px; font-weight:600; display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#93c5fd;">
+              <span>📦</span> Exporter Résultats (.results.zip)
+            </button>
+            <button id="btn-proctor-item-analysis" class="btn btn-secondary" style="padding:10px 14px; font-weight:600; display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;">
+              <span>📊</span> Analyse Psychométrique
+            </button>
+            <button id="btn-proctor-refresh" class="btn btn-secondary" style="padding:10px 14px;">
+              🔄 Rafraîchir
+            </button>
+          </div>
+        </div>
+
+        <!-- Tableau des Postes Candidats (REV-26) -->
+        <div style="margin-bottom:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:1.1rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+              <span>🖥️</span> Postes Candidats (<span id="proctor-stats-summary">0 connectés</span>)
+            </h3>
+            <span style="font-size:0.85rem; color:var(--text-secondary);">🔴 Télémétrie en direct via WebSocket</span>
+          </div>
+
+          <div class="proctor-table-container" style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); overflow-x:auto;">
+            <table class="proctor-table" id="proctor-candidates-table" style="width:100%; border-collapse:separate; border-spacing:0; text-align:left;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); font-size:0.82rem; color:var(--text-secondary);">
+                  <th style="padding:12px 16px;">Poste / Candidat</th>
+                  <th style="padding:12px 16px;">Statut</th>
+                  <th style="padding:12px 16px;">Progression</th>
+                  <th style="padding:12px 16px;">Temps Restant</th>
+                  <th style="padding:12px 16px;">Alertes Anti-Triche</th>
+                  <th style="padding:12px 16px;">Dernière Activité</th>
+                  <th style="padding:12px 16px; text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="proctor-students-table-body">
+                <!-- Lignes de candidats injectées dynamiquement -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Journal des Alertes et Événements en Direct -->
+        <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:16px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h4 style="font-size:0.95rem; color:#93c5fd; display:flex; align-items:center; gap:6px;">
+              <span>📜</span> Journal d'Audit & Alertes Anti-Triche en Temps Réel
+            </h4>
+            <span id="proctor-ws-indicator" style="font-size:0.8rem; color:#10b981; display:inline-flex; align-items:center; gap:6px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block; box-shadow:0 0 6px #10b981;"></span> Canal Enseignant Connecté
+            </span>
+          </div>
+          <div id="proctor-live-feed" style="max-height:160px; overflow-y:auto; font-family:var(--font-mono); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+            <!-- Flux des alertes en direct -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 8. VUE DÉDIÉE : SUPER ADMINISTRATEUR (REV-39, REV-40) -->
+    <main id="view-admin" class="view">
+      <div class="dashboard-container" style="max-width: 1240px; padding: 24px;">
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div>
+            <h2>⚙️ Console Super Administrateur & Pilotage Académique</h2>
+            <p style="color: var(--text-secondary); margin-top:4px;">
+              Gestion globale des effectifs (Étudiants, Enseignants), des Modules, des Épreuves et Consolidation Multi-Salles.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btn-admin-refresh-all" class="btn btn-secondary" style="padding:8px 14px; font-size:0.9rem;">
+              🔄 Actualiser les Données
+            </button>
+          </div>
+        </div>
+
+        <!-- Onglets Navigation Super Admin -->
+        <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid var(--card-border); padding-bottom:12px; overflow-x:auto;">
+          <button id="tab-btn-admin-stats" class="btn btn-primary admin-tab-btn active" data-tab="admin-tab-stats" style="padding:8px 16px; font-size:0.9rem;">
+            📊 Multi-Salles & Résultats
+          </button>
+          <button id="tab-btn-admin-students" class="btn btn-secondary admin-tab-btn" data-tab="admin-tab-students" style="padding:8px 16px; font-size:0.9rem;">
+            👥 Étudiants
+          </button>
+          <button id="tab-btn-admin-teachers" class="btn btn-secondary admin-tab-btn" data-tab="admin-tab-teachers" style="padding:8px 16px; font-size:0.9rem;">
+            👨‍🏫 Enseignants
+          </button>
+          <button id="tab-btn-admin-modules" class="btn btn-secondary admin-tab-btn" data-tab="admin-tab-modules" style="padding:8px 16px; font-size:0.9rem;">
+            📚 Modules Académiques
+          </button>
+          <button id="tab-btn-admin-exams" class="btn btn-secondary admin-tab-btn" data-tab="admin-tab-exams" style="padding:8px 16px; font-size:0.9rem;">
+            📋 Examens & Épreuves
+          </button>
+          <button id="tab-btn-admin-bulletins" class="btn btn-secondary admin-tab-btn" data-tab="admin-tab-bulletins" style="padding:8px 16px; font-size:0.9rem;">
+            📑 Bulletins Académiques
+          </button>
+        </div>
+
+        <!-- TAB 1 : STATISTIQUES GLOBALES & CONSOLIDATION MULTI-SALLES (REV-40) -->
+        <div id="admin-tab-stats" class="admin-tab-content">
+          <!-- Grille KPI Consolidés -->
+          <section class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">👥</div>
+              <div class="kpi-value" id="admin-kpi-students" style="font-size: 1.6rem; color: #60a5fa;">0</div>
+              <div class="kpi-label">Étudiants Inscrits</div>
+            </div>
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">👨‍🏫</div>
+              <div class="kpi-value" id="admin-kpi-teachers" style="font-size: 1.6rem; color: #a78bfa;">0</div>
+              <div class="kpi-label">Enseignants</div>
+            </div>
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">📚</div>
+              <div class="kpi-value" id="admin-kpi-modules" style="font-size: 1.6rem; color: #34d399;">0</div>
+              <div class="kpi-label">Modules</div>
+            </div>
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">📋</div>
+              <div class="kpi-value" id="admin-kpi-exams" style="font-size: 1.6rem; color: #f59e0b;">0</div>
+              <div class="kpi-label">Examens Créés</div>
+            </div>
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">📝</div>
+              <div class="kpi-value" id="admin-kpi-submitted" style="font-size: 1.6rem; color: #10b981;">0</div>
+              <div class="kpi-label">Copies Évaluées</div>
+            </div>
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">🎯</div>
+              <div class="kpi-value" id="admin-kpi-avg" style="font-size: 1.6rem; color: #38bdf8;">0.00 / 20</div>
+              <div class="kpi-label">Moyenne Générale</div>
+            </div>
+            <div class="kpi-card" style="padding: 16px;">
+              <div class="kpi-icon" style="font-size: 1.6rem;">🏆</div>
+              <div class="kpi-value" id="admin-kpi-pass-rate" style="font-size: 1.6rem; color: #4ade80;">0 %</div>
+              <div class="kpi-label">Taux de Réussite</div>
+            </div>
+          </section>
+
+          <!-- Zone Multi-Salles Ingestion CSV & Export -->
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h3 style="margin:0 0 4px 0; font-size:1.1rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                  <span>📥</span> Ingestion Multi-Salles & Consolidation CSV
+                </h3>
+                <p style="margin:0; font-size:0.85rem; color:var(--text-secondary);">
+                  Importez les résultats de copies générés par les serveurs locaux d'autres salles (ex: <code>student_submissions.csv</code> ou export de salle).
+                </p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="file" id="input-admin-csv-file" accept=".csv" style="display:none;" />
+                <button id="btn-admin-trigger-import-csv" class="btn btn-primary" style="padding:8px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">
+                  <span>📂</span> Importer CSV d'une Autre Salle
+                </button>
+                <input type="file" id="input-admin-results-zip-file" accept=".zip" style="display:none;" />
+                <button id="btn-admin-trigger-import-zip" class="btn btn-primary" style="padding:8px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; background:#4338ca; border-color:#3730a3;">
+                  <span>📦</span> Importer Archive Résultats (.results.zip)
+                </button>
+                <button id="btn-admin-download-consolidated-gradebook" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">
+                  <span>📊</span> Notes Consolidées Multi-Salles (CSV)
+                </button>
+                <a id="btn-admin-export-csv" href="/api/admin/csv/export/exam-results" target="_blank" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                  <span>📤</span> Exporter Toutes les Copies (.CSV)
+                </a>
+              </div>
+            </div>
+            <div id="admin-csv-import-feedback" style="display:none; margin-top:12px; padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem;"></div>
+          </div>
+
+          <!-- Filtres des Résultats & Tableau -->
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <h3 style="margin:0; font-size:1.05rem; color:var(--text-primary);">
+                📜 Résultats de Toutes les Épreuves & Copies Soumises
+              </h3>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <select id="admin-results-filter-room" class="form-control" style="font-size:0.85rem; padding:6px 10px; min-width:130px;">
+                  <option value="">Toutes les Salles</option>
+                </select>
+                <select id="admin-results-filter-group" class="form-control" style="font-size:0.85rem; padding:6px 10px; min-width:140px;">
+                  <option value="">Toutes les Spécialités</option>
+                </select>
+                <button id="btn-admin-results-refresh" class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;">Filtrer</button>
+              </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+                    <th style="padding:10px 14px;">Matricule</th>
+                    <th style="padding:10px 14px;">Candidat</th>
+                    <th style="padding:10px 14px;">Spécialité</th>
+                    <th style="padding:10px 14px;">Épreuve</th>
+                    <th style="padding:10px 14px;">Salle</th>
+                    <th style="padding:10px 14px; text-align:center;">Note Finale</th>
+                    <th style="padding:10px 14px;">Statut</th>
+                    <th style="padding:10px 14px;">Soumis le</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-results-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2 : GESTION DES ÉTUDIANTS (CRUD & CSV) -->
+        <div id="admin-tab-students" class="admin-tab-content" style="display:none;">
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary);">👥 Liste des Étudiants & Spécialités</h3>
+                <span id="admin-students-count" style="font-size:0.85rem; color:var(--text-secondary);">0 étudiant(s) au total</span>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <select id="admin-students-filter-group" class="form-control" style="font-size:0.85rem; padding:6px 10px; min-width:150px;">
+                  <option value="">Toutes les Spécialités</option>
+                </select>
+                <input type="text" id="admin-students-search" class="form-control" placeholder="Rechercher nom/matricule..." style="font-size:0.85rem; padding:6px 12px; width:180px;" />
+                <input type="file" id="input-admin-student-csv" accept=".csv" style="display:none;" />
+                <button id="btn-admin-trigger-student-csv" class="btn btn-secondary" style="padding:7px 14px; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">
+                  <span>📥</span> Importer CSV
+                </button>
+                <button id="btn-admin-add-student" class="btn btn-primary" style="padding:7px 14px; font-size:0.85rem;">
+                  ➕ Nouvel Étudiant
+                </button>
+              </div>
+            </div>
+
+            <div id="admin-student-csv-feedback" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem;"></div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+                    <th style="padding:10px 14px;">Matricule / ID</th>
+                    <th style="padding:10px 14px;">Identifiant</th>
+                    <th style="padding:10px 14px;">Nom Complet</th>
+                    <th style="padding:10px 14px;">Spécialité</th>
+                    <th style="padding:10px 14px;">Mot de passe</th>
+                    <th style="padding:10px 14px;">Email</th>
+                    <th style="padding:10px 14px; text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-students-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3 : GESTION DES ENSEIGNANTS (CRUD) -->
+        <div id="admin-tab-teachers" class="admin-tab-content" style="display:none;">
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary);">👨‍🏫 Corps Enseignant & Responsables de Module</h3>
+                <span id="admin-teachers-count" style="font-size:0.85rem; color:var(--text-secondary);">0 enseignant(s)</span>
+              </div>
+              <button id="btn-admin-add-teacher" class="btn btn-primary" style="padding:7px 14px; font-size:0.85rem;">
+                ➕ Nouvel Enseignant
+              </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+                    <th style="padding:10px 14px;">ID Enseignant</th>
+                    <th style="padding:10px 14px;">Identifiant</th>
+                    <th style="padding:10px 14px;">Nom & Prénom</th>
+                    <th style="padding:10px 14px;">Email</th>
+                    <th style="padding:10px 14px;">Modules Assignés</th>
+                    <th style="padding:10px 14px; text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-teachers-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4 : GESTION DES MODULES ACADÉMIQUES (CRUD) -->
+        <div id="admin-tab-modules" class="admin-tab-content" style="display:none;">
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary);">📚 Modules Fondamentaux & Unités d'Enseignement</h3>
+                <span id="admin-modules-count" style="font-size:0.85rem; color:var(--text-secondary);">0 module(s)</span>
+              </div>
+              <button id="btn-admin-add-module" class="btn btn-primary" style="padding:7px 14px; font-size:0.85rem;">
+                ➕ Nouveau Module
+              </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+                    <th style="padding:10px 14px;">Code Module</th>
+                    <th style="padding:10px 14px;">Intitulé Officiel</th>
+                    <th style="padding:10px 14px;">Description</th>
+                    <th style="padding:10px 14px;">Enseignants Rattachés</th>
+                    <th style="padding:10px 14px; text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-modules-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5 : GESTION DES EXAMENS & ÉPREUVES (CRUD) -->
+        <div id="admin-tab-exams" class="admin-tab-content" style="display:none;">
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary);">📋 Épreuves & Examens Officiels Programmés</h3>
+                <span id="admin-exams-count" style="font-size:0.85rem; color:var(--text-secondary);">0 examen(s)</span>
+              </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+                    <th style="padding:10px 14px;">ID Examen</th>
+                    <th style="padding:10px 14px;">Titre de l'Épreuve</th>
+                    <th style="padding:10px 14px;">Module</th>
+                    <th style="padding:10px 14px;">Durée</th>
+                    <th style="padding:10px 14px;">Barème</th>
+                    <th style="padding:10px 14px;">Questions</th>
+                    <th style="padding:10px 14px; text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-exams-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6 : GESTION DES BULLETINS ACADÉMIQUES (REV-45) -->
+        <div id="admin-tab-bulletins" class="admin-tab-content" style="display:none;">
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                  <span>📑</span> Gestion des Bulletins Académiques & Relevés Officiels
+                </h3>
+                <span id="admin-bulletins-count" style="font-size:0.85rem; color:var(--text-secondary);">0 bulletin(s) disponible(s)</span>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <select id="admin-bulletins-filter-speciality" class="form-control" style="font-size:0.83rem; padding:6px 10px; min-width:150px;">
+                  <option value="">Toutes les Spécialités</option>
+                </select>
+                <select id="admin-bulletins-sort-module" class="form-control" style="font-size:0.83rem; padding:6px 10px; min-width:150px;">
+                  <option value="AVG">Trier par : Moyenne Générale</option>
+                  <option value="ALGO">Trier par : Algorithmique</option>
+                  <option value="PYTHON_INIT">Trier par : Python</option>
+                  <option value="CRYPTO">Trier par : Cryptographie</option>
+                  <option value="LINUX_ADMIN">Trier par : Linux Admin</option>
+                  <option value="THEO">Trier par : Épr. Théorique</option>
+                  <option value="PRAC">Trier par : Épr. Pratique</option>
+                </select>
+                <input type="text" id="admin-bulletins-search" class="form-control" placeholder="Rechercher étudiant..." style="font-size:0.83rem; padding:6px 10px; width:150px;" />
+                <button id="btn-admin-export-bulletins-csv" class="btn btn-secondary" title="Export CSV consolidé" style="padding:6px 10px; font-size:0.82rem; display:inline-flex; align-items:center; gap:5px;">
+                  <span>📊</span> CSV
+                </button>
+                <button id="btn-admin-export-bulletins-zip-pdf" class="btn btn-primary" title="Télécharger tous les bulletins individuels en PDF dans une archive ZIP" style="padding:6px 10px; font-size:0.82rem; display:inline-flex; align-items:center; gap:5px; background:#1e3a8a; border-color:#1e40af;">
+                  <span>📦</span> ZIP (PDF)
+                </button>
+                <button id="btn-admin-export-bulletins-zip-docx" class="btn btn-primary" title="Télécharger tous les bulletins individuels en Word (.docx) dans une archive ZIP" style="padding:6px 10px; font-size:0.82rem; display:inline-flex; align-items:center; gap:5px; background:#2563eb; border-color:#1d4ed8;">
+                  <span>📦</span> ZIP (Word)
+                </button>
+                <button id="btn-admin-export-palmares-pdf" class="btn btn-success" title="Télécharger le palmarès officiel de la spécialité en PDF Paysage" style="padding:6px 10px; font-size:0.82rem; display:inline-flex; align-items:center; gap:5px;">
+                  <span>📑</span> Palmarès PDF
+                </button>
+                <button id="btn-admin-export-palmares-docx" class="btn btn-secondary" title="Télécharger le palmarès officiel de la spécialité en Word (.docx) Paysage" style="padding:6px 10px; font-size:0.82rem; display:inline-flex; align-items:center; gap:5px;">
+                  <span>📝</span> Palmarès Word
+                </button>
+              </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+                    <th style="padding:10px 14px;">Matricule</th>
+                    <th style="padding:10px 14px;">Étudiant</th>
+                    <th style="padding:10px 14px;">Spécialité</th>
+                    <th style="padding:10px 14px; text-align:center;">Algo (/20)</th>
+                    <th style="padding:10px 14px; text-align:center;">Python (/20)</th>
+                    <th style="padding:10px 14px; text-align:center;">Crypto (/20)</th>
+                    <th style="padding:10px 14px; text-align:center;">Linux (/20)</th>
+                    <th style="padding:10px 14px; text-align:center;">Épr. Théorique (/20)</th>
+                    <th style="padding:10px 14px; text-align:center;">Épr. Pratique (/20)</th>
+                    <th style="padding:10px 14px; text-align:center;">Moyenne Générale</th>
+                    <th style="padding:10px 14px; text-align:center;">Décision Jury</th>
+                    <th style="padding:10px 14px; text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-bulletins-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL : SÉLECTION DE MODÈLE D'EXAMEN OFFICIEL (REV-13) -->
+  <div id="modal-exam-template-picker" class="modal-overlay">
+    <div class="modal-box" style="max-width: 650px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3>📥 Charger un Modèle d'Examen Clé en Main</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-exam-template-picker" style="padding:4px 8px;">✕</button>
+      </div>
+      <p style="margin-bottom: 20px; color: var(--text-secondary); font-size:0.92rem;">
+        Choisissez parmi nos modèles officiels pré-configurés avec questions variées (QCU, QCM, Vrai/Faux, Matching, Texte à trou, Code) et barèmes sur 20 points :
+      </p>
+      <div id="templates-cards-container" style="display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto;">
+        <!-- Injecté dynamiquement -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : CONFIGURATION SESSION PYTHON ÉVOLUTIVE -->
+  <div id="modal-python-config" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px;">
+      <h3>Paramétrer la Session Python Évolutive</h3>
+      <p style="margin-bottom: 16px;">
+        Choisissez les modules et la difficulté des questions générées :
+      </p>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Nombre d'exercices :</label>
+        <select id="select-python-count" class="form-control">
+          <option value="5">5 exercices (Session Express)</option>
+          <option value="10" selected>10 exercices (Session Standard)</option>
+          <option value="15">15 exercices (Session Approfondie)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Niveau de difficulté :</label>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.9rem;">
+            <input type="checkbox" value="easy" class="cb-python-diff" checked /> Débutant (Facile)
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.9rem;">
+            <input type="checkbox" value="medium" class="cb-python-diff" checked /> Intermédiaire
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.9rem;">
+            <input type="checkbox" value="hard" class="cb-python-diff" checked /> Avancé
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 24px;">
+        <button id="btn-cancel-python-config" class="btn btn-secondary">Annuler</button>
+        <button id="btn-start-python-config" class="btn btn-primary">Démarrer la Session ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : HISTORIQUE DE TOUS LES TESTS DE NIVEAU -->
+  <div id="modal-practice-history" class="modal-overlay">
+    <div class="modal-box" style="max-width: 820px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0;">📜 Historique Complet des Tests de Niveau (Piliers)</h3>
+        <button id="btn-close-practice-history" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">✕ Fermer</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+        Consultez l'ensemble de vos tentatives passées sur les 4 modules fondamentaux. Vos scores et niveaux sont calculés en temps réel sur la moyenne de vos 4 dernières tentatives.
+      </p>
+      <div class="stats-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Date & Heure</th>
+              <th>Module Fondamental</th>
+              <th>Note Obtenue</th>
+              <th>Pourcentage</th>
+              <th>Avertissements</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="practice-history-table-body">
+            <!-- Injecté dynamiquement par app.js -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button id="btn-practice-history-done" class="btn btn-primary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : GALERIE DES 68 BADGES DE COMPÉTENCES -->
+  <div id="modal-badges-gallery" class="modal-overlay">
+    <div class="modal-box" style="max-width: 900px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0;">🏆 Galerie des 68 Badges & Milestones (XP)</h3>
+        <button id="btn-close-badges-gallery" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">✕ Fermer</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+        68 trophées à remporter à travers les quiz théoriques, laboratoires de programmation pratique et scores de perfection sur chaque chapitre.
+      </p>
+      
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+        <button class="btn btn-secondary btn-badge-filter active" data-filter="all" style="padding: 4px 12px; font-size: 0.8rem;">Tous (68)</button>
+        <button class="btn btn-secondary btn-badge-filter" data-filter="theo" style="padding: 4px 12px; font-size: 0.8rem;">Quiz Théoriques</button>
+        <button class="btn btn-secondary btn-badge-filter" data-filter="prac" style="padding: 4px 12px; font-size: 0.8rem;">Labs Pratiques</button>
+        <button class="btn btn-secondary btn-badge-filter" data-filter="unlocked" style="padding: 4px 12px; font-size: 0.8rem;">Débloqués Uniquement</button>
+      </div>
+
+      <div class="badges-grid-container" id="badges-gallery-grid">
+        <!-- Injecté dynamiquement par app.js -->
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button id="btn-badges-gallery-done" class="btn btn-primary">Fermer la Galerie</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : HISTORIQUE ENTRAÎNEMENT PYTHON -->
+  <div id="modal-python-history" class="modal-overlay">
+    <div class="modal-box" style="max-width: 820px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0;">📜 Historique des Entraînements Python</h3>
+        <button id="btn-close-python-history" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">✕ Fermer</button>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+        Historique chronologique des quiz théoriques et laboratoires de programmation effectués.
+      </p>
+      <div class="stats-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type d'Épreuve</th>
+              <th>Note / 20</th>
+              <th>Pourcentage</th>
+              <th>Questions</th>
+              <th>Résultat</th>
+            </tr>
+          </thead>
+          <tbody id="python-history-table-body">
+            <!-- Injecté dynamiquement par app.js -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button id="btn-python-history-done" class="btn btn-primary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : CONFIRMATION DE SOUMISSION -->
+  <div id="modal-submit-confirmation" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Confirmer la Soumission</h3>
+      <p>
+        Vous avez répondu à <strong id="modal-answered-count">0</strong> question(s).<br />
+        Questions sans réponse : <strong id="modal-unanswered-count" style="color: var(--warning);">0</strong>.
+      </p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        Une fois soumise, vous ne pourrez plus modifier vos réponses. Votre note sera calculée et enregistrée immédiatement.
+      </p>
+      <div class="modal-actions">
+        <button id="btn-modal-cancel" class="btn btn-secondary">Annuler & Revoir</button>
+        <button id="btn-modal-confirm" class="btn btn-danger">Confirmer la Soumission</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY ROUGE : SUSPENSION ANTI-TRICHE (> 10s) -->
+  <div id="overlay-suspension" class="suspension-overlay">
+    <div class="suspension-card">
+      <div class="suspension-icon">🔒</div>
+      <h2>Épreuve Suspendue</h2>
+      <p id="suspension-reason-text">
+        Sortie d'écran non autorisée détectée (> 10 secondes).
+      </p>
+      <p style="font-size: 0.9rem; color: #fca5a5;">
+        Votre terminal a été verrouillé par mesure d'intégrité. Veuillez avertir immédiatement votre surveillant pour demander le déblocage à distance.
+      </p>
+      <div style="margin-top: 24px;">
+        <span class="suspension-status-badge">
+          En attente du signal de déblocage du surveillant...
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : CRÉATION D'EXAMEN SUR-MESURE (REV-31) -->
+  <div id="modal-create-custom-exam" class="modal-overlay">
+    <div class="modal-box" style="max-width: 720px; width: 95%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0;">➕ Créer une Épreuve Officielle Sur-Mesure</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-create-custom-exam" style="padding:4px 8px;">✕</button>
+      </div>
+      <p style="margin-bottom: 20px; color: var(--text-secondary); font-size:0.92rem;">
+        Configurez une session d'examen personnalisée : choisissez le module, la durée, le barème et le ciblage des groupes d'étudiants.
+      </p>
+      <form id="form-create-custom-exam">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-group" style="grid-column: span 2;">
+            <label style="font-weight: 600; display: block; margin-bottom: 6px;">Titre de l'Examen :</label>
+            <input type="text" id="create-exam-title" class="form-control" required placeholder="Ex: Examen Officiel : Cryptographie Fondamentale & Sécurité Réseau" style="width: 100%;" />
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; display: block; margin-bottom: 6px;">Module / Spécialité :</label>
+            <select id="create-exam-module" class="form-control" style="width: 100%;">
+              <option value="CRYPTO" selected>CRYPTO (Cryptographie Fondamentale & Sécurité Réseau)</option>
+              <option value="PYTHON_INIT">PYTHON_INIT (Programmation Python Fondamentale)</option>
+              <option value="LINUX_ADMIN">LINUX_ADMIN (Systèmes & Administration Linux)</option>
+              <option value="ALGO">ALGO (Algorithmique & Structures de Données)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; display: block; margin-bottom: 6px;">Durée Chronométrée :</label>
+            <select id="create-exam-duration" class="form-control" style="width: 100%;">
+              <option value="15">15 minutes (Express)</option>
+              <option value="30">30 minutes</option>
+              <option value="45" selected>45 minutes (Standard)</option>
+              <option value="60">60 minutes (1 heure)</option>
+              <option value="90">90 minutes (1h30)</option>
+              <option value="120">120 minutes (2 heures)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; display: block; margin-bottom: 6px;">Note Maximale (Barème) :</label>
+            <input type="number" id="create-exam-max-score" class="form-control" value="20" min="5" max="100" style="width: 100%;" />
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; display: block; margin-bottom: 6px;">Identifiant Salle d'Attente :</label>
+            <input type="text" id="create-exam-room" class="form-control" value="SALLE-TP-1" placeholder="Ex: SALLE-TP-1" style="width: 100%;" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="font-weight: 600; display: block; margin-bottom: 6px;">Description / Instructions Candidat :</label>
+          <textarea id="create-exam-desc" class="form-control" rows="2" style="width: 100%;" placeholder="Épreuve officielle sur poste individuel. Durée : 45 minutes. Tout document ou communication externe interdit."></textarea>
+        </div>
+
+        <!-- Ciblage des Spécialités Promo -->
+        <div class="form-group" style="margin-bottom: 16px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+          <label style="font-weight: 600; display: block; margin-bottom: 8px;">Spécialités Étudiantes Autorisées :</label>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" class="cb-target-group" value="DEV-IA" checked /> Spécialité DEV-IA
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" class="cb-target-group" value="SYS-ADMIN" checked /> Spécialité SYS-ADMIN
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" class="cb-target-group" value="CYBER-SEC" checked /> Spécialité CYBER-SEC
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" class="cb-target-group" value="GRP-1" checked /> Groupe GRP-1 (Salle A)
+            </label>
+          </div>
+        </div>
+
+        <!-- Options d'anti-triche et d'aléa -->
+        <div class="form-group" style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+          <label style="font-weight: 600; display: block; margin-bottom: 8px;">Options d'Aléa & Sécurité :</label>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" id="create-exam-shuffle-questions" checked /> Mélanger l'ordre des questions
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" id="create-exam-shuffle-options" checked /> Mélanger les choix de réponses
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" id="create-exam-anticheat" checked /> Anti-triche strict (Plein écran + Verrouillage 4 avertissements)
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-create-custom-exam">Annuler</button>
+          <button type="submit" id="btn-submit-create-custom-exam" class="btn btn-primary" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            🚀 Enregistrer et Publier l'Épreuve
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN : CRÉATION / ÉDITION ÉTUDIANT (REV-39 / REV-43) -->
+  <div id="modal-admin-student" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px; width: 95%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 id="modal-admin-student-title" style="margin:0;">➕ Nouvel Étudiant</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-admin-student" style="padding:4px 8px;">✕</button>
+      </div>
+      <form id="form-admin-student">
+        <input type="hidden" id="admin-student-mode" value="create" />
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Matricule / ID Candidat * :</label>
+          <input type="text" id="admin-student-id" class="form-control" required placeholder="Ex: ETU-9901" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Identifiant de Connexion * :</label>
+          <input type="text" id="admin-student-username" class="form-control" required placeholder="Ex: etu_nouveau" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Nom et Prénom * :</label>
+          <input type="text" id="admin-student-fullname" class="form-control" required placeholder="Ex: Jean Dupont" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Adresse Email :</label>
+          <input type="email" id="admin-student-email" class="form-control" placeholder="jean.dupont@exam.local" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Spécialité * :</label>
+          <select id="admin-student-group" class="form-control" required style="width:100%;">
+            <!-- Rempli dynamiquement -->
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Mot de passe (en clair) :</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="admin-student-password" class="form-control" placeholder="Mot de passe étudiant" style="width:100%; font-family:monospace;" />
+            <button type="button" id="btn-admin-student-gen-pwd" class="btn btn-secondary" style="white-space:nowrap; font-size:0.8rem;">🎲 Générer</button>
+          </div>
+          <small style="color:var(--text-secondary); font-size:0.78rem;">Visible en clair par l'administrateur et modifiable à tout moment.</small>
+        </div>
+        <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-admin-student">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer l'Étudiant</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN : CRÉATION / ÉDITION ENSEIGNANT (REV-39) -->
+  <div id="modal-admin-teacher" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px; width: 95%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 id="modal-admin-teacher-title" style="margin:0;">➕ Nouvel Enseignant</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-admin-teacher" style="padding:4px 8px;">✕</button>
+      </div>
+      <form id="form-admin-teacher">
+        <input type="hidden" id="admin-teacher-mode" value="create" />
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">ID Enseignant * :</label>
+          <input type="text" id="admin-teacher-id" class="form-control" required placeholder="Ex: prof-02" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Identifiant de Connexion * :</label>
+          <input type="text" id="admin-teacher-username" class="form-control" required placeholder="Ex: prof_dupont" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Nom et Prénom * :</label>
+          <input type="text" id="admin-teacher-fullname" class="form-control" required placeholder="Ex: Prof. Alain Dupont" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Adresse Email :</label>
+          <input type="email" id="admin-teacher-email" class="form-control" placeholder="alain.dupont@exam.local" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Mot de Passe Initial (laisser vide = même que ID) :</label>
+          <input type="password" id="admin-teacher-password" class="form-control" placeholder="••••••••" style="width:100%;" />
+        </div>
+        <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-admin-teacher">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer l'Enseignant</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN : CRÉATION / ÉDITION MODULE (REV-39) -->
+  <div id="modal-admin-module" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px; width: 95%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 id="modal-admin-module-title" style="margin:0;">➕ Nouveau Module Académique</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-admin-module" style="padding:4px 8px;">✕</button>
+      </div>
+      <form id="form-admin-module">
+        <input type="hidden" id="admin-module-mode" value="create" />
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Code Module (ex: RESEAUX_SEC) * :</label>
+          <input type="text" id="admin-module-code" class="form-control" required placeholder="Ex: RESEAUX_SEC" style="width:100%; text-transform:uppercase;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Intitulé Officiel * :</label>
+          <input type="text" id="admin-module-title" class="form-control" required placeholder="Ex: Réseaux & Sécurité Périmétrique" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Description du Programme :</label>
+          <textarea id="admin-module-desc" class="form-control" rows="3" placeholder="Programme, objectifs et compétences évaluées..." style="width:100%;"></textarea>
+        </div>
+        <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-admin-module">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer le Module</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN : AFFECTATION ENSEIGNANT À UN MODULE -->
+  <div id="modal-admin-assign-module" class="modal-overlay">
+    <div class="modal-box" style="max-width: 580px; width: 95%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 id="modal-admin-assign-title" style="margin:0;">📚 Affectations au Module</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-admin-assign-module" style="padding:4px 8px;">✕</button>
+      </div>
+      <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:16px;">
+        Gérez la liste des enseignants habilités à enseigner et créer des examens pour ce module.
+      </p>
+      <input type="hidden" id="admin-assign-module-code" value="" />
+      <div style="display:flex; gap:10px; margin-bottom:18px;">
+        <select id="admin-assign-teacher-select" class="form-control" style="flex:1;">
+          <!-- Enseignants non encore affectés -->
+        </select>
+        <button id="btn-admin-do-assign-teacher" class="btn btn-primary" style="padding:7px 14px; font-size:0.85rem;">
+          ➕ Affecter
+        </button>
+      </div>
+      <div style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:12px;">
+        <div style="font-weight:600; margin-bottom:8px; font-size:0.9rem;">Enseignants actuellement rattachés :</div>
+        <div id="admin-assign-teachers-list" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Liste des enseignants avec bouton désaffecter -->
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end;">
+        <button type="button" class="btn btn-primary modal-close-btn" data-target="modal-admin-assign-module">Terminer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN : CONSULTATION & IMPRESSION BULLETIN ACADÉMIQUE (REV-45) -->
+  <div id="modal-admin-bulletin" class="modal-overlay">
+    <div class="modal-box" style="max-width: 860px; width: 95%; max-height: 90vh; overflow-y: auto; background: var(--bg-surface); padding: 24px;">
+      <div class="no-print" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--card-border); padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.4rem;">📑</span>
+          <h3 style="margin:0; font-size:1.15rem; color:var(--text-primary);">Bulletin de Notes Académique & Compétences</h3>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button id="btn-modal-bulletin-pdf" class="btn btn-primary" style="padding:7px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px; background:#1e3a8a; border-color:#1e40af;">
+            📄 Télécharger PDF
+          </button>
+          <button id="btn-modal-bulletin-docx" class="btn btn-primary" style="padding:7px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px; background:#2563eb; border-color:#1d4ed8;">
+            📝 Télécharger Word
+          </button>
+          <button id="btn-print-bulletin" class="btn btn-secondary" style="padding:7px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px;">
+            🖨️ Imprimer
+          </button>
+          <button class="btn btn-secondary modal-close-btn" data-target="modal-admin-bulletin" style="padding:7px 12px; font-size:0.83rem;">
+            ✕ Fermer
+          </button>
+        </div>
+      </div>
+
+      <!-- Zone Imprimable du Bulletin -->
+      <div id="printable-bulletin-area" style="background:#ffffff; color:#0f172a; padding:28px; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+        <!-- Injecté dynamiquement par app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : ANALYSE PSYCHOMÉTRIQUE & DISCRIMINATION DES QUESTIONS (ITEM ANALYSIS) -->
+  <div id="modal-item-analysis" class="modal-overlay">
+    <div class="modal-box" style="max-width: 1050px; width: 95%; max-height: 90vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.5rem;">📊</span>
+          <div>
+            <h3 style="margin:0; font-size:1.15rem; color:var(--text-primary);">Analyse Psychométrique & Discrimination des Questions</h3>
+            <p id="item-analysis-subtitle" style="margin:2px 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Épreuve : -- | Module : --</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button id="btn-export-item-analysis-csv" class="btn btn-primary" style="padding:6px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px; background:#059669; border-color:#047857;">
+            📥 Exporter CSV
+          </button>
+          <button class="btn btn-secondary modal-close-btn" data-target="modal-item-analysis" style="padding:6px 12px; font-size:0.83rem;">
+            ✕ Fermer
+          </button>
+        </div>
+      </div>
+
+      <!-- Résumé KPI Global -->
+      <div class="kpi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-icon" style="font-size: 1.2rem;">👥</div>
+          <div class="kpi-value" id="analysis-kpi-candidates" style="font-size: 1.3rem; color: #60a5fa;">0</div>
+          <div class="kpi-label" style="font-size: 0.75rem;">Candidats Évalués</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-icon" style="font-size: 1.2rem;">🎯</div>
+          <div class="kpi-value" id="analysis-kpi-mean" style="font-size: 1.3rem; color: #38bdf8;">-- / 20</div>
+          <div class="kpi-label" style="font-size: 0.75rem;">Note Moyenne</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-icon" style="font-size: 1.2rem;">📐</div>
+          <div class="kpi-value" id="analysis-kpi-median" style="font-size: 1.3rem; color: #a78bfa;">-- / 20</div>
+          <div class="kpi-label" style="font-size: 0.75rem;">Médiane</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-icon" style="font-size: 1.2rem;">📊</div>
+          <div class="kpi-value" id="analysis-kpi-stddev" style="font-size: 1.3rem; color: #f59e0b;">--</div>
+          <div class="kpi-label" style="font-size: 0.75rem;">Écart-Type (σ)</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-icon" style="font-size: 1.2rem;">🏆</div>
+          <div class="kpi-value" id="analysis-kpi-pass-rate" style="font-size: 1.3rem; color: #10b981;">-- %</div>
+          <div class="kpi-label" style="font-size: 0.75rem;">Taux de Réussite</div>
+        </div>
+      </div>
+
+      <!-- Alerte Anomalies Détectées -->
+      <div id="item-analysis-anomalies-box" style="display:none; background:rgba(239,68,68,0.12); border:1px solid #ef4444; border-radius:8px; padding:12px 16px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px; color:#f87171; font-weight:700; margin-bottom:6px;">
+          <span>⚠️</span>
+          <span id="item-analysis-anomalies-title">Anomalies psychométriques détectées</span>
+        </div>
+        <div id="item-analysis-anomalies-list" style="font-size:0.85rem; color:#fca5a5; line-height:1.5;"></div>
+      </div>
+
+      <!-- Tableau des Questions -->
+      <div style="overflow-x:auto;">
+        <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.83rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+              <th style="padding:8px 10px; width:40px;">N°</th>
+              <th style="padding:8px 10px;">Énoncé (Extrait)</th>
+              <th style="padding:8px 10px; width:90px;">Type</th>
+              <th style="padding:8px 10px; width:65px;">Barème</th>
+              <th style="padding:8px 10px; width:130px;">Taux Réussite (P)</th>
+              <th style="padding:8px 10px; width:85px; text-align:center;">Groupe Fort</th>
+              <th style="padding:8px 10px; width:85px; text-align:center;">Groupe Faible</th>
+              <th style="padding:8px 10px; width:110px; text-align:center;">Discrimination (D)</th>
+              <th style="padding:8px 10px;">Diagnostic Psychométrique</th>
+            </tr>
+          </thead>
+          <tbody id="item-analysis-table-body">
+            <!-- Injecté dynamiquement -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : GESTIONNAIRE DE QUESTIONS DE L'EXAMEN -->
+  <div id="modal-manage-questions" class="modal-overlay">
+    <div class="modal-box" style="max-width: 980px; width: 95%; max-height: 88vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--card-border); padding-bottom:12px;">
+        <div>
+          <h3 style="margin:0; font-size:1.15rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+            <span>📝</span> Gestionnaire de Questions de l'Examen
+          </h3>
+          <p id="manage-questions-subtitle" style="margin:2px 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Examen : --</p>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button id="btn-add-new-question" class="btn btn-primary" style="padding:6px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            ➕ Ajouter une Question
+          </button>
+          <input type="file" id="input-import-questions-json" accept=".json" style="display:none;" />
+          <button id="btn-trigger-import-questions-json" class="btn btn-secondary" style="padding:6px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px;">
+            📥 Importer JSON
+          </button>
+          <button id="btn-export-questions-json" class="btn btn-secondary" style="padding:6px 12px; font-size:0.83rem; display:inline-flex; align-items:center; gap:5px;">
+            📤 Exporter JSON
+          </button>
+          <button class="btn btn-secondary modal-close-btn" data-target="modal-manage-questions" style="padding:6px 12px; font-size:0.83rem;">
+            ✕ Fermer
+          </button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.85rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
+              <th style="padding:8px 10px; width:40px;">N°</th>
+              <th style="padding:8px 10px;">Énoncé Markdown</th>
+              <th style="padding:8px 10px; width:100px;">Type</th>
+              <th style="padding:8px 10px; width:70px;">Barème</th>
+              <th style="padding:8px 10px; width:70px;">Pénalité</th>
+              <th style="padding:8px 10px; text-align:center; width:130px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="manage-questions-table-body">
+            <!-- Injecté dynamiquement -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL : ÉDITION / AJOUT D'UNE QUESTION (WEB EDITOR) -->
+  <div id="modal-edit-question" class="modal-overlay">
+    <div class="modal-box" style="max-width: 650px; width: 95%; max-height: 90vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 id="modal-edit-question-title" style="margin:0;">➕ Ajouter une Question</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-edit-question" style="padding:4px 8px;">✕</button>
+      </div>
+      <form id="form-edit-question">
+        <input type="hidden" id="edit-question-id" value="" />
+        <input type="hidden" id="edit-question-exam-id" value="" />
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label style="font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem;">Type de Question * :</label>
+            <select id="edit-question-type" class="form-control" style="width:100%; font-size:0.85rem;" required>
+              <option value="single_choice">QCM Réponse Unique</option>
+              <option value="multi_choice">QCM Réponses Multiples</option>
+              <option value="boolean">Vrai / Faux (Binaire)</option>
+              <option value="fill_blank">Texte à Trou</option>
+              <option value="matching">Appariement / Correspondance</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem;">Ordre d'Apparition * :</label>
+            <input type="number" id="edit-question-ordering" class="form-control" min="1" value="1" required style="width:100%; font-size:0.85rem;" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem;">Énoncé de la Question (Markdown & Code) * :</label>
+          <textarea id="edit-question-prompt" class="form-control" rows="4" required placeholder="Saisissez l'énoncé en Markdown..." style="width:100%; font-family:var(--font-sans); font-size:0.88rem;"></textarea>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+          <div>
+            <label style="font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem;">Points attribués * :</label>
+            <input type="number" id="edit-question-points" class="form-control" step="0.25" min="0.25" value="2.0" required style="width:100%; font-size:0.85rem;" />
+          </div>
+          <div>
+            <label style="font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem;">Pénalité négative :</label>
+            <input type="number" id="edit-question-penalty" class="form-control" step="0.25" min="0" value="0.5" required style="width:100%; font-size:0.85rem;" />
+          </div>
+        </div>
+
+        <!-- Section Dynamique des Options & Réponses Correctes selon le type -->
+        <div id="edit-question-dynamic-options-container" style="background:rgba(255,255,255,0.02); border:1px solid var(--card-border); border-radius:6px; padding:12px; margin-bottom:16px;">
+          <!-- Injecté dynamiquement par JS selon edit-question-type -->
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-edit-question">Annuler</button>
+          <button type="submit" class="btn btn-primary" style="background:#2563eb;">💾 Enregistrer la Question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- OVERLAY PLEIN ÉCRAN REQUIS (REV-27) -->
+  <div id="overlay-fullscreen-required" class="modal-overlay">
+    <div class="modal-box" style="text-align: center; max-width: 520px; border: 2px solid #ef4444; box-shadow: 0 0 35px rgba(239, 68, 68, 0.45); background: #0f172a;">
+      <div style="font-size: 3.5rem; margin-bottom: 12px;">⚠️</div>
+      <h2 style="color: #ef4444; margin-bottom: 12px; font-size: 1.5rem;">Mode Plein Écran Requis</h2>
+      <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6; margin-bottom: 24px;">
+        Pour garantir l'intégrité de l'épreuve officielle, l'examen ne peut se poursuivre qu'en <strong>mode Plein Écran</strong>.<br/>
+        L'affichage est temporairement masqué pour empêcher toute consultation tierce.
+      </p>
+      <button id="btn-restore-fullscreen" class="btn btn-primary" style="padding: 12px 28px; font-size: 1.05rem; font-weight: 700; background: #ef4444; border-color: #dc2626;">
+        ⛶ Réactiver le Plein Écran Immédiatement
+      </button>
+    </div>
+  </div>
+
+  <!-- CodeMirror pour Édition Python Interactive avec Coloration Syntaxique & Outils Développeur -->
+  <script src="/vendor/codemirror/codemirror.min.js"></script>
+  <script src="/vendor/codemirror/mode/python/python.min.js"></script>
+  <script src="/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
+  <script src="/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

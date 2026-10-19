@@ -1,0 +1,641 @@
+import uuid
+import json
+from pathlib import Path
+from typing import List, Optional, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
+from backend.app.database import get_db
+from backend.app.models import Exam, Question, Module, Group, User, ExamSession
+from backend.app.schemas import (
+    ExamCreate, ExamUpdate, ExamResponse, ExamDetailResponse,
+    QuestionCreate, QuestionUpdate, QuestionResponse
+)
+from backend.app.dependencies import get_current_user, require_teacher_or_admin
+from backend.app.services.item_analysis import calculate_exam_item_analysis, generate_item_analysis_csv
+
+router = APIRouter(prefix="/api/exams", tags=["Gestion des Examens & Questions"])
+
+def _check_module_permission(user: User, module_code: str):
+    """Vérifie que l'enseignant est bien affecté au module ou est administrateur."""
+    if user.role == "admin":
+        return True
+    assigned = [m.code for m in user.assigned_modules]
+    if module_code.upper() not in assigned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Vous n'êtes pas affecté au module '{module_code}'. Action non autorisée."
+        )
+    return True
+
+@router.get("", response_model=List[ExamResponse])
+def list_exams(
+    module_code: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Liste les examens créés (filtrable par module)."""
+    query = db.query(Exam)
+    if module_code:
+        query = query.filter(Exam.module_code == module_code.upper())
+        
+    # Si l'utilisateur est étudiant, il ne voit que les examens assignés à son groupe
+    if current_user.role == "student":
+        if current_user.group_id:
+            query = query.filter(Exam.groups.any(id=current_user.group_id))
+        else:
+            return []
+            
+    exams = query.all()
+    results = []
+    for e in exams:
+        count = len(e.questions)
+        group_ids = [g.id for g in e.groups]
+        resp = ExamResponse(
+            id=e.id,
+            module_code=e.module_code,
+            title=e.title,
+            instructions=e.instructions,
+            duration_minutes=e.duration_minutes,
+            global_points=e.global_points,
+            navigation_mode=e.navigation_mode,
+            shuffle_questions=e.shuffle_questions,
+            shuffle_options=e.shuffle_options,
+            partial_credit_enabled=e.partial_credit_enabled,
+            default_negative_penalty=e.default_negative_penalty,
+            created_by=e.created_by,
+            created_at=e.created_at,
+            question_count=count,
+            assigned_groups=group_ids
+        )
+        results.append(resp)
+    return results
+
+@router.post("", response_model=ExamResponse, status_code=status.HTTP_201_CREATED)
+def create_exam(
+    payload: ExamCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Crée un nouvel examen rattaché à un module spécifique."""
+    module_code_clean = payload.module_code.strip().upper()
+    module = db.query(Module).filter(Module.code == module_code_clean).first()
+    if not module:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module introuvable.")
+        
+    _check_module_permission(current_user, module_code_clean)
+    
+    exam_id = f"EXAM-{uuid.uuid4().hex[:8].upper()}"
+    new_exam = Exam(
+        id=exam_id,
+        module_code=module_code_clean,
+        title=payload.title.strip(),
+        instructions=payload.instructions,
+        duration_minutes=payload.duration_minutes,
+        global_points=payload.global_points,
+        navigation_mode=payload.navigation_mode,
+        shuffle_questions=payload.shuffle_questions,
+        shuffle_options=payload.shuffle_options,
+        partial_credit_enabled=payload.partial_credit_enabled,
+        default_negative_penalty=payload.default_negative_penalty,
+        created_by=current_user.id
+    )
+    
+    if payload.group_ids:
+        groups = db.query(Group).filter(Group.id.in_(payload.group_ids)).all()
+        new_exam.groups.extend(groups)
+        
+    db.add(new_exam)
+    db.flush()
+
+    question_count = 0
+    # Si room_id est explicitement fourni (création personnalisée depuis l'interface)
+    if payload.room_id:
+        room_id = payload.room_id.strip()
+        candidate_template = None
+        if TEMPLATES_DIR.exists():
+            for f in TEMPLATES_DIR.glob("*.json"):
+                if module_code_clean.lower() in f.stem.lower() or f.stem.lower() in module_code_clean.lower():
+                    candidate_template = f
+                    break
+
+        if candidate_template and candidate_template.exists():
+            try:
+                with open(candidate_template, "r", encoding="utf-8") as fp:
+                    tdata = json.load(fp)
+                for idx, q_data in enumerate(tdata.get("questions", []), start=1):
+                    q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
+                    opts = q_data.get("options_json", "[]")
+                    opts_str = json.dumps(opts, ensure_ascii=False) if isinstance(opts, (list, dict)) else str(opts)
+                    corr = q_data.get("correct_answers_json", "")
+                    corr_str = json.dumps(corr, ensure_ascii=False) if isinstance(corr, (list, dict)) else str(corr)
+                    new_q = Question(
+                        id=q_id,
+                        exam_id=new_exam.id,
+                        ordering=int(q_data.get("ordering", idx)),
+                        type=str(q_data.get("type", "single_choice")),
+                        prompt_markdown=str(q_data.get("prompt_markdown", "")),
+                        points=float(q_data.get("points", 2.0)),
+                        negative_penalty=float(q_data.get("negative_penalty", 0.0)),
+                        time_limit_seconds=q_data.get("time_limit_seconds"),
+                        options_json=opts_str,
+                        correct_answers_json=corr_str
+                    )
+                    db.add(new_q)
+                    question_count += 1
+            except Exception as e:
+                print(f"[create_exam] Template question copy error: {e}")
+
+        # Créer automatiquement une session de salle en attente pour la salle demandée
+        existing_sess = db.query(ExamSession).filter(ExamSession.exam_id == new_exam.id, ExamSession.room_id == room_id).first()
+        if not existing_sess:
+            sess_id = f"SESS-{uuid.uuid4().hex[:8].upper()}"
+            session = ExamSession(
+                id=sess_id,
+                exam_id=new_exam.id,
+                room_id=room_id,
+                status="waiting",
+                launched_by=current_user.id
+            )
+            db.add(session)
+
+    db.commit()
+    db.refresh(new_exam)
+    
+    return ExamResponse(
+        id=new_exam.id,
+        module_code=new_exam.module_code,
+        title=new_exam.title,
+        instructions=new_exam.instructions,
+        duration_minutes=new_exam.duration_minutes,
+        global_points=new_exam.global_points,
+        navigation_mode=new_exam.navigation_mode,
+        shuffle_questions=new_exam.shuffle_questions,
+        shuffle_options=new_exam.shuffle_options,
+        partial_credit_enabled=new_exam.partial_credit_enabled,
+        default_negative_penalty=new_exam.default_negative_penalty,
+        created_by=new_exam.created_by,
+        created_at=new_exam.created_at,
+        question_count=question_count,
+        assigned_groups=[g.id for g in new_exam.groups]
+    )
+
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "seeds" / "templates"
+
+def _create_exam_from_template_dict(data: dict, db: Session, current_user: User) -> Exam:
+    module_code_clean = str(data.get("module_code", "")).strip().upper()
+    module = db.query(Module).filter(Module.code == module_code_clean).first()
+    if not module:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Module '{module_code_clean}' introuvable. Veuillez d'abord créer le module."
+        )
+    _check_module_permission(current_user, module_code_clean)
+    
+    exam_id = f"EXAM-{uuid.uuid4().hex[:8].upper()}"
+    new_exam = Exam(
+        id=exam_id,
+        module_code=module_code_clean,
+        title=str(data.get("title", f"Examen {module_code_clean}")).strip(),
+        instructions=data.get("instructions", "Épreuve officielle sur poste individuel."),
+        duration_minutes=int(data.get("duration_minutes", 45)),
+        global_points=float(data.get("global_points", 20.0)),
+        navigation_mode=data.get("navigation_mode", "free"),
+        shuffle_questions=bool(data.get("shuffle_questions", True)),
+        shuffle_options=bool(data.get("shuffle_options", True)),
+        partial_credit_enabled=bool(data.get("partial_credit_enabled", True)),
+        default_negative_penalty=float(data.get("default_negative_penalty", 0.5)),
+        created_by=current_user.id
+    )
+    
+    group_ids = data.get("group_ids", [])
+    if group_ids:
+        groups = db.query(Group).filter(Group.id.in_(group_ids)).all()
+        new_exam.groups.extend(groups)
+        
+    db.add(new_exam)
+    db.flush()
+    
+    questions_data = data.get("questions", [])
+    for idx, q_data in enumerate(questions_data, start=1):
+        q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
+        opts = q_data.get("options_json", "[]")
+        opts_str = json.dumps(opts, ensure_ascii=False) if isinstance(opts, (list, dict)) else str(opts)
+            
+        corr = q_data.get("correct_answers_json", "")
+        corr_str = json.dumps(corr, ensure_ascii=False) if isinstance(corr, (list, dict)) else str(corr)
+            
+        new_q = Question(
+            id=q_id,
+            exam_id=new_exam.id,
+            ordering=int(q_data.get("ordering", idx)),
+            type=str(q_data.get("type", "single_choice")),
+            prompt_markdown=str(q_data.get("prompt_markdown", "")),
+            points=float(q_data.get("points", 2.0)),
+            negative_penalty=float(q_data.get("negative_penalty", 0.0)),
+            time_limit_seconds=q_data.get("time_limit_seconds"),
+            options_json=opts_str,
+            correct_answers_json=corr_str
+        )
+        db.add(new_q)
+        
+    db.commit()
+    db.refresh(new_exam)
+    return new_exam
+
+@router.get("/templates")
+def list_exam_templates(
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Liste les modèles d'examen JSON disponibles dans le répertoire de templates."""
+    if not TEMPLATES_DIR.exists():
+        return []
+        
+    templates = []
+    for f in sorted(TEMPLATES_DIR.glob("*.json")):
+        try:
+            with open(f, "r", encoding="utf-8") as fp:
+                data = json.load(fp)
+            templates.append({
+                "template_id": f.stem,
+                "filename": f.name,
+                "title": data.get("title", f.stem),
+                "module_code": data.get("module_code", ""),
+                "duration_minutes": data.get("duration_minutes", 45),
+                "global_points": data.get("global_points", 20.0),
+                "question_count": len(data.get("questions", [])),
+                "group_ids": data.get("group_ids", [])
+            })
+        except Exception:
+            continue
+    return templates
+
+@router.post("/templates/{template_id}/load", response_model=ExamResponse, status_code=status.HTTP_201_CREATED)
+def load_exam_template(
+    template_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Charge et instancie un modèle d'examen officiel en base de données."""
+    candidate_files = [
+        TEMPLATES_DIR / f"{template_id}.json",
+        TEMPLATES_DIR / template_id,
+    ]
+    target_file = None
+    for cf in candidate_files:
+        if cf.exists() and cf.is_file():
+            target_file = cf
+            break
+            
+    if not target_file:
+        for f in TEMPLATES_DIR.glob("*.json"):
+            if template_id.lower() in f.stem.lower() or f.name.lower() == template_id.lower():
+                target_file = f
+                break
+                
+    if not target_file:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Modèle d'examen '{template_id}' introuvable."
+        )
+        
+    with open(target_file, "r", encoding="utf-8") as fp:
+        data = json.load(fp)
+        
+    new_exam = _create_exam_from_template_dict(data, db, current_user)
+    return ExamResponse(
+        id=new_exam.id,
+        module_code=new_exam.module_code,
+        title=new_exam.title,
+        instructions=new_exam.instructions,
+        duration_minutes=new_exam.duration_minutes,
+        global_points=new_exam.global_points,
+        navigation_mode=new_exam.navigation_mode,
+        shuffle_questions=new_exam.shuffle_questions,
+        shuffle_options=new_exam.shuffle_options,
+        partial_credit_enabled=new_exam.partial_credit_enabled,
+        default_negative_penalty=new_exam.default_negative_penalty,
+        created_by=new_exam.created_by,
+        created_at=new_exam.created_at,
+        question_count=len(new_exam.questions),
+        assigned_groups=[g.id for g in new_exam.groups]
+    )
+
+@router.post("/import-template", response_model=ExamResponse, status_code=status.HTTP_201_CREATED)
+def import_exam_template_payload(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Importe un examen complet depuis un objet JSON téléversé par l'enseignant."""
+    new_exam = _create_exam_from_template_dict(payload, db, current_user)
+    return ExamResponse(
+        id=new_exam.id,
+        module_code=new_exam.module_code,
+        title=new_exam.title,
+        instructions=new_exam.instructions,
+        duration_minutes=new_exam.duration_minutes,
+        global_points=new_exam.global_points,
+        navigation_mode=new_exam.navigation_mode,
+        shuffle_questions=new_exam.shuffle_questions,
+        shuffle_options=new_exam.shuffle_options,
+        partial_credit_enabled=new_exam.partial_credit_enabled,
+        default_negative_penalty=new_exam.default_negative_penalty,
+        created_by=new_exam.created_by,
+        created_at=new_exam.created_at,
+        question_count=len(new_exam.questions),
+        assigned_groups=[g.id for g in new_exam.groups]
+    )
+
+@router.get("/{exam_id}", response_model=ExamDetailResponse)
+def get_exam_detail(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Récupère un examen complet avec l'ensemble de ses questions et barèmes."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+        
+    _check_module_permission(current_user, exam.module_code)
+    
+    return ExamDetailResponse(
+        id=exam.id,
+        module_code=exam.module_code,
+        title=exam.title,
+        instructions=exam.instructions,
+        duration_minutes=exam.duration_minutes,
+        global_points=exam.global_points,
+        navigation_mode=exam.navigation_mode,
+        shuffle_questions=exam.shuffle_questions,
+        shuffle_options=exam.shuffle_options,
+        partial_credit_enabled=exam.partial_credit_enabled,
+        default_negative_penalty=exam.default_negative_penalty,
+        created_by=exam.created_by,
+        created_at=exam.created_at,
+        question_count=len(exam.questions),
+        assigned_groups=[g.id for g in exam.groups],
+        questions=[QuestionResponse.model_validate(q) for q in exam.questions]
+    )
+
+@router.put("/{exam_id}", response_model=ExamResponse)
+def update_exam(
+    exam_id: str,
+    payload: ExamUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Met à jour les paramètres d'un examen."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+        
+    _check_module_permission(current_user, exam.module_code)
+    
+    if payload.title is not None:
+        exam.title = payload.title.strip()
+    if payload.instructions is not None:
+        exam.instructions = payload.instructions
+    if payload.duration_minutes is not None:
+        exam.duration_minutes = payload.duration_minutes
+    if payload.global_points is not None:
+        exam.global_points = payload.global_points
+    if payload.shuffle_questions is not None:
+        exam.shuffle_questions = payload.shuffle_questions
+    if payload.shuffle_options is not None:
+        exam.shuffle_options = payload.shuffle_options
+    if payload.partial_credit_enabled is not None:
+        exam.partial_credit_enabled = payload.partial_credit_enabled
+    if payload.default_negative_penalty is not None:
+        exam.default_negative_penalty = payload.default_negative_penalty
+        
+    if payload.group_ids is not None:
+        exam.groups.clear()
+        if payload.group_ids:
+            groups = db.query(Group).filter(Group.id.in_(payload.group_ids)).all()
+            exam.groups.extend(groups)
+            
+    db.commit()
+    db.refresh(exam)
+    return ExamResponse(
+        id=exam.id,
+        module_code=exam.module_code,
+        title=exam.title,
+        instructions=exam.instructions,
+        duration_minutes=exam.duration_minutes,
+        global_points=exam.global_points,
+        navigation_mode=exam.navigation_mode,
+        shuffle_questions=exam.shuffle_questions,
+        shuffle_options=exam.shuffle_options,
+        partial_credit_enabled=exam.partial_credit_enabled,
+        default_negative_penalty=exam.default_negative_penalty,
+        created_by=exam.created_by,
+        created_at=exam.created_at,
+        question_count=len(exam.questions),
+        assigned_groups=[g.id for g in exam.groups]
+    )
+
+@router.delete("/{exam_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exam(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Supprime un examen et toutes ses questions rattachées."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    
+    db.delete(exam)
+    db.commit()
+    return None
+
+# --- Gestion des Questions dans un Examen ---
+
+@router.post("/{exam_id}/questions", response_model=QuestionResponse, status_code=status.HTTP_201_CREATED)
+def create_question(
+    exam_id: str,
+    payload: QuestionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Ajoute une question à un examen."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    
+    q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
+    new_q = Question(
+        id=q_id,
+        exam_id=exam.id,
+        ordering=payload.ordering,
+        type=payload.type,
+        prompt_markdown=payload.prompt_markdown,
+        points=payload.points,
+        negative_penalty=payload.negative_penalty,
+        time_limit_seconds=payload.time_limit_seconds,
+        options_json=payload.options_json,
+        correct_answers_json=payload.correct_answers_json
+    )
+    db.add(new_q)
+    db.commit()
+    db.refresh(new_q)
+    return new_q
+
+@router.put("/{exam_id}/questions/{q_id}", response_model=QuestionResponse)
+def update_question(
+    exam_id: str,
+    q_id: str,
+    payload: QuestionUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Met à jour une question existante."""
+    question = db.query(Question).filter(Question.id == q_id, Question.exam_id == exam_id).first()
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question introuvable.")
+    _check_module_permission(current_user, question.exam.module_code)
+    
+    if payload.ordering is not None:
+        question.ordering = payload.ordering
+    if payload.type is not None:
+        question.type = payload.type
+    if payload.prompt_markdown is not None:
+        question.prompt_markdown = payload.prompt_markdown
+    if payload.points is not None:
+        question.points = payload.points
+    if payload.negative_penalty is not None:
+        question.negative_penalty = payload.negative_penalty
+    if payload.time_limit_seconds is not None:
+        question.time_limit_seconds = payload.time_limit_seconds
+    if payload.options_json is not None:
+        question.options_json = payload.options_json
+    if payload.correct_answers_json is not None:
+        question.correct_answers_json = payload.correct_answers_json
+        
+    db.commit()
+    db.refresh(question)
+    return question
+
+@router.delete("/{exam_id}/questions/{q_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_question(
+    exam_id: str,
+    q_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Supprime une question d'un examen."""
+    question = db.query(Question).filter(Question.id == q_id, Question.exam_id == exam_id).first()
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question introuvable.")
+    _check_module_permission(current_user, question.exam.module_code)
+    
+    db.delete(question)
+    db.commit()
+    return None
+
+@router.post("/{exam_id}/questions/import-json")
+def import_questions_json(
+    exam_id: str,
+    payload: List[QuestionCreate],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Importe un lot de questions structurées depuis un tableau JSON."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    
+    added_count = 0
+    for q_data in payload:
+        q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
+        new_q = Question(
+            id=q_id,
+            exam_id=exam.id,
+            ordering=q_data.ordering,
+            type=q_data.type,
+            prompt_markdown=q_data.prompt_markdown,
+            points=q_data.points,
+            negative_penalty=q_data.negative_penalty,
+            time_limit_seconds=q_data.time_limit_seconds,
+            options_json=q_data.options_json,
+            correct_answers_json=q_data.correct_answers_json
+        )
+        db.add(new_q)
+        added_count += 1
+        
+    db.commit()
+    return {"success": True, "imported_count": added_count, "message": f"{added_count} question(s) importée(s) avec succès."}
+
+@router.get("/{exam_id}/questions/export-json")
+def export_questions_json(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Exporte l'ensemble des questions d'un examen sous forme de JSON structuré."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    
+    questions = db.query(Question).filter(Question.exam_id == exam_id).order_by(Question.ordering).all()
+    results = []
+    for q in questions:
+        results.append({
+            "ordering": q.ordering,
+            "type": q.type,
+            "prompt_markdown": q.prompt_markdown,
+            "points": q.points,
+            "negative_penalty": q.negative_penalty,
+            "time_limit_seconds": q.time_limit_seconds,
+            "options_json": q.options_json,
+            "correct_answers_json": q.correct_answers_json
+        })
+    return results
+
+@router.get("/{exam_id}/item-analysis")
+def get_exam_item_analysis_endpoint(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Retourne l'analyse psychométrique et l'indice de discrimination des questions (Item Analysis)
+    pour l'ensemble des tentatives soumises à cet examen.
+    """
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    
+    return calculate_exam_item_analysis(exam_id=exam.id, db=db)
+
+@router.get("/{exam_id}/item-analysis/csv")
+def export_exam_item_analysis_csv_endpoint(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Exporte l'analyse statistique et psychométrique des questions au format CSV UTF-8 BOM.
+    """
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    
+    analysis = calculate_exam_item_analysis(exam_id=exam.id, db=db)
+    csv_content = generate_item_analysis_csv(analysis)
+    
+    filename = f"analyse_questions_{exam.module_code}_{exam.id}.csv"
+    return StreamingResponse(
+        iter([csv_content.encode("utf-8-sig")]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+

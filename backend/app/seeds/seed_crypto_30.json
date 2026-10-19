@@ -1,0 +1,272 @@
+[
+  {
+    "ordering": 1,
+    "type": "boolean",
+    "prompt_markdown": "Dans le chiffrement asymétrique (RSA), la clé publique sert à chiffrer le message et la clé privée sert à le déchiffrer.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 2,
+    "type": "single_choice",
+    "prompt_markdown": "Quel algorithme parmi les suivants est un algorithme de **chiffrement symétrique par blocs** largement utilisé et standardisé ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"AES (Advanced Encryption Standard)\"}, {\"id\": \"b\", \"text\": \"RSA\"}, {\"id\": \"c\", \"text\": \"SHA-256\"}, {\"id\": \"d\", \"text\": \"Diffie-Hellman\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 3,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles sont les propriétés fondamentales attendues d'une **fonction de hachage cryptographique** sécurisée (comme SHA-256) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"R\\u00e9sistance aux pr\\u00e9images (sens unique)\"}, {\"id\": \"b\", \"text\": \"R\\u00e9sistance aux collisions (deux entr\\u00e9es distinctes ne doivent pas donner le m\\u00eame hash)\"}, {\"id\": \"c\", \"text\": \"Effet avalanche (une l\\u00e9g\\u00e8re modification d'entr\\u00e9e modifie radicalement le hash)\"}, {\"id\": \"d\", \"text\": \"R\\u00e9versibilit\\u00e9 facile pour retrouver le message d'origine\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 4,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel est le nom du célèbre chiffre par décalage monoalphabétique utilisé dans l'Antiquité romaine ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"cesar\", \"c\\u00e9sar\", \"chiffre de c\\u00e9sar\", \"chiffre de cesar\"]"
+  },
+  {
+    "ordering": 5,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque protocole ou algorithme cryptographique à sa catégorie :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"AES\", \"RSA\", \"SHA-3\", \"Diffie-Hellman\"], \"right\": [\"Chiffrement sym\\u00e9trique\", \"Chiffrement asym\\u00e9trique\", \"Fonction de hachage\", \"\\u00c9change de cl\\u00e9s\"]}",
+    "correct_answers_json": "{\"AES\": \"Chiffrement sym\\u00e9trique\", \"RSA\": \"Chiffrement asym\\u00e9trique\", \"SHA-3\": \"Fonction de hachage\", \"Diffie-Hellman\": \"\\u00c9change de cl\\u00e9s\"}"
+  },
+  {
+    "ordering": 6,
+    "type": "boolean",
+    "prompt_markdown": "Question 6 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 7,
+    "type": "single_choice",
+    "prompt_markdown": "Question 7 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 8,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 8 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 9,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 9 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 10,
+    "type": "matching",
+    "prompt_markdown": "Question 10 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 11,
+    "type": "boolean",
+    "prompt_markdown": "Question 11 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 12,
+    "type": "single_choice",
+    "prompt_markdown": "Question 12 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 13,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 13 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 14,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 14 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 15,
+    "type": "matching",
+    "prompt_markdown": "Question 15 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 16,
+    "type": "boolean",
+    "prompt_markdown": "Question 16 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 17,
+    "type": "single_choice",
+    "prompt_markdown": "Question 17 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 18,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 18 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 19,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 19 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 20,
+    "type": "matching",
+    "prompt_markdown": "Question 20 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 21,
+    "type": "boolean",
+    "prompt_markdown": "Question 21 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 22,
+    "type": "single_choice",
+    "prompt_markdown": "Question 22 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 23,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 23 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 24,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 24 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 25,
+    "type": "matching",
+    "prompt_markdown": "Question 25 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 26,
+    "type": "boolean",
+    "prompt_markdown": "Question 26 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 27,
+    "type": "single_choice",
+    "prompt_markdown": "Question 27 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 28,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 28 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 29,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 29 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 30,
+    "type": "matching",
+    "prompt_markdown": "Question 30 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  }
+]

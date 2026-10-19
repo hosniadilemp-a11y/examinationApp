@@ -1,0 +1,88 @@
+{
+  "module_code": "LINUX_ADMIN",
+  "title": "Examen Officiel : Administration Système Linux & Réseaux",
+  "instructions": "Épreuve officielle sur poste individuel GNU/Linux. Durée : 45 minutes. Documents interdits.",
+  "duration_minutes": 45,
+  "global_points": 20.0,
+  "navigation_mode": "free",
+  "shuffle_questions": true,
+  "shuffle_options": true,
+  "partial_credit_enabled": true,
+  "default_negative_penalty": 0.5,
+  "group_ids": ["SYS-ADMIN"],
+  "questions": [
+    {
+      "ordering": 1,
+      "type": "boolean",
+      "prompt_markdown": "Le fichier `/etc/shadow` contient les empreintes de mots de passe hachés et n'est lisible que par l'administrateur `root`.",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    },
+    {
+      "ordering": 2,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle commande permet de modifier le propriétaire et le groupe propriétaire d'un fichier en une seule opération sous Linux ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"chown utilisateur:groupe fichier\"}, {\"id\": \"1\", \"text\": \"chmod 755 fichier\"}, {\"id\": \"2\", \"text\": \"chgrp -R utilisateur fichier\"}, {\"id\": \"3\", \"text\": \"umask 022 fichier\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 3,
+      "type": "multi_choice",
+      "prompt_markdown": "Parmi les signaux POSIX suivants, lesquels provoquent l'arrêt ou la terminaison d'un processus par défaut ?",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"SIGTERM (15)\"}, {\"id\": \"1\", \"text\": \"SIGKILL (9)\"}, {\"id\": \"2\", \"text\": \"SIGSTOP (19)\"}, {\"id\": \"3\", \"text\": \"SIGINT (2)\"}, {\"id\": \"4\", \"text\": \"SIGCONT (18)\"}]",
+      "correct_answers_json": "[0, 1, 3]"
+    },
+    {
+      "ordering": 4,
+      "type": "fill_blank",
+      "prompt_markdown": "Sous les distributions modernes utilisant le paquet `iproute2`, quelle commande remplace l'ancien outil obsolète `ifconfig` ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"ip\"]"
+    },
+    {
+      "ordering": 5,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque utilitaire système Linux à sa responsabilité principale :",
+      "points": 4.0,
+      "negative_penalty": 0.0,
+      "options_json": "{\"left\": [\"systemctl\", \"journalctl\", \"ssh-keygen\", \"crontab\"], \"right\": [\"Gestion et contrôle des démons et unités systemd\", \"Consultation et filtrage des logs binaires journald\", \"Génération de biclés cryptographiques d'authentification\", \"Planification de tâches périodiques et automatisées\"]}",
+      "correct_answers_json": "{\"systemctl\": \"Gestion et contrôle des démons et unités systemd\", \"journalctl\": \"Consultation et filtrage des logs binaires journald\", \"ssh-keygen\": \"Génération de biclés cryptographiques d'authentification\", \"crontab\": \"Planification de tâches périodiques et automatisées\"}"
+    },
+    {
+      "ordering": 6,
+      "type": "single_choice",
+      "prompt_markdown": "Dans la notation octale des permissions Linux, à quelle représentation symbolique correspond la valeur `754` ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"-rwxr-xr--\"}, {\"id\": \"1\", \"text\": \"-rwxrwxr--\"}, {\"id\": \"2\", \"text\": \"-r-xr-xr--\"}, {\"id\": \"3\", \"text\": \"-rwxrw-r--\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 7,
+      "type": "fill_blank",
+      "prompt_markdown": "Dans quel pseudo-système de fichiers virtuel en mémoire le noyau Linux expose-t-il les informations en temps réel sur les processus actifs ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"/proc\", \"proc\"]"
+    },
+    {
+      "ordering": 8,
+      "type": "boolean",
+      "prompt_markdown": "La commande `sudo` permet à un utilisateur délégué d'exécuter des commandes avec les privilèges d'un autre compte, par défaut `root`, en traçant chaque action dans les journaux d'audit.",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    }
+  ]
+}
+
