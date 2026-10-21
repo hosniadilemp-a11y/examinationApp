@@ -5,7 +5,7 @@
 [![SQLite WAL / PostgreSQL](https://img.shields.io/badge/Database-SQLite%20WAL%20%7C%20Postgres-336791.svg)](https://www.sqlite.org/)
 [![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20ES%20Modules-F7DF1E.svg)](https://developer.mozilla.org/)
 [![Pyodide WebAssembly](https://img.shields.io/badge/Python%20Engine-Pyodide%20v0.26-E44D26.svg)](https://pyodide.org/)
-[![Tests Status](https://img.shields.io/badge/Tests-78%2F78%20Passing%20(100%25)-brightgreen.svg)](https://docs.pytest.org/)
+[![Tests Status](https://img.shields.io/badge/Tests-85%2F85%20Passing%20(100%25)-brightgreen.svg)](https://docs.pytest.org/)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)]()
 
 > Plateforme web institutionnelle complète d'évaluation continue, d'examen officiel surveillé et d'entraînement en programmation informatique, conçue pour opérer **strictement en réseau local autonome (LAN)** sans aucune dépendance à Internet ni recours à des CDN externes.
@@ -75,18 +75,21 @@ L'application repose sur le modèle architectural **Option B (Serveurs de Salles
 * **Enseignant Surveillant (`teacher`) :** Création d'examens sur-mesure ou chargement depuis templates officiels, éditeur web de questions, console de surveillance télémétrique en direct, déblocage des postes et analyses psychométriques.
 * **Étudiant / Candidat (`student`) :** Espace personnel avec indicateurs académiques, salle d'attente synchronisée, interface d'épreuve sécurisée, tests d'entraînement 24/7 et Centre d'Entraînement Python.
 
-### 2. Moteur d'Évaluation Universel à 5 Types d'Épreuves
+### 2. Moteur d'Évaluation Universel à 6 Types d'Épreuves
 1. **Vrai / Faux (`boolean`) :** Choix binaire avec tolérance de typage serveur.
 2. **QCM Choix Unique (`single_choice`) :** 1 réponse correcte parmi $N$ options.
 3. **QCM Choix Multiples (`multi_choice`) :** Crédit partiel au prorata des bonnes réponses et pénalité configurable pour les fausses sélections (avec plancher automatique à zéro).
 4. **Texte à Trou (`fill_blank`) :** Normalisation insensible à la casse et aux espaces superflus.
 5. **Appariement / Correspondance (`matching`) :** Association 1-à-1 dynamique en deux colonnes avec exclusion mutuelle des choix déjà retenus.
+6. **Programmation Python Pratique (`coding`) :** Défis d'algorithmique et de code inspirés d'AlgoCompiler / HackerRank, avec double panneau ajustable, CodeMirror Dracula, console I/O, onglet de validation des tests publics, et évaluation serveur stricte avec tests cachés masqués (`[Protégé]`).
 
-### 3. Centre d'Entraînement Python Évolutif (Pyodide Sandboxed)
-* Exécution du code étudiant dans le navigateur via **Pyodide WebAssembly** encapsulé dans un **Web Worker** isolé (ne bloque jamais l'interface utilisateur).
-* **Watchdog de 5 secondes :** Interruption automatique et sécurisée des boucles infinies.
+### 3. Centre d'Entraînement & Défis d'Algorithmique (230 Problèmes)
+* **Double Moteur Python :** Pyodide WebAssembly isolé pour l'entraînement instantané hors-ligne et Sandbox Python Subprocess sécurisé côté serveur avec watchdog de 5 secondes.
+* **Formules Mathématiques Hors-Ligne :** Rendu KaTeX local (`frontend/vendor/katex/`) sans recours à Internet ($O(N)$, complexité, sommes et équations).
+* **Règle Stricte des Tests :** 100% des 230 problèmes comportent obligatoirement $\ge 2$ tests publics et $\ge 1$ test caché.
+* **Isolation Pédagogique des 4 Tests de Niveau :** Les 4 épreuves de niveau sont diagnostiques et disponibles 24h/24 en self-service ; elles n'impactent pas les moyennes officielles des modules de cours.
 * **Éditeur CodeMirror Professionnel :** Coloration syntaxique Python, indentation automatique, numéros de ligne et diagnostic d'exceptions précis (`traceback` complet avec numéro de ligne).
-* 10 chapitres d'entraînement progressif et mode adaptatif personnalisé.
+* 10 chapitres d'entraînement progressif, défis AlgoCompiler avancés et mode adaptatif personnalisé.
 
 ---
 
@@ -184,20 +187,20 @@ python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-### 4. Méthode 3 : Déploiement avec Docker Compose
+### 4. Méthode 3 : Déploiement Conteneurisé Clé en Main (Dossier `deployment/`)
 
-Pour les serveurs équipés de Docker :
+Pour une exploitation simplifiée en production ou en salle d'examen, un ensemble complet de scripts de cycle de vie est fourni dans le dossier `deployment/` :
 
-```bash
-# Lancement de la pile complète en arrière-plan
-docker compose up -d
+| Script Windows | Script Linux / macOS | Description & Action |
+| :--- | :--- | :--- |
+| `deployment\start_app.bat` | `deployment/start_app.sh` | Démarre la pile Docker et vérifie l'état de santé du serveur (`healthcheck`). |
+| `deployment\stop_app.bat` | `deployment/stop_app.sh` | Arrête proprement les conteneurs tout en **préservant les données**. |
+| `deployment\update_app.bat` | `deployment/update_app.sh` | Reconstruit l'image avec les nouvelles mises à jour et applique les auto-migrations sans perte de données. |
+| `deployment\export_offline_image.bat` | — | Exporte l'image Docker sous archive `examination-quiz-server.tar` pour déploiement USB en milieu isolé (Air-gap). |
+| `deployment\load_offline_image.bat` | — | Charge l'image Docker depuis l'archive locale `.tar`. |
 
-# Visualisation des logs en direct
-docker compose logs -f
-
-# Arrêt du serveur
-docker compose down
-```
+Pour consulter le guide complet de persistance et de configuration autonome (SQLite WAL ou PostgreSQL) :
+👉 Voir [deployment/DEPLOYMENT_AND_PERSISTENCE_GUIDE.md](file:///c:/Users/adel/Documents/ExaminationQuiz%20APP/deployment/DEPLOYMENT_AND_PERSISTENCE_GUIDE.md).
 
 ---
 

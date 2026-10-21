@@ -42,16 +42,26 @@ class ApiClient {
       const response = await fetch(url, { ...options, headers });
       
       if (response.status === 401) {
-        this.clearSession();
-        window.dispatchEvent(new CustomEvent('auth:expired'));
-        throw new Error("Session expirée. Veuillez vous reconnecter.");
+        if (!endpoint.includes('/auth/login')) {
+          this.clearSession();
+          window.dispatchEvent(new CustomEvent('auth:expired'));
+          throw new Error("Session expirée. Veuillez vous reconnecter.");
+        }
       }
 
       if (!response.ok) {
         let errorMsg = `Erreur HTTP ${response.status}`;
         try {
           const errData = await response.json();
-          errorMsg = errData.detail || errorMsg;
+          if (typeof errData.detail === 'string') {
+            errorMsg = errData.detail;
+          } else if (Array.isArray(errData.detail)) {
+            errorMsg = errData.detail.map(d => d.msg ? `${d.loc && d.loc.length > 1 ? d.loc.slice(1).join('.') + ': ' : ''}${d.msg}` : JSON.stringify(d)).join(' | ');
+          } else if (errData.detail && typeof errData.detail === 'object') {
+            errorMsg = errData.detail.message || JSON.stringify(errData.detail);
+          } else if (errData.message) {
+            errorMsg = errData.message;
+          }
         } catch (_) {}
         throw new Error(errorMsg);
       }
@@ -328,12 +338,21 @@ class ApiClient {
     return await response.json();
   }
 
-  async listUsers(role = null, groupId = null) {
+  async listUsers(role = null, groupId = null, enrollmentYear = null) {
     const params = new URLSearchParams();
     if (role) params.append('role', role);
     if (groupId) params.append('group_id', groupId);
+    if (enrollmentYear) params.append('enrollment_year', enrollmentYear);
     const qs = params.toString();
     return await this.request(`/users${qs ? '?' + qs : ''}`);
+  }
+
+  async listEnrollmentYears() {
+    try {
+      return await this.request('/users/enrollment-years');
+    } catch (_) {
+      return [];
+    }
   }
 
   async createUser(payload) {
@@ -387,7 +406,7 @@ class ApiClient {
   async assignTeacherModule(code, teacherId) {
     return await this.request(`/modules/${encodeURIComponent(code)}/teachers`, {
       method: 'POST',
-      body: JSON.stringify({ teacher_id: teacherId })
+      body: JSON.stringify({ teacher_id: teacherId, module_code: code })
     });
   }
 
@@ -620,6 +639,88 @@ class ApiClient {
 
   async exportQuestionsJson(examId) {
     return await this.request(`/exams/${examId}/questions/export-json`);
+  }
+
+  // --- Exécution Python & Tests AlgoCompiler (Sandbox) ---
+  async runPythonCode(code, stdin = "", timeout = 3.0) {
+    return await this.request('/training/python/run-code', {
+      method: 'POST',
+      body: JSON.stringify({ code, stdin, timeout })
+    });
+  }
+
+  async runPythonTests(param1, param2, runAll = false, timeout = 3.0) {
+    let payload = {};
+    if (Array.isArray(param2)) {
+      // Appel sous forme: runPythonTests(code, testsArray, runAll, timeout)
+      payload = { code: String(param1 || ''), tests: param2, run_all: Boolean(runAll), timeout };
+    } else if (Array.isArray(param1)) {
+      // Appel inversé: runPythonTests(testsArray, code, runAll, timeout)
+      payload = { code: String(param2 || ''), tests: param1, run_all: Boolean(runAll), timeout };
+    } else {
+      // Appel standard: runPythonTests(exerciseId, code, runAll, timeout)
+      payload = { exercise_id: param1, code: String(param2 || ''), run_all: Boolean(runAll), timeout };
+    }
+    return await this.request('/training/python/run-tests', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // --- Centre d'Entraînement Linux (POSIX & Shell) ---
+  async getLinuxChapters() {
+    return await this.request('/training/linux/chapters');
+  }
+
+  async getLinuxChapter(chapterId, sessionType = null) {
+    const qs = sessionType ? `?session_type=${encodeURIComponent(sessionType)}` : '';
+    return await this.request(`/training/linux/chapters/${encodeURIComponent(chapterId)}${qs}`);
+  }
+
+  async getLinuxProgression() {
+    return await this.request('/training/linux/progression');
+  }
+
+  async generateLinuxSession(params = {}) {
+    return await this.request('/training/linux/generate-session', {
+      method: 'POST',
+      body: JSON.stringify(params)
+    });
+  }
+
+  async submitLinuxSession(answers = []) {
+    return await this.request('/training/linux/submit-session', {
+      method: 'POST',
+      body: JSON.stringify({ answers })
+    });
+  }
+
+  async getLinuxCurriculum() {
+    return await this.request('/training/linux/curriculum');
+  }
+
+  async getLinuxChallenges(level = null) {
+    const qs = level ? `?level=${encodeURIComponent(level)}` : '';
+    return await this.request(`/training/linux/challenges${qs}`);
+  }
+
+  async getLinuxChallenge(challengeId) {
+    return await this.request(`/training/linux/challenges/${encodeURIComponent(challengeId)}`);
+  }
+
+  async getLinuxTheoryQuizzes(level = null, topic = null) {
+    const params = new URLSearchParams();
+    if (level) params.append('level', level);
+    if (topic) params.append('topic', topic);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return await this.request(`/training/linux/theory/quizzes${qs}`);
+  }
+
+  async submitLinuxChallenge(payload) {
+    return await this.request('/training/linux/submit-challenge', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 }
 

@@ -134,6 +134,24 @@ def get_session_proctor_overview(
                     s_time = s_time.replace(tzinfo=timezone.utc)
                 elapsed_seconds = int((now - s_time).total_seconds())
                 
+            total_duration_sec = (exam.duration_minutes if exam else 60) * 60
+            remaining_sec = max(0, total_duration_sec - elapsed_seconds) if att.started_at and att.status == "in_progress" else 0
+            if att.status == "waiting":
+                remaining_sec = total_duration_sec
+            elif att.status in ["submitted", "timed_out", "completed"]:
+                remaining_sec = 0
+
+            last_answer = max([a.updated_at for a in att.answers], default=None)
+            last_activity_sec = None
+            if last_answer:
+                if last_answer.tzinfo is None:
+                    last_answer = last_answer.replace(tzinfo=timezone.utc)
+                last_activity_sec = int((now - last_answer).total_seconds())
+            elif att.started_at:
+                last_activity_sec = elapsed_seconds
+
+            is_online = ws_manager.is_student_connected(session.id, student.id) or (att.status == "in_progress" and (last_activity_sec is None or last_activity_sec < 90))
+                
             student_cards.append({
                 "attempt_id": att.id,
                 "student_id": student.id,
@@ -141,12 +159,15 @@ def get_session_proctor_overview(
                 "username": student.username,
                 "group_id": student.group_id,
                 "status": att.status,  # 'waiting', 'in_progress', 'suspended', 'submitted'
+                "is_online": is_online,
                 "suspension_reason": att.suspension_reason,
                 "suspension_count": att.suspension_count,
                 "answered_count": answered_count,
                 "total_questions": total_questions,
                 "progress_pct": progress_pct,
                 "elapsed_seconds": elapsed_seconds,
+                "remaining_seconds": remaining_sec,
+                "last_activity_seconds": last_activity_sec,
                 "client_ip": att.client_ip or "127.0.0.1",
                 "raw_score": att.raw_score,
                 "final_mark": att.final_mark
@@ -159,12 +180,15 @@ def get_session_proctor_overview(
                 "username": student.username,
                 "group_id": student.group_id,
                 "status": "not_entered",
+                "is_online": False,
                 "suspension_reason": None,
                 "suspension_count": 0,
                 "answered_count": 0,
                 "total_questions": total_questions,
                 "progress_pct": 0,
                 "elapsed_seconds": 0,
+                "remaining_seconds": (exam.duration_minutes if exam else 60) * 60,
+                "last_activity_seconds": None,
                 "client_ip": "—",
                 "raw_score": None,
                 "final_mark": None
@@ -183,6 +207,24 @@ def get_session_proctor_overview(
                 if s_time.tzinfo is None:
                     s_time = s_time.replace(tzinfo=timezone.utc)
                 elapsed_seconds = int((now - s_time).total_seconds())
+            total_duration_sec = (exam.duration_minutes if exam else 60) * 60
+            remaining_sec = max(0, total_duration_sec - elapsed_seconds) if att.started_at and att.status == "in_progress" else 0
+            if att.status == "waiting":
+                remaining_sec = total_duration_sec
+            elif att.status in ["submitted", "timed_out", "completed"]:
+                remaining_sec = 0
+
+            last_answer = max([a.updated_at for a in att.answers], default=None)
+            last_activity_sec = None
+            if last_answer:
+                if last_answer.tzinfo is None:
+                    last_answer = last_answer.replace(tzinfo=timezone.utc)
+                last_activity_sec = int((now - last_answer).total_seconds())
+            elif att.started_at:
+                last_activity_sec = elapsed_seconds
+
+            is_online = ws_manager.is_student_connected(session.id, student.id) or (att.status == "in_progress" and (last_activity_sec is None or last_activity_sec < 90))
+
             student_cards.append({
                 "attempt_id": att.id,
                 "student_id": student.id,
@@ -190,12 +232,15 @@ def get_session_proctor_overview(
                 "username": student.username,
                 "group_id": student.group_id,
                 "status": att.status,
+                "is_online": is_online,
                 "suspension_reason": att.suspension_reason,
                 "suspension_count": att.suspension_count,
                 "answered_count": answered_count,
                 "total_questions": total_questions,
                 "progress_pct": progress_pct,
                 "elapsed_seconds": elapsed_seconds,
+                "remaining_seconds": remaining_sec,
+                "last_activity_seconds": last_activity_sec,
                 "client_ip": att.client_ip or "127.0.0.1",
                 "raw_score": att.raw_score,
                 "final_mark": att.final_mark
@@ -311,6 +356,21 @@ async def extend_session_time(
         
     extra_minutes = int(payload.get("extra_minutes", 5))
     target_student_id = payload.get("student_id")
+
+    from datetime import timedelta
+    if target_student_id:
+        target_att = db.query(StudentAttempt).filter(
+            StudentAttempt.session_id == session_id,
+            StudentAttempt.student_id == target_student_id
+        ).first()
+        if target_att and target_att.started_at:
+            target_att.started_at = target_att.started_at + timedelta(minutes=extra_minutes)
+    else:
+        if session.started_at:
+            session.started_at = session.started_at + timedelta(minutes=extra_minutes)
+        for att in session.attempts:
+            if att.started_at:
+                att.started_at = att.started_at + timedelta(minutes=extra_minutes)
     
     db.add(AuditLog(
         session_id=session_id,
@@ -462,6 +522,56 @@ async def unlock_student_attempt(
         "student_id": attempt.student_id,
         "status": "in_progress",
         "message": f"Poste de {attempt.student.full_name} débloqué avec succès (compteur d'avertissements réinitialisé)."
+    }
+
+@router.post("/sessions/{session_id}/unlock-all")
+async def unlock_all_student_attempts(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Débloque en masse tous les postes étudiants suspendus dans la session de salle.
+    Remet à zéro leurs compteurs d'avertissements et diffuse les mises à jour WebSocket.
+    """
+    session = db.query(ExamSession).filter(ExamSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session introuvable.")
+
+    suspended_attempts = db.query(StudentAttempt).filter(
+        StudentAttempt.session_id == session.id,
+        StudentAttempt.status == "suspended"
+    ).all()
+
+    for att in suspended_attempts:
+        att.status = "in_progress"
+        att.suspension_reason = None
+        att.suspension_count = 0
+        await ws_manager.send_to_student(session_id, att.student_id, {
+            "type": "ATTEMPT_UNLOCKED",
+            "attempt_id": att.id,
+            "status": "in_progress",
+            "reset_warnings": True
+        })
+
+    db.add(AuditLog(
+        session_id=session_id,
+        event_type="UNLOCKED_ALL_BY_TEACHER",
+        details_json=f'{{"unlocked_by": "{current_user.username}", "unlocked_count": {len(suspended_attempts)}, "reset_warnings": true}}'
+    ))
+    db.commit()
+
+    await ws_manager.broadcast_to_teachers(session_id, {
+        "type": "ALL_ATTEMPTS_UNLOCKED",
+        "session_id": session.id,
+        "unlocked_count": len(suspended_attempts),
+        "unlocked_by": current_user.username
+    })
+
+    return {
+        "success": True,
+        "unlocked_count": len(suspended_attempts),
+        "message": f"{len(suspended_attempts)} étudiant(s) suspendu(s) débloqué(s) avec succès."
     }
 
 @router.post("/sessions/{session_id}/close")

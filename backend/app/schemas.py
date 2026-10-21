@@ -47,6 +47,15 @@ class GroupResponse(GroupBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+# --- Utilisateurs (Bref) ---
+class UserBrief(BaseModel):
+    id: str
+    username: str
+    full_name: str
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)
+
 # --- Modules ---
 class ModuleBase(BaseModel):
     code: str = Field(..., min_length=1, max_length=50)
@@ -62,6 +71,7 @@ class ModuleUpdate(BaseModel):
 
 class ModuleResponse(ModuleBase):
     created_at: datetime
+    teachers: Optional[List[UserBrief]] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -72,6 +82,7 @@ class UserBase(BaseModel):
     email: Optional[str] = None
     role: str = Field(default="student", pattern="^(admin|teacher|student)$")
     group_id: Optional[str] = None
+    enrollment_year: Optional[str] = None  # ex: '2024-2025', '2025-2026'
 
 class UserCreate(UserBase):
     id: Optional[str] = None  # Si absent, utilise username
@@ -83,16 +94,9 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
     role: Optional[str] = Field(None, pattern="^(admin|teacher|student)$")
     group_id: Optional[str] = None
+    enrollment_year: Optional[str] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None
-
-class UserBrief(BaseModel):
-    id: str
-    username: str
-    full_name: str
-    role: str
-
-    model_config = ConfigDict(from_attributes=True)
 
 class UserResponse(BaseModel):
     id: str
@@ -101,6 +105,7 @@ class UserResponse(BaseModel):
     email: Optional[str]
     role: str
     group_id: Optional[str]
+    enrollment_year: Optional[str] = None
     must_change_password: bool
     is_active: bool
     created_at: datetime
@@ -110,7 +115,7 @@ class UserResponse(BaseModel):
 
 class TeacherModuleAssign(BaseModel):
     teacher_id: str
-    module_code: str
+    module_code: Optional[str] = None
 
 # --- Imports / Exports CSV ---
 class CSVImportResponse(BaseModel):
@@ -123,7 +128,7 @@ class CSVImportResponse(BaseModel):
 # --- Questions & Examens ---
 class QuestionBase(BaseModel):
     ordering: int = 1
-    type: str = Field(..., pattern="^(boolean|single_choice|multi_choice|fill_blank|matching)$")
+    type: str = Field(..., pattern="^(boolean|single_choice|multi_choice|fill_blank|matching|coding)$")
     prompt_markdown: str
     points: float = 1.0
     negative_penalty: float = 0.5
@@ -135,7 +140,7 @@ class QuestionCreate(QuestionBase):
 
 class QuestionUpdate(BaseModel):
     ordering: Optional[int] = None
-    type: Optional[str] = Field(None, pattern="^(boolean|single_choice|multi_choice|fill_blank|matching)$")
+    type: Optional[str] = Field(None, pattern="^(boolean|single_choice|multi_choice|fill_blank|matching|coding)$")
     prompt_markdown: Optional[str] = None
     points: Optional[float] = None
     negative_penalty: Optional[float] = None
@@ -157,12 +162,23 @@ class QuestionStudentView(QuestionBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class QuestionOrderItem(BaseModel):
+    id: str
+    display_order: Optional[int] = None
+    ordering: Optional[int] = None
+
+class QuestionReorderPayload(BaseModel):
+    question_orders: Optional[List[QuestionOrderItem]] = None
+    items: Optional[List[QuestionOrderItem]] = None
+
 class ExamBase(BaseModel):
     module_code: str
     title: str = Field(..., min_length=1, max_length=200)
+    exam_type: str = Field(default="theoretical", pattern="^(theoretical|practical)$")
     instructions: Optional[str] = None
     duration_minutes: int = Field(default=60, ge=1, le=360)
     global_points: float = Field(default=20.0, ge=1.0)
+    passing_score: float = Field(default=10.0, ge=0.0)
     navigation_mode: str = "free"
     shuffle_questions: bool = True
     shuffle_options: bool = True
@@ -172,12 +188,15 @@ class ExamBase(BaseModel):
 class ExamCreate(ExamBase):
     group_ids: List[str] = []
     room_id: Optional[str] = None
+    questions: Optional[List[QuestionCreate]] = []
 
 class ExamUpdate(BaseModel):
     title: Optional[str] = None
+    exam_type: Optional[str] = Field(None, pattern="^(theoretical|practical)$")
     instructions: Optional[str] = None
     duration_minutes: Optional[int] = None
     global_points: Optional[float] = None
+    passing_score: Optional[float] = None
     shuffle_questions: Optional[bool] = None
     shuffle_options: Optional[bool] = None
     partial_credit_enabled: Optional[bool] = None
@@ -186,6 +205,9 @@ class ExamUpdate(BaseModel):
 
 class ExamResponse(ExamBase):
     id: str
+    exam_type: str = "theoretical"
+    total_question_points: float = 0.0
+    passing_score: float = 10.0
     created_by: Optional[str]
     created_at: datetime
     question_count: Optional[int] = 0
@@ -194,6 +216,9 @@ class ExamResponse(ExamBase):
     model_config = ConfigDict(from_attributes=True)
 
 class ExamDetailResponse(ExamResponse):
+    exam_type: str = "theoretical"
+    total_question_points: float = 0.0
+    passing_score: float = 10.0
     questions: List[QuestionResponse] = []
 
 # --- Tests de Niveau ---

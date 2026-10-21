@@ -5,7 +5,7 @@ from backend.app.database import get_db
 from backend.app.models import Module, User
 from backend.app.schemas import (
     ModuleCreate, ModuleUpdate, ModuleResponse, 
-    UserResponse, TeacherModuleAssign
+    UserResponse, UserBrief, TeacherModuleAssign
 )
 from backend.app.dependencies import require_admin, require_teacher_or_admin
 
@@ -18,7 +18,19 @@ def list_modules(
 ):
     """Liste tous les modules de cours disponibles."""
     modules = db.query(Module).all()
-    return modules
+    results = []
+    for m in modules:
+        results.append(ModuleResponse(
+            code=m.code,
+            title=m.title,
+            description=m.description,
+            created_at=m.created_at,
+            teachers=[
+                UserBrief(id=t.id, username=t.username, full_name=t.full_name, role=t.role)
+                for t in (m.teachers or [])
+            ]
+        ))
+    return results
 
 @router.post("", response_model=ModuleResponse, status_code=status.HTTP_201_CREATED)
 def create_module(
@@ -43,7 +55,13 @@ def create_module(
     db.add(module)
     db.commit()
     db.refresh(module)
-    return module
+    return ModuleResponse(
+        code=module.code,
+        title=module.title,
+        description=module.description,
+        created_at=module.created_at,
+        teachers=[]
+    )
 
 @router.get("/{module_code}", response_model=ModuleResponse)
 def get_module(
@@ -55,7 +73,16 @@ def get_module(
     module = db.query(Module).filter(Module.code == module_code.upper()).first()
     if not module:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module introuvable.")
-    return module
+    return ModuleResponse(
+        code=module.code,
+        title=module.title,
+        description=module.description,
+        created_at=module.created_at,
+        teachers=[
+            UserBrief(id=t.id, username=t.username, full_name=t.full_name, role=t.role)
+            for t in (module.teachers or [])
+        ]
+    )
 
 @router.get("/{module_code}/teachers", response_model=List[UserResponse])
 def get_module_teachers(

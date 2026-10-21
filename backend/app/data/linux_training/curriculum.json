@@ -1,0 +1,1455 @@
+{
+  "curriculum_title": "Cursus d'Entraînement Linux & Administration Système",
+  "total_levels": 4,
+  "levels": [
+    {
+      "id": 1,
+      "level": 1,
+      "title": "Niveau 1 : Navigation & Manipulation de Fichiers",
+      "description": "Apprentissage des commandes fondamentales de navigation, création et gestion de répertoires et fichiers.",
+      "topics": ["FHS Navigation", "Manipulation de Fichiers"],
+      "challenges_count": 3,
+      "quizzes_count": 16
+    },
+    {
+      "id": 2,
+      "level": 2,
+      "title": "Niveau 2 : Permissions, Utilisateurs & Filtrage",
+      "description": "Gestion des permissions POSIX, attributs de sécurité et manipulation de flux textuels.",
+      "topics": ["Permissions & Sécurité", "Filtrage Textuel"],
+      "challenges_count": 2,
+      "quizzes_count": 16
+    },
+    {
+      "id": 3,
+      "level": 3,
+      "title": "Niveau 3 : Scripts Bash, Tubes & Redirections",
+      "description": "Composition de commandes via les pipes, redirections de flux standards et enchaînements logiques.",
+      "topics": ["Pipes & Redirections", "Scripts Bash"],
+      "challenges_count": 2,
+      "quizzes_count": 16
+    },
+    {
+      "id": 4,
+      "level": 4,
+      "title": "Niveau 4 : Administration Système, Processus & Diagnostic",
+      "description": "Supervision des processus, signaux système, variables d'environnement et diagnostic de panne.",
+      "topics": ["Processus & Signaux", "Diagnostic Système"],
+      "challenges_count": 2,
+      "quizzes_count": 16
+    }
+  ],
+  "chapters": [
+    {
+      "id": "fhs_navigation",
+      "title": "Arborescence FHS & Navigation",
+      "order": 1,
+      "description": "Structure standard Linux (FHS), chemins relatifs et absolus, commandes pwd, cd, ls et tree",
+      "mcq_questions_count": 8,
+      "coding_exercises_count": 4,
+      "mcq_questions": [
+        {
+          "id": "LIN-THEO-101",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Dans la norme FHS (Filesystem Hierarchy Standard), quel répertoire contient les fichiers de configuration globaux du système ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "/etc"
+            },
+            {
+              "id": 1,
+              "text": "/var"
+            },
+            {
+              "id": 2,
+              "text": "/bin"
+            },
+            {
+              "id": 3,
+              "text": "/dev"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le répertoire /etc contient tous les fichiers et scripts de configuration du système et des services."
+        },
+        {
+          "id": "LIN-THEO-102",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Quelle commande affiche le chemin absolu du répertoire de travail actuel ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "pwd"
+            },
+            {
+              "id": 1,
+              "text": "cd ."
+            },
+            {
+              "id": 2,
+              "text": "whereis"
+            },
+            {
+              "id": 3,
+              "text": "path"
+            }
+          ],
+          "correct": 0,
+          "explanation": "pwd (Print Working Directory) renvoie le chemin absolu du répertoire courant."
+        },
+        {
+          "id": "LIN-THEO-103",
+          "type": "multi_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quelles options de la commande ls permettent d'afficher respectivement les fichiers cachés et les informations détaillées (droits, propriétaire, taille) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-a pour afficher les fichiers commençant par un point"
+            },
+            {
+              "id": 1,
+              "text": "-l pour le format long détaillé"
+            },
+            {
+              "id": 2,
+              "text": "-h pour forcer le masquage des fichiers"
+            },
+            {
+              "id": 3,
+              "text": "-d pour supprimer les fichiers"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "-a affiche tous les fichiers y compris cachés (. et ..), -l fournit le format long."
+        },
+        {
+          "id": "LIN-THEO-104",
+          "type": "boolean",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Le tilde (~) est un raccourci shell représentant le répertoire personnel (home directory) de l'utilisateur actuel.",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "~ équivaut à la variable d'environnement $HOME (ex: /home/student)."
+        },
+        {
+          "id": "LIN-THEO-105",
+          "type": "matching",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Associez chaque répertoire FHS à son rôle prédominant :",
+          "options": {
+            "left": [
+              "/var/log",
+              "/tmp",
+              "/dev",
+              "/boot"
+            ],
+            "right": [
+              "Fichiers journaux et traces d'activité système",
+              "Fichiers temporaires accessibles à tous",
+              "Points d'accès aux périphériques matériels",
+              "Noyau Linux et fichiers de démarrage GRUB"
+            ]
+          },
+          "correct": {
+            "/var/log": "Fichiers journaux et traces d'activité système",
+            "/tmp": "Fichiers temporaires accessibles à tous",
+            "/dev": "Points d'accès aux périphériques matériels",
+            "/boot": "Noyau Linux et fichiers de démarrage GRUB"
+          },
+          "explanation": "Respect des conventions standard du Filesystem Hierarchy Standard."
+        },
+        {
+          "id": "LIN-THEO-106",
+          "type": "fill_blank",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Pour revenir au répertoire précédemment visité dans le shell, quelle commande cd utilise-t-on (2 caractères) ?",
+          "options": [
+            "cd -"
+          ],
+          "correct": "cd -",
+          "explanation": "'cd -' bascule vers le répertoire $OLDPWD."
+        },
+        {
+          "id": "LIN-THEO-107",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quelle est la différence fondamentale entre un chemin absolu et un chemin relatif ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Le chemin absolu débute toujours par la racine / ou le tilde ~, le chemin relatif dépend du répertoire courant"
+            },
+            {
+              "id": 1,
+              "text": "Le chemin absolu ne peut pas contenir de sous-dossiers"
+            },
+            {
+              "id": 2,
+              "text": "Le chemin relatif nécessite obligatoirement les droits root"
+            },
+            {
+              "id": 3,
+              "text": "Il n'y a aucune différence technique"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Un chemin absolu commence à la racine / ou ~, indépendant de l'endroit où l'on se trouve."
+        },
+        {
+          "id": "LIN-THEO-108",
+          "type": "boolean",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Sous Linux, deux fichiers situés dans le même répertoire peuvent avoir le même nom s'ils ont une casse différente (ex: 'Rapport.txt' et 'rapport.txt').",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Les systèmes de fichiers Linux (ext4, etc.) sont sensibles à la casse (case-sensitive)."
+        }
+      ],
+      "coding_exercises": [
+        {
+          "id": "LIN-PRAC-101",
+          "type": "linux_cmd",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "title": "Exploration & Affichage du Répertoire Courant",
+          "description": "Affichez le chemin absolu du répertoire dans lequel vous vous trouvez, puis listez tous les fichiers (y compris les fichiers cachés) au format détaillé.",
+          "starter_code": "# Tapez vos commandes Linux\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {
+                ".bashrc": {
+                  "type": "file",
+                  "content": "# configuration\n"
+                },
+                ".profile": {
+                  "type": "file",
+                  "content": "export PATH\n"
+                },
+                "documents": {
+                  "type": "dir"
+                },
+                "notes.txt": {
+                  "type": "file",
+                  "content": "Bienvenue sur Linux\n"
+                }
+              }
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "pwd",
+              "expected_stdout": "/home/student",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls -la",
+              "expected_stdout": ".bashrc",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "pwd && ls -a",
+              "expected_stdout": "/home/student\n",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls -l notes.txt",
+              "expected_stdout": "notes.txt",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd documents && pwd",
+              "expected_stdout": "/home/student/documents",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd .. && pwd",
+              "expected_stdout": "/home",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls -la | grep notes.txt",
+              "expected_stdout": "notes.txt",
+              "expected_exit_code": 0
+            }
+          ]
+        },
+        {
+          "id": "LIN-PRAC-102",
+          "type": "linux_cmd",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "title": "Navigation & Changement de Répertoire",
+          "description": "Basculez dans le répertoire système `/var/log`, affichez le chemin actuel pour confirmer votre position, puis affichez la liste des fichiers.",
+          "starter_code": "cd /var/log && pwd && ls\n",
+          "initial_fs": {
+            "/var/log": {
+              "type": "dir",
+              "files": {
+                "syslog": {
+                  "type": "file",
+                  "content": "Oct 20 20:00:01 systemd: Started\n"
+                },
+                "auth.log": {
+                  "type": "file",
+                  "content": "session opened for user student\n"
+                },
+                "nginx": {
+                  "type": "dir"
+                }
+              }
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "cd /var/log && pwd",
+              "expected_stdout": "/var/log",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd /var/log && ls",
+              "expected_stdout": "syslog",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "cd /var/log && ls auth.log",
+              "expected_stdout": "auth.log",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd /var/log && cd nginx && pwd",
+              "expected_stdout": "/var/log/nginx",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd /var/log && cd - && pwd",
+              "expected_stdout": "/home/student",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd / && pwd && ls",
+              "expected_stdout": "/\n",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd /var/log && cat syslog",
+              "expected_stdout": "Started",
+              "expected_exit_code": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "file_management",
+      "title": "Manipulation de Fichiers & Répertoires",
+      "order": 2,
+      "description": "Création, copie, déplacement, suppression et archivage avec touch, mkdir, cp, mv, rm et tar",
+      "mcq_questions_count": 6,
+      "coding_exercises_count": 4,
+      "mcq_questions": [
+        {
+          "id": "LIN-THEO-201",
+          "type": "single_choice",
+          "topic": "File Management",
+          "difficulty": "easy",
+          "prompt": "Quelle option de la commande mkdir permet de créer récursivement des répertoires parents s'ils n'existent pas déjà ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-p"
+            },
+            {
+              "id": 1,
+              "text": "-r"
+            },
+            {
+              "id": 2,
+              "text": "-f"
+            },
+            {
+              "id": 3,
+              "text": "-a"
+            }
+          ],
+          "correct": 0,
+          "explanation": "mkdir -p (parents) crée tous les répertoires intermédiaires nécessaires."
+        },
+        {
+          "id": "LIN-THEO-202",
+          "type": "single_choice",
+          "topic": "File Management",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet à la fois de renommer un fichier et de le déplacer vers un autre dossier ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "mv"
+            },
+            {
+              "id": 1,
+              "text": "cp"
+            },
+            {
+              "id": 2,
+              "text": "rename"
+            },
+            {
+              "id": 3,
+              "text": "touch"
+            }
+          ],
+          "correct": 0,
+          "explanation": "mv déplace et/ou renomme un fichier ou dossier."
+        },
+        {
+          "id": "LIN-THEO-203",
+          "type": "multi_choice",
+          "topic": "File Management",
+          "difficulty": "medium",
+          "prompt": "Quelles commandes suppriment définitivement un dossier nommé 'projet' et tout son contenu sans demander de confirmation ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "rm -rf projet"
+            },
+            {
+              "id": 1,
+              "text": "rm -r -f projet"
+            },
+            {
+              "id": 2,
+              "text": "rmdir projet (même non vide)"
+            },
+            {
+              "id": 3,
+              "text": "del /s projet"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "rmdir échoue si le dossier n'est pas vide. rm -rf force la suppression récursive."
+        },
+        {
+          "id": "LIN-THEO-204",
+          "type": "boolean",
+          "topic": "File Management",
+          "difficulty": "easy",
+          "prompt": "La commande touch crée un fichier vide s'il n'existe pas, ou met à jour sa date de dernier accès/modification s'il existe déjà.",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "C'est la définition exacte de touch sous Unix/Linux."
+        },
+        {
+          "id": "LIN-THEO-205",
+          "type": "single_choice",
+          "topic": "File Management",
+          "difficulty": "medium",
+          "prompt": "Quelle commande copie le dossier 'source' et tous ses sous-dossiers vers 'destination' ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "cp -r source destination"
+            },
+            {
+              "id": 1,
+              "text": "cp source destination"
+            },
+            {
+              "id": 2,
+              "text": "mv -c source destination"
+            },
+            {
+              "id": 3,
+              "text": "copy source destination"
+            }
+          ],
+          "correct": 0,
+          "explanation": "cp requiert l'option -r ou -R pour copier récursivement des répertoires."
+        },
+        {
+          "id": "LIN-THEO-206",
+          "type": "matching",
+          "topic": "File Management",
+          "difficulty": "medium",
+          "prompt": "Associez chaque commande à son action sur le système de fichiers :",
+          "options": {
+            "left": [
+              "touch rapport.md",
+              "mkdir -p a/b/c",
+              "cp file1 file2",
+              "rm -f temp.log"
+            ],
+            "right": [
+              "Crée un fichier vide ou rafraîchit son horodatage",
+              "Crée une arborescence complète imbriquée",
+              "Duplique le contenu d'un fichier vers un nouveau",
+              "Supprime un fichier sans invite même s'il est protégé"
+            ]
+          },
+          "correct": {
+            "touch rapport.md": "Crée un fichier vide ou rafraîchit son horodatage",
+            "mkdir -p a/b/c": "Crée une arborescence complète imbriquée",
+            "cp file1 file2": "Duplique le contenu d'un fichier vers un nouveau",
+            "rm -f temp.log": "Supprime un fichier sans invite même s'il est protégé"
+          },
+          "explanation": "Commandes fondamentales de manipulation du filesystem."
+        }
+      ],
+      "coding_exercises": [
+        {
+          "id": "LIN-PRAC-201",
+          "type": "linux_cmd",
+          "topic": "File Management",
+          "difficulty": "easy",
+          "title": "Création d'une Arborescence de Projet",
+          "description": "Créez une arborescence de répertoires `projet/src` et `projet/tests` à l'aide d'une seule commande `mkdir`, puis créez un fichier vide `projet/src/main.py`.",
+          "starter_code": "# Créez l'arborescence et le fichier\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {}
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "mkdir -p projet/src projet/tests && touch projet/src/main.py && ls projet/src",
+              "expected_stdout": "main.py",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls projet",
+              "expected_stdout": "src",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "test -d projet/src && echo OK",
+              "expected_stdout": "OK",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "test -d projet/tests && echo OK",
+              "expected_stdout": "OK",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "test -f projet/src/main.py && echo OK",
+              "expected_stdout": "OK",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls -d projet/*",
+              "expected_stdout": "projet/src",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "cd projet/src && pwd",
+              "expected_stdout": "/home/student/projet/src",
+              "expected_exit_code": 0
+            }
+          ]
+        },
+        {
+          "id": "LIN-PRAC-202",
+          "type": "linux_cmd",
+          "topic": "File Management",
+          "difficulty": "medium",
+          "title": "Sauvegarde & Déplacement de Fichiers",
+          "description": "Copiez le fichier `config.json` sous le nom `config.json.bak`, créez un dossier `archives/`, puis déplacez la sauvegarde `config.json.bak` dans `archives/`.",
+          "starter_code": "cp config.json config.json.bak && mkdir -p archives && mv config.json.bak archives/\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {
+                "config.json": {
+                  "type": "file",
+                  "content": "{\"env\": \"production\"}\n"
+                }
+              }
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "cp config.json config.json.bak && mkdir -p archives && mv config.json.bak archives/ && ls archives",
+              "expected_stdout": "config.json.bak",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls config.json",
+              "expected_stdout": "config.json",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "cat archives/config.json.bak",
+              "expected_stdout": "production",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "test -f archives/config.json.bak && echo EXISTE",
+              "expected_stdout": "EXISTE",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "test ! -f config.json.bak && echo DEPLACE",
+              "expected_stdout": "DEPLACE",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls archives",
+              "expected_stdout": "config.json.bak",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "rm -rf archives && ls",
+              "expected_stdout": "config.json",
+              "expected_exit_code": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "permissions_security",
+      "title": "Permissions & Droits d'Accès",
+      "order": 3,
+      "description": "Gestion des droits de lecture, écriture et exécution (chmod rwx, notation octale 755, chown)",
+      "mcq_questions_count": 6,
+      "coding_exercises_count": 3,
+      "mcq_questions": [
+        {
+          "id": "LIN-THEO-301",
+          "type": "single_choice",
+          "topic": "Permissions",
+          "difficulty": "easy",
+          "prompt": "Que représente la valeur octale '755' dans la commande chmod 755 script.sh ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "rwxr-xr-x (Propriétaire: rwx, Groupe: r-x, Autres: r-x)"
+            },
+            {
+              "id": 1,
+              "text": "rwxrw-rw- (Propriétaire: rwx, Groupe: rw-, Autres: rw-)"
+            },
+            {
+              "id": 2,
+              "text": "r-xr-xr-x (Tout le monde en lecture et exécution seule)"
+            },
+            {
+              "id": 3,
+              "text": "rwxrwxrwx (Tous les droits pour tout le monde)"
+            }
+          ],
+          "correct": 0,
+          "explanation": "7 = 4+2+1 (rwx), 5 = 4+0+1 (r-x). Donc 755 = rwxr-xr-x."
+        },
+        {
+          "id": "LIN-THEO-302",
+          "type": "single_choice",
+          "topic": "Permissions",
+          "difficulty": "easy",
+          "prompt": "Quelle commande symbolique ajoute le droit d'exécution à l'utilisateur propriétaire sur un script ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "chmod u+x script.sh"
+            },
+            {
+              "id": 1,
+              "text": "chmod g+x script.sh"
+            },
+            {
+              "id": 2,
+              "text": "chmod o+w script.sh"
+            },
+            {
+              "id": 3,
+              "text": "chmod +r script.sh"
+            }
+          ],
+          "correct": 0,
+          "explanation": "u désigne l'utilisateur propriétaire (user), +x ajoute le droit d'exécution."
+        },
+        {
+          "id": "LIN-THEO-303",
+          "type": "multi_choice",
+          "topic": "Permissions",
+          "difficulty": "medium",
+          "prompt": "Pour qu'un utilisateur puisse entrer dans un dossier ('cd dossier') et lister son contenu ('ls dossier'), quels droits doit-il au minimum posséder sur ce dossier ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Droit d'exécution (x) pour traverser/entrer dans le dossier"
+            },
+            {
+              "id": 1,
+              "text": "Droit de lecture (r) pour lire la liste des entrées"
+            },
+            {
+              "id": 2,
+              "text": "Droit d'écriture (w) obligatoirement"
+            },
+            {
+              "id": 3,
+              "text": "Droit de suppression (d)"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "Sur un répertoire, 'r' permet de lister les fichiers et 'x' permet de le traverser et d'y entrer."
+        },
+        {
+          "id": "LIN-THEO-304",
+          "type": "boolean",
+          "topic": "Permissions",
+          "difficulty": "easy",
+          "prompt": "La permission octale 644 correspond aux droits standard pour un fichier texte : lecture et écriture pour le propriétaire, lecture seule pour les autres.",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "6 = 4(r) + 2(w) = rw-, 4 = 4(r) = r--, soit -rw-r--r-- (644)."
+        },
+        {
+          "id": "LIN-THEO-305",
+          "type": "fill_blank",
+          "topic": "Permissions",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet de modifier le propriétaire d'un fichier en lui attribuant l'utilisateur 'admin' ?",
+          "options": [
+            "chown admin",
+            "chown admin fichier"
+          ],
+          "correct": "chown admin",
+          "explanation": "chown (Change Owner) modifie le propriétaire d'un fichier."
+        },
+        {
+          "id": "LIN-THEO-306",
+          "type": "matching",
+          "topic": "Permissions",
+          "difficulty": "medium",
+          "prompt": "Associez les valeurs octales de chmod à leurs permissions symboliques correspondantes :",
+          "options": {
+            "left": [
+              "777",
+              "700",
+              "600",
+              "444"
+            ],
+            "right": [
+              "rwxrwxrwx (Totalité des droits pour tous)",
+              "rwx------ (Accès complet réservé au propriétaire seul)",
+              "rw------- (Lecture et écriture privées au propriétaire)",
+              "r--r--r-- (Lecture seule absolue pour tous)"
+            ]
+          },
+          "correct": {
+            "777": "rwxrwxrwx (Totalité des droits pour tous)",
+            "700": "rwx------ (Accès complet réservé au propriétaire seul)",
+            "600": "rw------- (Lecture et écriture privées au propriétaire)",
+            "444": "r--r--r-- (Lecture seule absolue pour tous)"
+          },
+          "explanation": "Correspondances exactes de la notation octale POSIX."
+        }
+      ],
+      "coding_exercises": [
+        {
+          "id": "LIN-PRAC-301",
+          "type": "linux_cmd",
+          "topic": "Permissions",
+          "difficulty": "easy",
+          "title": "Sécurisation d'un Script Exécutable",
+          "description": "Le fichier `backup.sh` n'a pas les droits d'exécution. Attribuez-lui les permissions octales `755` (lecture, écriture, exécution pour le propriétaire ; lecture et exécution pour les autres) et vérifiez avec `ls -l`.",
+          "starter_code": "chmod 755 backup.sh && ls -l backup.sh\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {
+                "backup.sh": {
+                  "type": "file",
+                  "content": "#!/bin/bash\necho \"Backup complete\"\n",
+                  "permissions": "644"
+                }
+              }
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "chmod 755 backup.sh && ls -l backup.sh",
+              "expected_stdout": "-rwxr-xr-x",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "./backup.sh",
+              "expected_stdout": "Backup complete",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "chmod 755 backup.sh && ./backup.sh",
+              "expected_stdout": "complete",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ls -l backup.sh",
+              "expected_stdout": "rwxr-xr-x",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "chmod 700 backup.sh && ls -l backup.sh",
+              "expected_stdout": "rwx------",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "chmod 644 backup.sh && ls -l backup.sh",
+              "expected_stdout": "rw-r--r--",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "chmod +x backup.sh && test -x backup.sh && echo EXEC",
+              "expected_stdout": "EXEC",
+              "expected_exit_code": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "text_processing_pipes",
+      "title": "Filtres, Tubes & Redirections",
+      "order": 4,
+      "description": "Enchaînement de commandes avec tubes (|), redirections (>, >>, <), recherche avec grep et analyse avec wc, sort, uniq, head et tail",
+      "mcq_questions_count": 6,
+      "coding_exercises_count": 3,
+      "mcq_questions": [
+        {
+          "id": "LIN-THEO-401",
+          "type": "single_choice",
+          "topic": "Pipes & Redirection",
+          "difficulty": "easy",
+          "prompt": "Quelle est la différence fondamentale entre l'opérateur de redirection '>' et l'opérateur '>>' ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "'>' écrase le contenu du fichier cible, '>>' ajoute à la fin (append)"
+            },
+            {
+              "id": 1,
+              "text": "'>' lit un fichier, '>>' écrit dans un fichier"
+            },
+            {
+              "id": 2,
+              "text": "'>' nécessite les droits root, '>>' est accessible à tous"
+            },
+            {
+              "id": 3,
+              "text": "Il n'y a aucune différence"
+            }
+          ],
+          "correct": 0,
+          "explanation": "> tronque et remplace le fichier, tandis que >> effectue un ajout à la fin sans écraser."
+        },
+        {
+          "id": "LIN-THEO-402",
+          "type": "single_choice",
+          "topic": "Pipes & Redirection",
+          "difficulty": "easy",
+          "prompt": "Que fait l'opérateur tube (pipe '|') entre deux commandes ('cmd1 | cmd2') ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Il connecte la sortie standard (stdout) de cmd1 à l'entrée standard (stdin) de cmd2"
+            },
+            {
+              "id": 1,
+              "text": "Il exécute cmd2 uniquement si cmd1 a échoué"
+            },
+            {
+              "id": 2,
+              "text": "Il fusionne les fichiers cmd1 et cmd2"
+            },
+            {
+              "id": 3,
+              "text": "Il lance cmd1 en arrière-plan"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le tube redirige le flux de sortie de la première commande vers l'entrée de la seconde."
+        },
+        {
+          "id": "LIN-THEO-403",
+          "type": "multi_choice",
+          "topic": "Pipes & Redirection",
+          "difficulty": "medium",
+          "prompt": "Quelles options de la commande grep permettent respectivement d'ignorer la casse et d'inverser la sélection (afficher les lignes ne contenant pas le motif) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-i pour ignorer la casse (minuscules/majuscules)"
+            },
+            {
+              "id": 1,
+              "text": "-v pour inverser la correspondance"
+            },
+            {
+              "id": 2,
+              "text": "-c pour afficher le nombre d'occurrences"
+            },
+            {
+              "id": 3,
+              "text": "-r pour supprimer les lignes"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "grep -i est case-insensitive, grep -v inverse le filtre."
+        },
+        {
+          "id": "LIN-THEO-404",
+          "type": "boolean",
+          "topic": "Pipes & Redirection",
+          "difficulty": "easy",
+          "prompt": "La commande 'wc -l fichier.txt' compte et affiche le nombre total de lignes présentes dans 'fichier.txt'.",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "wc -l (word count - lines) compte le nombre de sauts de ligne."
+        },
+        {
+          "id": "LIN-THEO-405",
+          "type": "fill_blank",
+          "topic": "Pipes & Redirection",
+          "difficulty": "medium",
+          "prompt": "Quelle commande affiche les 5 premières lignes d'un fichier nommé 'access.log' ?",
+          "options": [
+            "head -n 5 access.log",
+            "head -5 access.log"
+          ],
+          "correct": "head -n 5 access.log",
+          "explanation": "head -n 5 affiche les 5 premières lignes."
+        },
+        {
+          "id": "LIN-THEO-406",
+          "type": "matching",
+          "topic": "Pipes & Redirection",
+          "difficulty": "medium",
+          "prompt": "Associez chaque filtre textuel à son utilité principale :",
+          "options": {
+            "left": [
+              "sort",
+              "uniq",
+              "tail -f",
+              "grep -c"
+            ],
+            "right": [
+              "Trie les lignes par ordre alphabétique ou numérique",
+              "Supprime les lignes doublons consécutives",
+              "Suit en temps réel l'ajout de nouvelles lignes dans un log",
+              "Renvoie le nombre de lignes correspondant au motif"
+            ]
+          },
+          "correct": {
+            "sort": "Trie les lignes par ordre alphabétique ou numérique",
+            "uniq": "Supprime les lignes doublons consécutives",
+            "tail -f": "Suit en temps réel l'ajout de nouvelles lignes dans un log",
+            "grep -c": "Renvoie le nombre de lignes correspondant au motif"
+          },
+          "explanation": "Rôles des filtres standards POSIX."
+        }
+      ],
+      "coding_exercises": [
+        {
+          "id": "LIN-PRAC-401",
+          "type": "linux_cmd",
+          "topic": "Pipes & Redirection",
+          "difficulty": "medium",
+          "title": "Filtrage et Comptage d'Erreurs dans un Log",
+          "description": "Le fichier `server.log` contient des lignes de statut. Filtrez toutes les lignes contenant le mot 'ERROR' et comptez combien il y en a en utilisant un tube (`|`) avec la commande `wc -l`.",
+          "starter_code": "grep \"ERROR\" server.log | wc -l\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {
+                "server.log": {
+                  "type": "file",
+                  "content": "INFO: Server started\nERROR: Connection refused\nINFO: User login\nERROR: Database timeout\nERROR: Disk full\nINFO: Backup done\n"
+                }
+              }
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "grep \"ERROR\" server.log | wc -l",
+              "expected_stdout": "3",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "grep \"INFO\" server.log | wc -l",
+              "expected_stdout": "3",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "grep \"ERROR\" server.log",
+              "expected_stdout": "Connection refused",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "grep -v \"ERROR\" server.log | wc -l",
+              "expected_stdout": "3",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "head -n 2 server.log",
+              "expected_stdout": "Server started",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "tail -n 2 server.log",
+              "expected_stdout": "Backup done",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "grep -c \"ERROR\" server.log",
+              "expected_stdout": "3",
+              "expected_exit_code": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "processes_signals",
+      "title": "Gestion des Processus & Système",
+      "order": 5,
+      "description": "Surveillance des processus (ps, top), arrêt et signaux (kill -9, SIGTERM), utilisateurs et variables d'environnement",
+      "mcq_questions_count": 5,
+      "coding_exercises_count": 2,
+      "mcq_questions": [
+        {
+          "id": "LIN-THEO-501",
+          "type": "single_choice",
+          "topic": "Processes",
+          "difficulty": "easy",
+          "prompt": "Quel signal envoyé par la commande kill correspond à un arrêt immédiat et inconditionnel (SIGKILL) qui ne peut être intercepté par le processus ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-9"
+            },
+            {
+              "id": 1,
+              "text": "-15 (SIGTERM)"
+            },
+            {
+              "id": 2,
+              "text": "-1 (SIGHUP)"
+            },
+            {
+              "id": 3,
+              "text": "-2 (SIGINT)"
+            }
+          ],
+          "correct": 0,
+          "explanation": "kill -9 envoie le signal SIGKILL qui termine immédiatement le processus au niveau du noyau."
+        },
+        {
+          "id": "LIN-THEO-502",
+          "type": "single_choice",
+          "topic": "Processes",
+          "difficulty": "easy",
+          "prompt": "Quelle commande liste tous les processus en cours d'exécution sur le système avec leur PID et utilisateur associé ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "ps aux ou ps -ef"
+            },
+            {
+              "id": 1,
+              "text": "proc list"
+            },
+            {
+              "id": 2,
+              "text": "show process"
+            },
+            {
+              "id": 3,
+              "text": "kill --list"
+            }
+          ],
+          "correct": 0,
+          "explanation": "ps aux (syntaxe BSD) ou ps -ef (syntaxe System V) listent l'ensemble des processus actifs."
+        },
+        {
+          "id": "LIN-THEO-503",
+          "type": "boolean",
+          "topic": "Processes",
+          "difficulty": "easy",
+          "prompt": "Le processus racine initial sous Linux (PID 1) s'appelle traditionnellement init ou systemd.",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le PID 1 est l'ancêtre de tous les processus créés sur la machine."
+        },
+        {
+          "id": "LIN-THEO-504",
+          "type": "fill_blank",
+          "topic": "Processes",
+          "difficulty": "medium",
+          "prompt": "Quelle commande shell permet d'exporter une variable d'environnement pour qu'elle soit héritée par les sous-processus ?",
+          "options": [
+            "export"
+          ],
+          "correct": "export",
+          "explanation": "export NOM=valeur rend la variable visible aux programmes enfants."
+        },
+        {
+          "id": "LIN-THEO-505",
+          "type": "matching",
+          "topic": "Processes",
+          "difficulty": "medium",
+          "prompt": "Associez chaque commande de surveillance système à son information principale :",
+          "options": {
+            "left": [
+              "uptime",
+              "whoami",
+              "uname -a",
+              "env"
+            ],
+            "right": [
+              "Durée de fonctionnement et charge moyenne du serveur",
+              "Nom de l'utilisateur actif de la session courante",
+              "Version complète du noyau Linux et architecture matérielle",
+              "Liste de toutes les variables d'environnement actives"
+            ]
+          },
+          "correct": {
+            "uptime": "Durée de fonctionnement et charge moyenne du serveur",
+            "whoami": "Nom de l'utilisateur actif de la session courante",
+            "uname -a": "Version complète du noyau Linux et architecture matérielle",
+            "env": "Liste de toutes les variables d'environnement actives"
+          },
+          "explanation": "Outils de base de diagnostic système."
+        }
+      ],
+      "coding_exercises": [
+        {
+          "id": "LIN-PRAC-501",
+          "type": "linux_cmd",
+          "topic": "Processes",
+          "difficulty": "medium",
+          "title": "Inspection et Terminaison d'un Processus Suspect",
+          "description": "Affichez la liste des processus pour repérer le processus nommé `rogue_miner`, puis arrêtez-le en utilisant la commande `kill` avec son PID (4092).",
+          "starter_code": "ps aux | grep rogue_miner\n# kill le processus\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {}
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "kill 4092 && ps aux",
+              "expected_stdout": "Terminated 4092",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "whoami",
+              "expected_stdout": "student",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "uname -a",
+              "expected_stdout": "Linux",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "uptime",
+              "expected_stdout": "up",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "export TEST_VAR=ok && echo $TEST_VAR",
+              "expected_stdout": "ok",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "kill -9 4092",
+              "expected_stdout": "Killed 4092",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "ps | grep -v 4092",
+              "expected_stdout": "bash",
+              "expected_exit_code": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bash_scripting",
+      "title": "Scripting Bash & Automatisation",
+      "order": 6,
+      "description": "Variables, conditions if, boucles for/while, codes de sortie ($?) et enchaînement logique (&&, ||)",
+      "mcq_questions_count": 5,
+      "coding_exercises_count": 2,
+      "mcq_questions": [
+        {
+          "id": "LIN-THEO-601",
+          "type": "single_choice",
+          "topic": "Bash Scripting",
+          "difficulty": "easy",
+          "prompt": "Quelle variable spéciale contient le code de retour (exit status) de la dernière commande exécutée ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "$?"
+            },
+            {
+              "id": 1,
+              "text": "$$"
+            },
+            {
+              "id": 2,
+              "text": "$#"
+            },
+            {
+              "id": 3,
+              "text": "$!"
+            }
+          ],
+          "correct": 0,
+          "explanation": "$? vaut 0 en cas de succès et une valeur différente de zéro en cas d'erreur."
+        },
+        {
+          "id": "LIN-THEO-602",
+          "type": "single_choice",
+          "topic": "Bash Scripting",
+          "difficulty": "medium",
+          "prompt": "Que signifie la première ligne d'un script bash commençant par '#!/bin/bash' (shebang) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Elle indique au système quel interpréteur exécutera le script"
+            },
+            {
+              "id": 1,
+              "text": "C'est un simple commentaire ignoré"
+            },
+            {
+              "id": 2,
+              "text": "Elle élève les droits en mode super-administrateur root"
+            },
+            {
+              "id": 3,
+              "text": "Elle compile le fichier en code binaire C"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le shebang (#!) indique le chemin de l'interpréteur de commandes."
+        },
+        {
+          "id": "LIN-THEO-603",
+          "type": "boolean",
+          "topic": "Bash Scripting",
+          "difficulty": "easy",
+          "prompt": "L'opérateur '&&' permet d'exécuter la seconde commande uniquement si la première a réussi avec un code retour 0.",
+          "options": [
+            {
+              "id": 0,
+              "text": "Vrai"
+            },
+            {
+              "id": 1,
+              "text": "Faux"
+            }
+          ],
+          "correct": 0,
+          "explanation": "cmd1 && cmd2 applique un ET logique conditionnel."
+        },
+        {
+          "id": "LIN-THEO-604",
+          "type": "multi_choice",
+          "topic": "Bash Scripting",
+          "difficulty": "medium",
+          "prompt": "Dans un script bash, quelles variables représentent respectivement le nombre d'arguments passés et l'ensemble de tous les arguments ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "$# pour le nombre d'arguments"
+            },
+            {
+              "id": 1,
+              "text": "$@ ou $* pour l'ensemble des arguments"
+            },
+            {
+              "id": 2,
+              "text": "$0 pour le premier argument (hors nom du script)"
+            },
+            {
+              "id": 3,
+              "text": "$$ pour le code d'erreur"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "$# est le compteur, $@ est la liste des arguments, $0 est le nom du script lui-même."
+        },
+        {
+          "id": "LIN-THEO-605",
+          "type": "fill_blank",
+          "topic": "Bash Scripting",
+          "difficulty": "medium",
+          "prompt": "Quel mot-clé termine un bloc conditionnel 'if' en langage Bash ?",
+          "options": [
+            "fi"
+          ],
+          "correct": "fi",
+          "explanation": "En bash, un bloc 'if ... then ... else ...' se termine par 'fi' (l'inverse de if)."
+        }
+      ],
+      "coding_exercises": [
+        {
+          "id": "LIN-PRAC-601",
+          "type": "linux_cmd",
+          "topic": "Bash Scripting",
+          "difficulty": "medium",
+          "title": "Création d'un Script de Rapport Système",
+          "description": "Créez un script exécutable nommé `report.sh` qui écrit la date actuelle dans `summary.txt`, puis y ajoute le texte 'System OK' à l'aide de la redirection `>>`.",
+          "starter_code": "#!/bin/bash\necho \"System OK\" >> summary.txt\n",
+          "initial_fs": {
+            "/home/student": {
+              "type": "dir",
+              "files": {}
+            }
+          },
+          "public_tests": [
+            {
+              "cmd": "date > summary.txt && echo \"System OK\" >> summary.txt && cat summary.txt",
+              "expected_stdout": "System OK",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "test -f summary.txt && echo CREATED",
+              "expected_stdout": "CREATED",
+              "expected_exit_code": 0
+            }
+          ],
+          "hidden_tests": [
+            {
+              "cmd": "grep \"System OK\" summary.txt",
+              "expected_stdout": "System OK",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "wc -l summary.txt",
+              "expected_stdout": "2",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "echo $?",
+              "expected_stdout": "0",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "test -s summary.txt && echo NON_VIDE",
+              "expected_stdout": "NON_VIDE",
+              "expected_exit_code": 0
+            },
+            {
+              "cmd": "head -n 1 summary.txt",
+              "expected_stdout": "2026",
+              "expected_exit_code": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -81,10 +81,14 @@ class WebSocketConnectionManager:
             return
             
         payload = json.dumps(message)
-        for ws in self.student_connections[session_id].values():
+        for student_id, ws in list(self.student_connections[session_id].items()):
             try:
                 await ws.send_text(payload)
             except Exception:
                 pass
+
+    def is_student_connected(self, session_id: str, student_id: str) -> bool:
+        """Indique si un étudiant est actuellement connecté en WebSocket actif sur la session."""
+        return session_id in self.student_connections and student_id in self.student_connections[session_id]
 
 ws_manager = WebSocketConnectionManager()

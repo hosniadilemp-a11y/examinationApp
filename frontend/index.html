@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/vendor/codemirror/codemirror.min.css" />
   <link rel="stylesheet" href="/vendor/codemirror/theme/dracula.min.css" />
+  <link rel="stylesheet" href="/vendor/codemirror/addon/hint/show-hint.css" />
+  <link rel="stylesheet" href="/vendor/katex/katex.min.css" />
   <style>
     @media print {
       body * {
@@ -61,12 +63,20 @@
         <span>Exam<span class="text-gradient">Platform</span></span>
       </div>
 
-      <div class="user-badge" id="header-user-info" style="display: none;">
-        <span class="user-tag" id="header-user-group">Spécialité</span>
-        <span style="font-weight: 600;" id="header-user-name">Utilisateur</span>
-        <button id="btn-logout" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
-          Déconnexion
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- Bouton Basculeur Thème Clair / Sombre -->
+        <button id="btn-theme-toggle" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;" title="Basculer Mode Clair / Sombre">
+          <span id="theme-icon">🌙</span>
+          <span id="theme-label" style="font-size: 0.8rem; font-weight: 600;">Mode Sombre</span>
         </button>
+
+        <div class="user-badge" id="header-user-info" style="display: none;">
+          <span class="user-tag" id="header-user-group">Spécialité</span>
+          <span style="font-weight: 600;" id="header-user-name">Utilisateur</span>
+          <button id="btn-logout" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+            Déconnexion
+          </button>
+        </div>
       </div>
     </header>
 
@@ -82,6 +92,9 @@
 
     <!-- Bannière Flottante Avertissements Anti-Triche (Protocole 4 Avertissements) -->
     <div id="warning-toast" class="warning-toast" style="display: none;"></div>
+
+    <!-- Conteneur Global des Notifications Toast Modernes -->
+    <div id="app-toast-container" class="app-toast-container"></div>
 
     <!-- 1. VUE : CONNEXION -->
     <main id="view-login" class="view active">
@@ -173,6 +186,9 @@
           <button id="btn-open-training-center" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
             <span>🐍</span> Centre d'Entraînement Python ➔
           </button>
+          <button id="btn-open-linux-center" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">
+            <span>🐧</span> Centre d'Entraînement Linux ➔
+          </button>
         </div>
 
         <!-- Section Examens Officiels Programmés -->
@@ -183,12 +199,12 @@
           <!-- Injecté dynamiquement par app.js -->
         </div>
 
-        <!-- Section Tests de Niveau par Module (Piliers du Cursus) -->
+        <!-- Section Tests de Niveau & Positionnement (24h/24) -->
         <div class="section-header" style="margin-top: 36px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h3 style="margin: 0;">🎯 Tests de Niveau par Module (Piliers du Cursus)</h3>
+            <h3 style="margin: 0;">🎯 Tests de Niveau & Positionnement (Accessibles 24h/24)</h3>
             <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">
-              Épreuves hebdomadaires permanentes (30 questions). Format Examen 1 Q/Page • Autres onglets autorisés.
+              Tests d'évaluation de niveau autonomes accessibles à tout moment. <strong>Non comptabilisés dans les moyennes d'examen officielles</strong>.
             </p>
           </div>
           <button id="btn-open-practice-history" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
@@ -212,6 +228,22 @@
           </div>
           <button id="btn-open-dedicated-python-training" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700; font-size: 0.95rem; white-space: nowrap;">
             🚀 Accéder au Centre d'Entraînement Python ➔
+          </button>
+        </div>
+
+        <!-- Section Centre d'Entraînement Linux (Accès au Centre dédié) -->
+        <div style="margin-top: 24px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.98)); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-lg); padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+          <div style="max-width: 680px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+              <span style="font-size:1.6rem;">🐧</span>
+              <h3 style="font-size:1.25rem; margin:0; color:#fff;">Centre d'Entraînement Linux (Terminal POSIX & VFS)</h3>
+            </div>
+            <p style="color:var(--text-secondary); margin:0; font-size:0.92rem; line-height:1.5;">
+              Maîtrisez la ligne de commande Unix, l'arborescence FHS, les droits POSIX, les processus et le scripting Bash dans un terminal 100% exécuté dans le navigateur avec évaluation automatisée.
+            </p>
+          </div>
+          <button id="btn-open-dedicated-linux-training" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700; font-size: 0.95rem; white-space: nowrap; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none;">
+            🐧 Accéder au Centre d'Entraînement Linux ➔
           </button>
         </div>
 
@@ -511,6 +543,120 @@
 
         <div id="python-curriculum-container" style="margin-bottom: 36px;">
           <!-- Injecté dynamiquement par app.js (10 chapitres avec puces de difficulté) -->
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 4-BIS. VUE : CENTRE D'ENTRAÎNEMENT LINUX (THÉORIQUE & PRATIQUE VFS) -->
+    <main id="view-linux" class="view">
+      <div class="dashboard-container">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2>🐧 Centre d'Entraînement Linux (Théorique & Pratique Shell)</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Arborescence FHS, permissions, processus, scripting Bash et émulation complète de terminal POSIX dans le navigateur.
+            </p>
+          </div>
+          <button id="btn-linux-back-dash" class="btn btn-secondary">
+            ← Revenir au Tableau de Bord
+          </button>
+        </div>
+
+        <!-- 1. Deux Grandes Cartes de Sélection : Pratique Shell vs Théorique -->
+        <div class="assessment-type-grid">
+          <!-- Carte 1 : Laboratoire Shell Pratique -->
+          <div class="type-selection-card active-practical" id="card-linux-select-practical">
+            <div class="type-card-active-indicator">
+              <span class="indicator-dot"></span>
+              <span class="indicator-text" id="status-linux-practical">✓ ACTIF</span>
+            </div>
+            
+            <div class="type-card-icon-wrapper practical" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+              <span class="type-card-big-icon">💻</span>
+            </div>
+            
+            <div class="type-card-body">
+              <div class="type-card-header">
+                <div>
+                  <span class="type-card-badge" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);">⚡ Terminal Bash & VFS</span>
+                  <h3 class="type-card-title">Atelier Ligne de Commande</h3>
+                </div>
+              </div>
+              <p class="type-card-desc">
+                Manipulez un véritable système de fichiers Linux virtuel (VFS) dans votre navigateur. Exécution de commandes réelles (ls, grep, pipes, chmod), tests automatiques et validation instantanée.
+              </p>
+              <div class="type-card-meta">
+                <span class="type-card-meta-pill">🐧 100% Client / Shell POSIX</span>
+                <span class="type-card-meta-pill">🧪 Tests unitaires & side-effects</span>
+                <span class="type-card-meta-pill">💡 Historique & Autocomplétion Tab</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carte 2 : Quiz Théorique Linux -->
+          <div class="type-selection-card" id="card-linux-select-theoretical">
+            <div class="type-card-active-indicator">
+              <span class="indicator-dot"></span>
+              <span class="indicator-text" id="status-linux-theoretical">○ CHOISIR</span>
+            </div>
+            
+            <div class="type-card-icon-wrapper theoretical" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+              <span class="type-card-big-icon">📖</span>
+            </div>
+            
+            <div class="type-card-body">
+              <div class="type-card-header">
+                <div>
+                  <span class="type-card-badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3);">⏱️ Questions Système FHS</span>
+                  <h3 class="type-card-title">Quiz Théorique Linux</h3>
+                </div>
+              </div>
+              <p class="type-card-desc">
+                Questions d'évaluation sur les concepts clés de Linux : arborescence FHS, droits d'accès, signaux de processus, variables d'environnement et syntaxe Bash.
+              </p>
+              <div class="type-card-meta">
+                <span class="type-card-meta-pill">📚 Questions interactives QCM / Texte</span>
+                <span class="type-card-meta-pill">⏱️ Évaluation chronométrée</span>
+                <span class="type-card-meta-pill">🎯 Barème instantané</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Synthèse de progression Linux -->
+        <div class="card" style="margin-top: 24px; padding: 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div>
+              <span style="font-size:0.85rem; font-weight:700; text-transform:uppercase; color:#60a5fa; letter-spacing:0.05em;">Pilier Académique LINUX_ADMIN</span>
+              <h3 style="margin:4px 0 0 0;" id="linux-progression-title">Niveau 1 — Découverte Système</h3>
+            </div>
+            <div style="display:flex; gap:16px; align-items:center;">
+              <div style="text-align:right;">
+                <div style="font-size:0.8rem; color:var(--text-muted);">Moyenne Générale</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#10b981;" id="linux-avg-score">-- / 20</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.8rem; color:var(--text-muted);">Tentatives</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#60a5fa;" id="linux-attempts-count">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Grille des 6 Chapitres Linux -->
+        <div style="margin-top: 28px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:1.2rem; display:flex; align-items:center; gap:8px;">
+              <span>📂</span> Chapitres du Cursus Linux (6 Modules)
+            </h3>
+            <span style="font-size:0.85rem; color:var(--text-muted);">Sélectionnez un chapitre ci-dessous pour démarrer</span>
+          </div>
+
+          <div class="grid" id="linux-chapters-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+            <!-- Injecté dynamiquement par app.js -->
+          </div>
         </div>
 
       </div>
@@ -928,6 +1074,9 @@
                 <span id="admin-students-count" style="font-size:0.85rem; color:var(--text-secondary);">0 étudiant(s) au total</span>
               </div>
               <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <select id="admin-students-filter-year" class="form-control" style="font-size:0.85rem; padding:6px 10px; min-width:140px;">
+                  <option value="">Toutes les Années</option>
+                </select>
                 <select id="admin-students-filter-group" class="form-control" style="font-size:0.85rem; padding:6px 10px; min-width:150px;">
                   <option value="">Toutes les Spécialités</option>
                 </select>
@@ -951,6 +1100,7 @@
                     <th style="padding:10px 14px;">Matricule / ID</th>
                     <th style="padding:10px 14px;">Identifiant</th>
                     <th style="padding:10px 14px;">Nom Complet</th>
+                    <th style="padding:10px 14px;">Année</th>
                     <th style="padding:10px 14px;">Spécialité</th>
                     <th style="padding:10px 14px;">Mot de passe</th>
                     <th style="padding:10px 14px;">Email</th>
@@ -1346,6 +1496,13 @@
             </select>
           </div>
           <div class="form-group">
+            <label style="font-weight: 600; display: block; margin-bottom: 6px;">Type d'Épreuve :</label>
+            <select id="create-exam-type" class="form-control" style="width: 100%; font-weight:600;">
+              <option value="theoretical" selected>📝 Épreuve Théorique (QCM & Connaissances)</option>
+              <option value="practical">💻 Épreuve Pratique (Défis de Programmation & Machine)</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label style="font-weight: 600; display: block; margin-bottom: 6px;">Durée Chronométrée :</label>
             <select id="create-exam-duration" class="form-control" style="width: 100%;">
               <option value="15">15 minutes (Express)</option>
@@ -1440,6 +1597,10 @@
         <div class="form-group" style="margin-bottom:12px;">
           <label style="font-weight:600; display:block; margin-bottom:4px;">Adresse Email :</label>
           <input type="email" id="admin-student-email" class="form-control" placeholder="jean.dupont@exam.local" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Année d'inscription / Promotion :</label>
+          <input type="text" id="admin-student-year" class="form-control" placeholder="Ex: 2024-2025 ou 2025-2026" style="width:100%;" />
         </div>
         <div class="form-group" style="margin-bottom:12px;">
           <label style="font-weight:600; display:block; margin-bottom:4px;">Spécialité * :</label>
@@ -1741,6 +1902,7 @@
               <option value="boolean">Vrai / Faux (Binaire)</option>
               <option value="fill_blank">Texte à Trou</option>
               <option value="matching">Appariement / Correspondance</option>
+              <option value="coding">💻 Défi de Programmation Python (Tests Publics & Cachés)</option>
             </select>
           </div>
           <div>
@@ -1793,11 +1955,17 @@
     </div>
   </div>
 
+  <!-- KaTeX pour le rendu des formules mathématiques -->
+  <script src="/vendor/katex/katex.min.js"></script>
+  <script src="/vendor/katex/contrib/auto-render.min.js"></script>
+
   <!-- CodeMirror pour Édition Python Interactive avec Coloration Syntaxique & Outils Développeur -->
   <script src="/vendor/codemirror/codemirror.min.js"></script>
   <script src="/vendor/codemirror/mode/python/python.min.js"></script>
   <script src="/vendor/codemirror/addon/edit/closebrackets.min.js"></script>
   <script src="/vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
+  <script src="/vendor/codemirror/addon/hint/show-hint.js"></script>
+  <script src="/vendor/codemirror/addon/hint/python-hint.js"></script>
 
   <script type="module" src="/js/app.js"></script>
 </body>

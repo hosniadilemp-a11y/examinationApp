@@ -22,6 +22,10 @@ from backend.app.services.training_service import (
     calculate_gamification,
     PASSING_MARK
 )
+from backend.app.services.sandbox_runner import (
+    execute_user_code_with_input,
+    execute_user_code_against_tests
+)
 
 router = APIRouter(prefix="/api/training/python", tags=["Entraînement Évolutif Python"])
 
@@ -62,6 +66,18 @@ class SessionSubmitRequest(BaseModel):
     target_topic: Optional[str] = None
     target_difficulty: Optional[str] = None
     answers: List[SubmitAnswerItem]
+
+class RunCodeRequest(BaseModel):
+    code: str
+    stdin: Optional[str] = ""
+    timeout: Optional[float] = 3.0
+
+class RunTestsRequest(BaseModel):
+    exercise_id: Optional[Any] = None
+    code: str
+    tests: Optional[List[Dict[str, Any]]] = None
+    run_all: Optional[bool] = False
+    timeout: Optional[float] = 3.0
 
 @router.get("/progression")
 def get_progression(
@@ -589,3 +605,82 @@ def get_training_history(
         "topic_rankings": topic_rankings,
         "marks_history": marks_history
     }
+
+@router.post("/run-code")
+def run_custom_code(
+    payload: RunCodeRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Exécute un script Python arbitraire avec stdin personnalisé (Console E/S interactive)."""
+    return execute_user_code_with_input(payload.code, payload.stdin or "", payload.timeout or 3.0)
+
+@router.post("/run-tests")
+def run_code_against_tests(
+    payload: RunTestsRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Exécute le code d'un exercice contre les cas de test.
+    - Si payload.tests est fourni directement : exécute sur ces tests sans lookup.
+    - Sinon : recherche l'exercice par exercise_id dans curriculum ou coding_challenges.json.
+    - Si run_all=False : teste uniquement les cas publics avec entrées et sorties détaillées.
+    - Si run_all=True : soumission complète validant les tests publics et cachés.
+    """
+    if payload.tests and len(payload.tests) > 0:
+        all_tests = []
+        for i, t in enumerate(payload.tests):
+            all_tests.append({
+                "id": t.get("id", f"test_{i+1}"),
+                "input": t.get("input", ""),
+                "output": t.get("output", t.get("expected_output", "")),
+                "is_public": t.get("is_public", True)
+            })
+        return execute_user_code_against_tests(
+            payload.code,
+            all_tests,
+            timeout_seconds=payload.timeout or 3.0,
+            mask_hidden_output=True
+        )
+
+    curriculum = load_curriculum()
+    ex_id_str = str(payload.exercise_id)
+    
+    target_exercise = None
+    for ch in curriculum.get("chapters", []):
+        for ex in ch.get("coding_exercises", []):
+            if str(ex.get("id")) == ex_id_str:
+                target_exercise = ex
+                break
+        if target_exercise:
+            break
+            
+    if not target_exercise:
+        # Recherche dans coding_challenges.json
+        import os
+        challenges_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "python_training", "coding_challenges.json")
+        if os.path.exists(challenges_path):
+            with open(challenges_path, "r", encoding="utf-8") as f:
+                challenges = json.load(f)
+                for ch in challenges:
+                    if str(ch.get("id")) == ex_id_str:
+                        target_exercise = ch
+                        break
+                        
+    if not target_exercise:
+        raise HTTPException(status_code=404, detail=f"Exercice Python #{payload.exercise_id} introuvable.")
+        
+    public_tests = [{"id": f"pub_{i+1}", "input": t.get("input", ""), "output": t.get("output", t.get("expected_output", "")), "is_public": True} for i, t in enumerate(target_exercise.get("public_tests", []))]
+    hidden_tests = [{"id": f"hid_{i+1}", "input": t.get("input", ""), "output": t.get("output", t.get("expected_output", "")), "is_public": False} for i, t in enumerate(target_exercise.get("hidden_tests", []))]
+    
+    if payload.run_all:
+        all_tests = public_tests + hidden_tests
+    else:
+        all_tests = public_tests
+        
+    return execute_user_code_against_tests(
+        payload.code,
+        all_tests,
+        timeout_seconds=payload.timeout or 3.0,
+        mask_hidden_output=True
+    )
+

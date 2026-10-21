@@ -1,6 +1,6 @@
 import io
 import csv
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -77,6 +77,7 @@ def import_students_csv(
             group_id = (row.get("specialite") or row.get("specialité") or row.get("speciality") or row.get("group_id") or row.get("groupe") or "").strip()
             group_name = (row.get("group_name") or row.get("nom_specialite") or group_id).strip()
             plain_pwd = (row.get("password") or row.get("mot_de_passe") or student_id).strip()
+            enrollment_year = (row.get("annee") or row.get("année") or row.get("annee_inscription") or row.get("promotion") or row.get("enrollment_year") or "").strip() or None
             
             # Gestion automatique de la création du Groupe/Spécialité si renseigné
             if group_id:
@@ -98,6 +99,8 @@ def import_students_csv(
                     existing_user.email = email
                 if group_id:
                     existing_user.group_id = group_id
+                if enrollment_year:
+                    existing_user.enrollment_year = enrollment_year
                 if "password" in row or "mot_de_passe" in row:
                     existing_user.password_hash = hash_password(plain_pwd)
                     existing_user.plain_password = plain_pwd
@@ -113,6 +116,7 @@ def import_students_csv(
                     email=email,
                     role="student",
                     group_id=group_id if group_id else None,
+                    enrollment_year=enrollment_year,
                     must_change_password=False if ("password" in row or "mot_de_passe" in row) else True,
                     is_active=True
                 )
@@ -292,18 +296,25 @@ def import_modules_csv(
 
 @router.get("/export/students")
 def export_students_csv(
+    enrollment_year: Optional[str] = None,
+    group_id: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_teacher_or_admin)
 ):
-    """Exporte la liste de tous les étudiants au format CSV."""
-    students = db.query(User).filter(User.role == "student").order_by(User.group_id, User.username).all()
+    """Exporte la liste des étudiants au format CSV avec filtres promotion et groupe."""
+    query = db.query(User).filter(User.role == "student")
+    if enrollment_year:
+        query = query.filter(User.enrollment_year == enrollment_year)
+    if group_id:
+        query = query.filter(User.group_id == group_id)
+    students = query.order_by(User.enrollment_year.desc(), User.group_id, User.username).all()
     
     output = io.StringIO()
     writer = csv.writer(output, delimiter=";")
-    writer.writerow(["student_id", "username", "full_name", "email", "group_id", "must_change_password", "is_active"])
+    writer.writerow(["student_id", "username", "full_name", "email", "group_id", "enrollment_year", "must_change_password", "is_active"])
     
     for s in students:
-        writer.writerow([s.id, s.username, s.full_name, s.email or "", s.group_id or "", s.must_change_password, s.is_active])
+        writer.writerow([s.id, s.username, s.full_name, s.email or "", s.group_id or "", s.enrollment_year or "", s.must_change_password, s.is_active])
         
     output.seek(0)
     return StreamingResponse(

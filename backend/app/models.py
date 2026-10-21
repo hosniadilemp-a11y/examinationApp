@@ -46,6 +46,7 @@ class User(Base):
     email = Column(String, nullable=True)
     role = Column(String, nullable=False, default="student")  # 'admin', 'teacher', 'student'
     group_id = Column(String, ForeignKey("groups.id", ondelete="SET NULL"), nullable=True)
+    enrollment_year = Column(String, nullable=True, default=None, index=True)  # ex: '2024-2025', '2025-2026'
     must_change_password = Column(Boolean, default=True, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -76,6 +77,7 @@ class Exam(Base):
     id = Column(String, primary_key=True, index=True)
     module_code = Column(String, ForeignKey("modules.code", ondelete="CASCADE"), nullable=False)
     title = Column(String, nullable=False)
+    exam_type = Column(String, nullable=False, default="theoretical")  # 'theoretical' (QCM/Synthèse) ou 'practical' (Machine/Coding)
     instructions = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=False, default=60)
     global_points = Column(Float, nullable=False, default=20.0)

@@ -2,14 +2,15 @@ import uuid
 import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models import Exam, Question, Module, Group, User, ExamSession
 from backend.app.schemas import (
     ExamCreate, ExamUpdate, ExamResponse, ExamDetailResponse,
-    QuestionCreate, QuestionUpdate, QuestionResponse
+    QuestionCreate, QuestionUpdate, QuestionResponse,
+    QuestionOrderItem, QuestionReorderPayload
 )
 from backend.app.dependencies import get_current_user, require_teacher_or_admin
 from backend.app.services.item_analysis import calculate_exam_item_analysis, generate_item_analysis_csv
@@ -51,13 +52,17 @@ def list_exams(
     for e in exams:
         count = len(e.questions)
         group_ids = [g.id for g in e.groups]
+        tot_pts = round(sum(q.points for q in e.questions), 2)
         resp = ExamResponse(
             id=e.id,
             module_code=e.module_code,
             title=e.title,
+            exam_type=getattr(e, "exam_type", "theoretical") or "theoretical",
             instructions=e.instructions,
             duration_minutes=e.duration_minutes,
             global_points=e.global_points,
+            total_question_points=tot_pts,
+            passing_score=getattr(e, "passing_score", 10.0) or 10.0,
             navigation_mode=e.navigation_mode,
             shuffle_questions=e.shuffle_questions,
             shuffle_options=e.shuffle_options,
@@ -84,12 +89,28 @@ def create_exam(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Module introuvable.")
         
     _check_module_permission(current_user, module_code_clean)
+
+    exam_type_val = payload.exam_type or "theoretical"
+    # Validation des questions embarquées si fournies dans payload
+    if payload.questions:
+        for q_item in payload.questions:
+            if exam_type_val == "theoretical" and q_item.type in ["coding", "code"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Une épreuve théorique ne peut pas contenir de défi de programmation Python. Choisissez une épreuve pratique."
+                )
+            if exam_type_val == "practical" and q_item.type not in ["coding", "code"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Une épreuve pratique doit contenir exclusivement des défis de programmation Python."
+                )
     
     exam_id = f"EXAM-{uuid.uuid4().hex[:8].upper()}"
     new_exam = Exam(
         id=exam_id,
         module_code=module_code_clean,
         title=payload.title.strip(),
+        exam_type=exam_type_val,
         instructions=payload.instructions,
         duration_minutes=payload.duration_minutes,
         global_points=payload.global_points,
@@ -109,6 +130,25 @@ def create_exam(
     db.flush()
 
     question_count = 0
+    # Insertion des questions fournies dans le payload
+    if payload.questions:
+        for idx, q_data in enumerate(payload.questions, start=1):
+            q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
+            new_q = Question(
+                id=q_id,
+                exam_id=new_exam.id,
+                ordering=q_data.ordering or idx,
+                type=q_data.type,
+                prompt_markdown=q_data.prompt_markdown,
+                points=q_data.points,
+                negative_penalty=q_data.negative_penalty,
+                time_limit_seconds=q_data.time_limit_seconds,
+                options_json=q_data.options_json,
+                correct_answers_json=q_data.correct_answers_json
+            )
+            db.add(new_q)
+            question_count += 1
+
     # Si room_id est explicitement fourni (création personnalisée depuis l'interface)
     if payload.room_id:
         room_id = payload.room_id.strip()
@@ -119,11 +159,16 @@ def create_exam(
                     candidate_template = f
                     break
 
-        if candidate_template and candidate_template.exists():
+        if candidate_template and candidate_template.exists() and not payload.questions:
             try:
                 with open(candidate_template, "r", encoding="utf-8") as fp:
                     tdata = json.load(fp)
                 for idx, q_data in enumerate(tdata.get("questions", []), start=1):
+                    q_type = str(q_data.get("type", "single_choice"))
+                    if exam_type_val == "theoretical" and q_type in ["coding", "code"]:
+                        continue
+                    if exam_type_val == "practical" and q_type not in ["coding", "code"]:
+                        continue
                     q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
                     opts = q_data.get("options_json", "[]")
                     opts_str = json.dumps(opts, ensure_ascii=False) if isinstance(opts, (list, dict)) else str(opts)
@@ -133,7 +178,7 @@ def create_exam(
                         id=q_id,
                         exam_id=new_exam.id,
                         ordering=int(q_data.get("ordering", idx)),
-                        type=str(q_data.get("type", "single_choice")),
+                        type=q_type,
                         prompt_markdown=str(q_data.get("prompt_markdown", "")),
                         points=float(q_data.get("points", 2.0)),
                         negative_penalty=float(q_data.get("negative_penalty", 0.0)),
@@ -162,13 +207,17 @@ def create_exam(
     db.commit()
     db.refresh(new_exam)
     
+    total_pts = round(sum(q.points for q in new_exam.questions), 2)
     return ExamResponse(
         id=new_exam.id,
         module_code=new_exam.module_code,
         title=new_exam.title,
+        exam_type=getattr(new_exam, "exam_type", "theoretical") or "theoretical",
         instructions=new_exam.instructions,
         duration_minutes=new_exam.duration_minutes,
         global_points=new_exam.global_points,
+        total_question_points=total_pts,
+        passing_score=getattr(new_exam, "passing_score", 10.0) or 10.0,
         navigation_mode=new_exam.navigation_mode,
         shuffle_questions=new_exam.shuffle_questions,
         shuffle_options=new_exam.shuffle_options,
@@ -176,7 +225,7 @@ def create_exam(
         default_negative_penalty=new_exam.default_negative_penalty,
         created_by=new_exam.created_by,
         created_at=new_exam.created_at,
-        question_count=question_count,
+        question_count=len(new_exam.questions),
         assigned_groups=[g.id for g in new_exam.groups]
     )
 
@@ -197,6 +246,7 @@ def _create_exam_from_template_dict(data: dict, db: Session, current_user: User)
         id=exam_id,
         module_code=module_code_clean,
         title=str(data.get("title", f"Examen {module_code_clean}")).strip(),
+        exam_type=str(data.get("exam_type", "theoretical")),
         instructions=data.get("instructions", "Épreuve officielle sur poste individuel."),
         duration_minutes=int(data.get("duration_minutes", 45)),
         global_points=float(data.get("global_points", 20.0)),
@@ -303,13 +353,17 @@ def load_exam_template(
         data = json.load(fp)
         
     new_exam = _create_exam_from_template_dict(data, db, current_user)
+    tot_pts = round(sum(q.points for q in new_exam.questions), 2)
     return ExamResponse(
         id=new_exam.id,
         module_code=new_exam.module_code,
         title=new_exam.title,
+        exam_type=getattr(new_exam, "exam_type", "theoretical") or "theoretical",
         instructions=new_exam.instructions,
         duration_minutes=new_exam.duration_minutes,
         global_points=new_exam.global_points,
+        total_question_points=tot_pts,
+        passing_score=getattr(new_exam, "passing_score", 10.0) or 10.0,
         navigation_mode=new_exam.navigation_mode,
         shuffle_questions=new_exam.shuffle_questions,
         shuffle_options=new_exam.shuffle_options,
@@ -329,13 +383,17 @@ def import_exam_template_payload(
 ):
     """Importe un examen complet depuis un objet JSON téléversé par l'enseignant."""
     new_exam = _create_exam_from_template_dict(payload, db, current_user)
+    tot_pts = round(sum(q.points for q in new_exam.questions), 2)
     return ExamResponse(
         id=new_exam.id,
         module_code=new_exam.module_code,
         title=new_exam.title,
+        exam_type=getattr(new_exam, "exam_type", "theoretical") or "theoretical",
         instructions=new_exam.instructions,
         duration_minutes=new_exam.duration_minutes,
         global_points=new_exam.global_points,
+        total_question_points=tot_pts,
+        passing_score=getattr(new_exam, "passing_score", 10.0) or 10.0,
         navigation_mode=new_exam.navigation_mode,
         shuffle_questions=new_exam.shuffle_questions,
         shuffle_options=new_exam.shuffle_options,
@@ -360,13 +418,17 @@ def get_exam_detail(
         
     _check_module_permission(current_user, exam.module_code)
     
+    tot_pts = round(sum(q.points for q in exam.questions), 2)
     return ExamDetailResponse(
         id=exam.id,
         module_code=exam.module_code,
         title=exam.title,
+        exam_type=getattr(exam, "exam_type", "theoretical") or "theoretical",
         instructions=exam.instructions,
         duration_minutes=exam.duration_minutes,
         global_points=exam.global_points,
+        total_question_points=tot_pts,
+        passing_score=getattr(exam, "passing_score", 10.0) or 10.0,
         navigation_mode=exam.navigation_mode,
         shuffle_questions=exam.shuffle_questions,
         shuffle_options=exam.shuffle_options,
@@ -395,12 +457,16 @@ def update_exam(
     
     if payload.title is not None:
         exam.title = payload.title.strip()
+    if payload.exam_type is not None:
+        exam.exam_type = payload.exam_type
     if payload.instructions is not None:
         exam.instructions = payload.instructions
     if payload.duration_minutes is not None:
         exam.duration_minutes = payload.duration_minutes
     if payload.global_points is not None:
         exam.global_points = payload.global_points
+    if payload.passing_score is not None and hasattr(exam, "passing_score"):
+        exam.passing_score = payload.passing_score
     if payload.shuffle_questions is not None:
         exam.shuffle_questions = payload.shuffle_questions
     if payload.shuffle_options is not None:
@@ -418,13 +484,17 @@ def update_exam(
             
     db.commit()
     db.refresh(exam)
+    tot_pts = round(sum(q.points for q in exam.questions), 2)
     return ExamResponse(
         id=exam.id,
         module_code=exam.module_code,
         title=exam.title,
+        exam_type=getattr(exam, "exam_type", "theoretical") or "theoretical",
         instructions=exam.instructions,
         duration_minutes=exam.duration_minutes,
         global_points=exam.global_points,
+        total_question_points=tot_pts,
+        passing_score=getattr(exam, "passing_score", 10.0) or 10.0,
         navigation_mode=exam.navigation_mode,
         shuffle_questions=exam.shuffle_questions,
         shuffle_options=exam.shuffle_options,
@@ -452,6 +522,73 @@ def delete_exam(
     db.commit()
     return None
 
+@router.get("/{exam_id}/validate")
+def validate_exam(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Vérifie la validité de l'examen avant activation ou lancement :
+    - Nombre de questions > 0
+    - Respect strict du type d'épreuve (théorique vs pratique)
+    - Cohérence du barème des questions vs note globale
+    - Présence des tests publics (>= 2) et cachés (>= 10) pour les défis pratiques
+    """
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+
+    errors = []
+    warnings = []
+    q_count = len(exam.questions)
+    total_points = round(sum(q.points for q in exam.questions), 2)
+    exam_type = getattr(exam, "exam_type", "theoretical") or "theoretical"
+    passing_score = getattr(exam, "passing_score", 10.0) or 10.0
+
+    if q_count == 0:
+        errors.append("L'examen ne contient aucune question.")
+
+    if exam_type == "theoretical":
+        coding_qs = [q.id for q in exam.questions if q.type in ["coding", "code"]]
+        if coding_qs:
+            errors.append(f"Une épreuve théorique ne peut pas contenir de défis de programmation ({len(coding_qs)} question(s) détectée(s)).")
+    elif exam_type == "practical":
+        non_coding_qs = [q.id for q in exam.questions if q.type not in ["coding", "code"]]
+        if non_coding_qs:
+            errors.append(f"Une épreuve pratique doit contenir exclusivement des défis de programmation ({len(non_coding_qs)} question(s) non conforme(s) détectée(s)).")
+
+        for q in exam.questions:
+            if q.type in ["coding", "code"]:
+                try:
+                    opts = json.loads(q.options_json) if isinstance(q.options_json, str) else (q.options_json or {})
+                    pub = opts.get("public_tests", []) if isinstance(opts, dict) else []
+                    corr = json.loads(q.correct_answers_json) if isinstance(q.correct_answers_json, str) else (q.correct_answers_json or [])
+                    tot_corr = len(corr) if isinstance(corr, list) else len(corr.get("hidden_tests", []))
+                    if len(pub) < 2:
+                        warnings.append(f"Question {q.id} : Moins de 2 tests publics ({len(pub)} présent(s)).")
+                    if tot_corr < 10:
+                        warnings.append(f"Question {q.id} : Moins de 10 tests cachés ({tot_corr} présent(s)).")
+                except Exception:
+                    pass
+
+    if q_count > 0 and total_points != exam.global_points:
+        warnings.append(f"Le total des points des questions ({total_points}) ne correspond pas au barème global ({exam.global_points}).")
+
+    valid = len(errors) == 0
+    return {
+        "valid": valid,
+        "exam_id": exam.id,
+        "exam_type": exam_type,
+        "question_count": q_count,
+        "total_points": total_points,
+        "global_points": exam.global_points,
+        "passing_score": passing_score,
+        "errors": errors,
+        "warnings": warnings
+    }
+
 # --- Gestion des Questions dans un Examen ---
 
 @router.post("/{exam_id}/questions", response_model=QuestionResponse, status_code=status.HTTP_201_CREATED)
@@ -466,6 +603,19 @@ def create_question(
     if not exam:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
     _check_module_permission(current_user, exam.module_code)
+
+    # Validation stricte du type d'épreuve (Théorique vs Pratique)
+    exam_type = getattr(exam, "exam_type", "theoretical") or "theoretical"
+    if exam_type == "theoretical" and payload.type in ["coding", "code"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Une épreuve théorique ne peut pas contenir de défi de programmation Python. Choisissez une épreuve pratique."
+        )
+    if exam_type == "practical" and payload.type not in ["coding", "code"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Une épreuve pratique doit contenir exclusivement des défis de programmation Python."
+        )
     
     q_id = f"Q-{uuid.uuid4().hex[:8].upper()}"
     new_q = Question(
@@ -498,11 +648,23 @@ def update_question(
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question introuvable.")
     _check_module_permission(current_user, question.exam.module_code)
+
+    if payload.type is not None:
+        exam_type = getattr(question.exam, "exam_type", "theoretical") or "theoretical"
+        if exam_type == "theoretical" and payload.type in ["coding", "code"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Une épreuve théorique ne peut pas contenir de défi de programmation Python. Choisissez une épreuve pratique."
+            )
+        if exam_type == "practical" and payload.type not in ["coding", "code"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Une épreuve pratique doit contenir exclusivement des défis de programmation Python."
+            )
+        question.type = payload.type
     
     if payload.ordering is not None:
         question.ordering = payload.ordering
-    if payload.type is not None:
-        question.type = payload.type
     if payload.prompt_markdown is not None:
         question.prompt_markdown = payload.prompt_markdown
     if payload.points is not None:
@@ -537,6 +699,57 @@ def delete_question(
     db.commit()
     return None
 
+@router.put("/{exam_id}/questions/reorder")
+def reorder_exam_questions(
+    exam_id: str,
+    payload: Any = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Réordonne en bloc les questions d'un examen en mettant à jour le champ ordering.
+    Accepte soit {"question_orders": [{"id": ..., "display_order": ...}]},
+    soit {"items": [{"id": ..., "ordering": ...}]},
+    soit une liste directe [{"id": ..., "display_order": ...}].
+    """
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+
+    items = []
+    if isinstance(payload, dict):
+        items = payload.get("question_orders") or payload.get("items") or payload.get("questions") or []
+    elif isinstance(payload, list):
+        items = payload
+    else:
+        items = getattr(payload, "question_orders", None) or getattr(payload, "items", None) or []
+
+    if not items:
+        return {"success": True, "reordered_count": 0, "message": "Aucun ordre à mettre à jour."}
+
+    updated_count = 0
+    for it in items:
+        qid = it.get("id") if isinstance(it, dict) else getattr(it, "id", None)
+        ord_val = None
+        if isinstance(it, dict):
+            ord_val = it.get("display_order") if it.get("display_order") is not None else it.get("ordering")
+        else:
+            ord_val = getattr(it, "display_order", None) or getattr(it, "ordering", None)
+
+        if qid and ord_val is not None:
+            q = db.query(Question).filter(Question.id == qid, Question.exam_id == exam_id).first()
+            if q:
+                q.ordering = int(ord_val)
+                updated_count += 1
+
+    db.commit()
+    return {
+        "success": True,
+        "reordered_count": updated_count,
+        "message": f"Ordre de {updated_count} question(s) mis à jour avec succès."
+    }
+
 @router.post("/{exam_id}/questions/import-json")
 def import_questions_json(
     exam_id: str,
@@ -549,6 +762,20 @@ def import_questions_json(
     if not exam:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
     _check_module_permission(current_user, exam.module_code)
+
+    # Validation stricte du type d'épreuve (Théorique vs Pratique)
+    exam_type = getattr(exam, "exam_type", "theoretical") or "theoretical"
+    for q_item in payload:
+        if exam_type == "theoretical" and q_item.type in ["coding", "code"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Une épreuve théorique ne peut pas contenir de défi de programmation Python. Choisissez une épreuve pratique."
+            )
+        if exam_type == "practical" and q_item.type not in ["coding", "code"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Une épreuve pratique doit contenir exclusivement des défis de programmation Python."
+            )
     
     added_count = 0
     for q_data in payload:
@@ -582,7 +809,7 @@ def export_questions_json(
     if not exam:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
     _check_module_permission(current_user, exam.module_code)
-    
+
     questions = db.query(Question).filter(Question.exam_id == exam_id).order_by(Question.ordering).all()
     results = []
     for q in questions:
@@ -628,7 +855,7 @@ def export_exam_item_analysis_csv_endpoint(
     if not exam:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
     _check_module_permission(current_user, exam.module_code)
-    
+
     analysis = calculate_exam_item_analysis(exam_id=exam.id, db=db)
     csv_content = generate_item_analysis_csv(analysis)
     

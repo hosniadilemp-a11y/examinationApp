@@ -1,0 +1,49 @@
+.CodeMirror-hints {
+  position: absolute;
+  z-index: 10000;
+  overflow: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #1e293b;
+  font-size: 13px;
+  font-family: var(--font-mono, monospace);
+  max-height: 18em;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+.CodeMirror-hint {
+  margin: 0;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: pre;
+  color: #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+li.CodeMirror-hint-active {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.hint-badge {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-family: var(--font-sans, sans-serif);
+}
+
+.hint-badge-keyword { background: #ff79c6; color: #0f172a; }
+.hint-badge-builtin { background: #50fa7b; color: #0f172a; }
+.hint-badge-module  { background: #8be9fd; color: #0f172a; }
+.hint-badge-snippet { background: #bd93f9; color: #0f172a; }
+

@@ -177,4 +177,36 @@ def evaluate_answer(
 
         return float(max(floor_score, final_score)), is_exact, feedback
 
+    # --- 6. Type : Exercice de Code Python (HackerRank / AlgoCompiler) ---
+    elif q_type in ["coding", "code"]:
+        if not user_answer or not str(user_answer).strip():
+            return 0.0, False, "Aucun code fourni."
+
+        code_str = str(user_answer)
+        
+        # Les cas de test sont stockés dans correct_answers sous forme de liste de dictionnaires
+        test_cases = []
+        if isinstance(correct_answers, list):
+            test_cases = correct_answers
+        elif isinstance(correct_answers, dict):
+            test_cases = correct_answers.get("tests", correct_answers.get("test_cases", []))
+
+        if not test_cases:
+            return float(points), True, "Code soumis sans cas de test automatisés."
+
+        from backend.app.services.sandbox_runner import execute_user_code_against_tests
+        run_res = execute_user_code_against_tests(code_str, test_cases, timeout_seconds=3.0, mask_hidden_output=False)
+        
+        total = run_res.get("total_count", 0)
+        passed = run_res.get("passed_count", 0)
+        all_passed = run_res.get("all_passed", False)
+        
+        if total > 0:
+            awarded = round((passed / total) * points, 2)
+        else:
+            awarded = 0.0
+            
+        feedback = f"{passed}/{total} cas de test validés."
+        return float(max(floor_score, awarded)), all_passed, feedback
+
     return 0.0, False, f"Type de question non supporté : '{q_type}'."

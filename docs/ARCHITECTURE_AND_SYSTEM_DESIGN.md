@@ -473,6 +473,35 @@ Les **4 tests d'entraînement libre** (30 questions chacun, soit 120 questions a
 * **Éditeur Visuel Multi-Types :** Création et modification en ligne des 5 types de questions (`boolean`, `single_choice`, `multi_choice`, `fill_blank`, `matching`) avec barèmes, pénalités et temps alloué.
 * **Import/Export JSON :** Transfert fluide des banques de questions entre modules et instances.
 
+### 8.47. Moteur d'Évaluation de Code Python & Interface Défi AlgoCompiler (REV-51)
+* **Interface Inspirée d'AlgoCompiler / HackerRank :** Disposition responsive en double panneau avec redimensionnement interactif :
+  - *Panneau Gauche :* Énoncé riche du problème avec intégration complète de KaTeX hors-ligne (`frontend/vendor/katex/`) pour le rendu des notations mathématiques ($O(N)$, formules de complexité, équations), capsules de difficulté, temps d'exécution limite et spécifications d'entrées/sorties.
+  - *Panneau Droit :* Éditeur CodeMirror Python avec thème Dracula, barre d'outils complète (Annuler/Rétablir, Commenter le code, Réinitialiser au starter code, Gestion de taille de police) et barre d'état dynamique (Position curseur, Longueur).
+  - *Volet Inférieur Réglable (Splitter Horizontal) :* Navigation par onglets interactifs entre la *Console d'Exécution* (entrée personnalisée `stdin` et flux de sortie `stdout`/`stderr`) et les *Résultats des Tests* (affichage des tests publics validés ou échoués avec vue différentielle attendu vs obtenu).
+* **Moteur d'Exécution Hybride (`sandbox_runner.py`) :** Service Python backend exécutant le code utilisateur dans un sous-processus isolé avec garde-fou temporel (timeout de 5 secondes), capture sécurisée des flux standards et capture exhaustive des exceptions et tracebacks.
+* **Règle Stricte des Cas de Test & Catalogue Étendu :**
+  - Exigence architecturale absolue : chaque problème de programmation dispose obligatoirement d'au moins 2 tests publics et d'au moins 1 test caché.
+  - Rééquilibrage intégral des 183 exercices du curriculum (`curriculum.json`) et intégration des 47 problèmes d'algorithmique avancée d'AlgoCompiler (`coding_challenges.json`), portant le référentiel à **230 défis de programmation**.
+
+### 8.48. Confidentialité Absolue des Corrigés & Protection Inviolable des Tests Cachés (REV-52)
+* **Secret des Corrigés en Examen Officiel :** Aucune réponse attendue, explication pédagogique ni code de référence n'est transmis au client web de l'étudiant tant que l'épreuve n'est pas définitivement scellée.
+* **Masquage Authoritaire des Tests Cachés :** Dans `sandbox_runner.py`, tout test marqué `is_public=False` voit ses métadonnées et résultats sensibles remplacés par `[Protégé]` pour la sortie attendue et `[Test Caché]` pour les paramètres d'entrée.
+* **Évaluation Côté Serveur :** L'attribution de la note partielle proportionnelle au taux de réussite des tests est calculée de manière étanche par le service `grading.py` sans exposition du jeu d'évaluation au client.
+
+### 8.49. Studio Enseignant de Conception d'Examens & Auteur de Questions de Programmation (REV-53)
+* **Sélecteur Dynamique de Modules :** La modale de création d'examen `#modal-create-custom-exam` charge dynamiquement l'ensemble des modules d'enseignement de l'établissement (`DEV_WEB`, `DATABASE_SQL`, `NETWORKS`, `AI_ML`, `DATA_STRUCT`, etc.) ou les modules affectés à l'enseignant connecté.
+* **Auteur de Questions de Programmation (`coding`) :** Extension du formulaire de création de questions pour prendre en charge le type `coding`, incluant la saisie du code squelette (`starter_code`), l'ajout libre de tests publics et la définition obligatoire d'au moins 1 test caché d'évaluation, avec validation bloquante côté interface.
+
+### 8.50. Isolation Pédagogique des 4 Tests Diagnostiques de Niveau (REV-54)
+* **Positionnement 24/7 en Libre-Service :** Les 4 épreuves diagnostiques (Python Niveaux 1 à 4) sont formellement isolées des cursus d'enseignement académique. Elles permettent aux étudiants d'auto-évaluer leur progression à tout moment sans incidence sur leurs notes semestrielles.
+* **Indépendance des Bulletins Officiels :** Le moteur d'évaluation académique et de génération de bulletins A4/PDF exclut totalement les tentatives de ces tests diagnostiques des moyennes générales de spécialité.
+
+### 8.51. Télémétrie Proctoring Temps Réel & Persistance Authoritaire des Extensions (REV-55)
+* **Suivi de Connexion en Direct :** `WebSocketManager` suit activement l'état des connexions sockets par étudiant (`is_student_connected`). La vue de surveillance proctor affiche instantanément les statuts `En ligne`, `Hors-ligne`, `Focus Perdu` ou `Suspendu`.
+* **Persistance en Base de Données des Prolongations :** L'endpoint `POST /api/proctor/sessions/{session_id}/extend-time` modifie directement l'attribut `exam_attempts.started_at` en base SQLite. L'extension de temps (+5 min, +10 min) reste ainsi pérenne et fait autorité lors de tout rechargement de page ou reprise de session après incident réseau.
+* **Résilience Haute Densité :** L'architecture gère les variations de charge jusqu'à 30+ étudiants en simultané avec mise en mémoire tampon des réponses et synchronisation idempotente.
+
+
 
 
 

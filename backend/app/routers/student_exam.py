@@ -13,6 +13,7 @@ from backend.app.models import (
 from backend.app.schemas import QuestionStudentView
 from backend.app.services.grading import evaluate_answer
 from backend.app.services.training_service import get_level, get_level_title
+from backend.app.services.sandbox_runner import execute_user_code_against_tests, execute_user_code_with_input
 from backend.app.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/student", tags=["Interface d'Examen Étudiant"])
@@ -58,11 +59,14 @@ def get_available_exams(
         results.append({
             "exam_id": ex.id,
             "title": ex.title,
+            "exam_type": getattr(ex, "exam_type", "theoretical") or "theoretical",
             "module_code": ex.module_code,
             "instructions": ex.instructions,
             "duration_minutes": ex.duration_minutes,
             "global_points": ex.global_points,
+            "passing_score": getattr(ex, "passing_score", 10.0) or 10.0,
             "question_count": len(ex.questions),
+            "total_question_points": round(sum(q.points for q in ex.questions), 2),
             "session_id": active_session.id if active_session else None,
             "session_status": active_session.status if active_session else "no_active_session",
             "attempt_status": attempt.status if attempt else "not_started",
@@ -395,6 +399,171 @@ def check_attempt_status(
         "raw_score": attempt.raw_score
     }
 
+@router.post("/attempts/{attempt_id}/questions/{question_id}/run-tests")
+def run_attempt_question_tests(
+    attempt_id: str,
+    question_id: str,
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Exécute le code d'un défi de programmation pendant une épreuve officielle.
+    Enforce la garde 403 Forbidden si l'épreuve est suspendue (anti-triche).
+    Masque les sorties attendues des tests cachés.
+    """
+    attempt = db.query(StudentAttempt).filter(
+        StudentAttempt.id == attempt_id,
+        StudentAttempt.student_id == current_user.id
+    ).first()
+
+    if not attempt:
+        raise HTTPException(status_code=404, detail="Tentative introuvable.")
+
+    if attempt.status == "suspended":
+        raise HTTPException(
+            status_code=403, 
+            detail="Votre épreuve est suspendue. Déblocage surveillant requis."
+        )
+
+    if attempt.status in ["submitted", "timed_out", "completed"]:
+        raise HTTPException(status_code=400, detail="Cette épreuve a déjà été soumise.")
+
+    question = db.query(Question).filter(Question.id == question_id).first()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question introuvable.")
+
+    exam_id = attempt.session.exam_id if attempt.session else None
+    if question.exam_id != exam_id:
+        raise HTTPException(status_code=400, detail="Cette question n'appartient pas à l'épreuve en cours.")
+
+    user_code = payload.get("code", "")
+    run_all = bool(payload.get("run_all", False))
+    timeout = float(payload.get("timeout", 3.0))
+
+    # Récupérer les tests publics et cachés
+    opts = {}
+    try:
+        opts = json.loads(question.options_json) if isinstance(question.options_json, str) else (question.options_json or {})
+    except Exception:
+        opts = {}
+
+    corr = []
+    try:
+        corr = json.loads(question.correct_answers_json) if isinstance(question.correct_answers_json, str) else (question.correct_answers_json or [])
+    except Exception:
+        corr = []
+
+    public_tests = []
+    hidden_tests = []
+
+    if isinstance(opts, dict) and "public_tests" in opts:
+        for idx, t in enumerate(opts["public_tests"]):
+            if isinstance(t, dict):
+                public_tests.append({
+                    "id": f"pub_{idx+1}",
+                    "input": t.get("input", ""),
+                    "output": t.get("output", t.get("expected_output", "")),
+                    "is_public": True
+                })
+
+    if isinstance(corr, dict):
+        if "hidden_tests" in corr:
+            for idx, t in enumerate(corr["hidden_tests"]):
+                if isinstance(t, dict):
+                    hidden_tests.append({
+                        "id": f"hid_{idx+1}",
+                        "input": t.get("input", ""),
+                        "output": t.get("output", t.get("expected_output", "")),
+                        "is_public": False
+                    })
+        if not public_tests and "public_tests" in corr:
+            for idx, t in enumerate(corr["public_tests"]):
+                if isinstance(t, dict):
+                    public_tests.append({
+                        "id": f"pub_{idx+1}",
+                        "input": t.get("input", ""),
+                        "output": t.get("output", t.get("expected_output", "")),
+                        "is_public": True
+                    })
+    elif isinstance(corr, list):
+        num_pub = len(public_tests)
+        for idx, t in enumerate(corr):
+            if not isinstance(t, dict):
+                continue
+            is_pub = t.get("is_public")
+            if is_pub is True:
+                if not any(pt["input"] == t.get("input") for pt in public_tests):
+                    public_tests.append({
+                        "id": f"pub_{len(public_tests)+1}",
+                        "input": t.get("input", ""),
+                        "output": t.get("output", t.get("expected_output", "")),
+                        "is_public": True
+                    })
+            elif is_pub is False:
+                hidden_tests.append({
+                    "id": f"hid_{len(hidden_tests)+1}",
+                    "input": t.get("input", ""),
+                    "output": t.get("output", t.get("expected_output", "")),
+                    "is_public": False
+                })
+            else:
+                if idx < num_pub:
+                    pass
+                else:
+                    hidden_tests.append({
+                        "id": f"hid_{len(hidden_tests)+1}",
+                        "input": t.get("input", ""),
+                        "output": t.get("output", t.get("expected_output", "")),
+                        "is_public": False
+                    })
+
+    if run_all:
+        test_cases = public_tests + hidden_tests
+    else:
+        test_cases = public_tests
+
+    return execute_user_code_against_tests(
+        user_code,
+        test_cases,
+        timeout_seconds=timeout,
+        mask_hidden_output=True
+    )
+
+@router.post("/attempts/{attempt_id}/run-code")
+def run_attempt_code(
+    attempt_id: str,
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Exécute le code d'un étudiant avec une entrée personnalisée stdin pendant l'épreuve.
+    Enforce la garde 403 Forbidden si l'épreuve est suspendue.
+    """
+    attempt = db.query(StudentAttempt).filter(
+        StudentAttempt.id == attempt_id,
+        StudentAttempt.student_id == current_user.id
+    ).first()
+
+    if not attempt:
+        raise HTTPException(status_code=404, detail="Tentative introuvable.")
+
+    if attempt.status == "suspended":
+        raise HTTPException(
+            status_code=403, 
+            detail="Votre épreuve est suspendue. Déblocage surveillant requis."
+        )
+
+    if attempt.status in ["submitted", "timed_out", "completed"]:
+        raise HTTPException(status_code=400, detail="Cette épreuve a déjà été soumise.")
+
+    user_code = payload.get("code", "")
+    custom_stdin = payload.get("stdin", "")
+    timeout = float(payload.get("timeout", 3.0))
+
+    return execute_user_code_with_input(user_code, custom_stdin, timeout_seconds=timeout)
+
 @router.post("/attempts/{attempt_id}/submit")
 def submit_official_exam(
     attempt_id: str,
@@ -412,6 +581,9 @@ def submit_official_exam(
 
     if not attempt:
         raise HTTPException(status_code=404, detail="Tentative introuvable.")
+
+    if attempt.status == "suspended":
+        raise HTTPException(status_code=403, detail="Votre épreuve est suspendue. Déblocage surveillant requis.")
 
     if attempt.status in ["submitted", "timed_out"]:
         return {
@@ -571,15 +743,16 @@ def get_student_statistics(
         if code == "PYTHON_INIT":
             m_training = [t.final_mark for t in training_attempts if t.final_mark is not None]
 
-        all_m_marks = m_official + m_practice + m_training
-        best_mark = max(all_m_marks) if all_m_marks else 0.0
-        avg_mark = round(sum(all_m_marks) / len(all_m_marks), 2) if all_m_marks else 0.0
+        # Découplage R2 : Les moyennes et statistiques officielles par module dérivent EXCLUSIVEMENT
+        # des épreuves officielles (m_official). Les tests de niveau/practice ne polluent plus ces moyennes.
+        best_mark = max(m_official) if m_official else 0.0
+        avg_mark = round(sum(m_official) / len(m_official), 2) if m_official else 0.0
 
         if code in fundamental_codes:
-            fundamental_best_marks[code] = best_mark
+            fundamental_best_marks[code] = max(m_practice) if m_practice else 0.0
 
         mastery = "Non commencé"
-        if len(all_m_marks) > 0:
+        if len(m_official) > 0:
             if best_mark < 7.0: mastery = "En découverte"
             elif best_mark < 10.0: mastery = "En progression"
             elif best_mark < 14.0: mastery = "Compétence acquise"
@@ -592,7 +765,7 @@ def get_student_statistics(
             "is_fundamental": code in fundamental_codes,
             "best_mark": round(best_mark, 2),
             "average_mark": avg_mark,
-            "attempts_count": len(all_m_marks),
+            "attempts_count": len(m_official),
             "passed": best_mark >= 10.0,
             "mastery_level": mastery
         })

@@ -73,6 +73,10 @@ export class AntiCheatManager {
     this._stopPracticeFullscreenCountdown();
     this._stopStatusPolling();
 
+    if (navigator.keyboard && navigator.keyboard.unlock) {
+      try { navigator.keyboard.unlock(); } catch (_) {}
+    }
+
     window.removeEventListener('blur', this._boundOnBlur);
     window.removeEventListener('focus', this._boundOnFocus);
     document.removeEventListener('visibilitychange', this._boundOnVisibility);
@@ -99,10 +103,14 @@ export class AntiCheatManager {
 
   requestFullscreen() {
     const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen().catch(() => {});
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen();
+    const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? Promise.resolve(elem.webkitRequestFullscreen()) : null);
+    if (p && p.then) {
+      p.then(() => {
+        // Verrouille la touche Échap en mode plein écran (Chromium Keyboard Lock API)
+        if (navigator.keyboard && navigator.keyboard.lock) {
+          navigator.keyboard.lock(['Escape']).catch(() => {});
+        }
+      }).catch(() => {});
     }
   }
 

@@ -1,0 +1,35 @@
+# ==============================================================================
+# docker-compose.standalone.yml - Déploiement Autonome Ultra-Léger (SQLite WAL)
+# Idéal pour les salles de TP sans service PostgreSQL externe
+# ==============================================================================
+version: "3.8"
+
+services:
+  serveur-salle:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: examination-quiz-server:latest
+    container_name: exam_app_standalone
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - SQLITE_DB_PATH=/app/data/exam_app.db
+      - SECRET_KEY=exam_lan_super_secret_production_key_change_me_998877
+      - APP_NAME=Plateforme d'Examen et d'Entraînement
+      - AUTO_SEED_DEFAULT_USERS=true
+    volumes:
+      - standalone_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  standalone_data:
+    name: exam_standalone_data
+

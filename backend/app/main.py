@@ -1,12 +1,14 @@
+import os
+import json
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
 from backend.app.database import engine, Base, SessionLocal
-from backend.app.models import User, Module, Group, Exam, ExamSession, StudentAttempt, PracticeAttempt
+from backend.app.models import User, Module, Group, Exam, ExamSession, StudentAttempt, PracticeAttempt, Question
 from backend.app.security import hash_password
-from backend.app.routers import auth, users, groups, modules, csv_io, exams, practice, student_exam, proctor, sync_io, training_python, admin
+from backend.app.routers import auth, users, groups, modules, csv_io, exams, practice, student_exam, proctor, sync_io, training_python, training_linux, admin
 
 def _auto_migrate_schema(engine):
     """Vérifie et applique les colonnes manquantes pour SQLite local sans casser l'existant."""
@@ -22,6 +24,8 @@ def _auto_migrate_schema(engine):
                 if ucols:
                     if "plain_password" not in ucols:
                         cur.execute("ALTER TABLE users ADD COLUMN plain_password VARCHAR")
+                    if "enrollment_year" not in ucols:
+                        cur.execute("ALTER TABLE users ADD COLUMN enrollment_year VARCHAR")
                 cur.execute("PRAGMA table_info(training_attempts)")
                 cols = [r[1] for r in cur.fetchall()]
                 if cols:
@@ -38,6 +42,18 @@ def _auto_migrate_schema(engine):
                 if pcols:
                     if "warnings_count" not in pcols:
                         cur.execute("ALTER TABLE practice_attempts ADD COLUMN warnings_count INTEGER DEFAULT 0")
+                cur.execute("PRAGMA table_info(exams)")
+                ecols = [r[1] for r in cur.fetchall()]
+                if ecols:
+                    if "exam_type" not in ecols:
+                        cur.execute("ALTER TABLE exams ADD COLUMN exam_type VARCHAR DEFAULT 'theoretical'")
+                    if "passing_score" not in ecols:
+                        cur.execute("ALTER TABLE exams ADD COLUMN passing_score FLOAT DEFAULT 10.0")
+                cur.execute("PRAGMA table_info(exams)")
+                ecols = [r[1] for r in cur.fetchall()]
+                if ecols:
+                    if "exam_type" not in ecols:
+                        cur.execute("ALTER TABLE exams ADD COLUMN exam_type VARCHAR DEFAULT 'theoretical'")
                 conn.commit()
                 conn.close()
             except Exception as e:
@@ -67,12 +83,17 @@ def init_db():
         elif not admin.plain_password:
             admin.plain_password = settings.INITIAL_ADMIN_PASSWORD
             
-        # 2. Création des 4 Modules Fondamentaux
+        # 2. Création des Modules et Cours Académiques
         initial_modules = [
             ("ALGO", "Bases d'Algorithmique", "Variables, boucles, récursivité, tris et complexités fondamentales."),
             ("PYTHON_INIT", "Initiation à Python", "Apprentissage des bases du langage Python, structures de données et algorithmes fondamentaux."),
             ("CRYPTO", "Cryptographie", "Introduction à la sécurité de l'information, chiffrements symétriques/asymétriques, hachage et signatures numériques."),
-            ("LINUX_ADMIN", "Administration des Systèmes Linux", "Gestion des serveurs Linux, arborescence système, droits utilisateurs, scripts bash et processus.")
+            ("LINUX_ADMIN", "Administration des Systèmes Linux", "Gestion des serveurs Linux, arborescence système, droits utilisateurs, scripts bash et processus."),
+            ("DEV_WEB", "Développement Web & APIs", "Architectures RESTful, FastAPI, protocoles HTTP, client-serveur et sécurité web."),
+            ("DATABASE_SQL", "Bases de Données & SQL", "Modélisation relationnelle, algèbre relationnelle, requêtes SQL, indexation et transactions ACID."),
+            ("NETWORKS", "Réseaux & Protocoles de Communication", "Modèle OSI, suite TCP/IP, routage, sous-réseaux, DNS et analyse de trames."),
+            ("AI_ML", "Intelligence Artificielle & Machine Learning", "Apprentissage supervisé et non-supervisé, classification, régression, réseaux de neurones."),
+            ("DATA_STRUCT", "Structures de Données Avancées", "Arbres binaires de recherche, tas, graphes, tables de hachage et algorithmes avancés.")
         ]
         
         for code, title, desc in initial_modules:
@@ -122,7 +143,7 @@ def init_db():
             elif not teacher.plain_password:
                 teacher.plain_password = settings.INITIAL_TEACHER_PASSWORD
 
-            for m_code in ["PYTHON_INIT", "ALGO", "CRYPTO", "LINUX_ADMIN"]:
+            for m_code in ["PYTHON_INIT", "ALGO", "CRYPTO", "LINUX_ADMIN", "DEV_WEB", "DATABASE_SQL", "NETWORKS", "AI_ML", "DATA_STRUCT"]:
                 mod = db.query(Module).filter(Module.code == m_code).first()
                 if mod and mod not in teacher.assigned_modules:
                     teacher.assigned_modules.append(mod)
@@ -191,106 +212,48 @@ def init_db():
         db.close()
 
 def _seed_realistic_bulletin_data(db):
-    """Amorce les examens officiels et les résultats (4 piliers + 2 examens) pour simuler la charge et valider les bulletins."""
-    exams_spec = [
-        # DEV-IA
-        {
-            "id": "EXAM-DEV-THEO",
-            "module_code": "PYTHON_INIT",
-            "title": "Examen Officiel : Génie Logiciel & Python (Théorie)",
-            "duration": 45,
-            "groups": ["DEV-IA", "GRP-1"]
-        },
-        {
-            "id": "EXAM-DEV-PRAC",
-            "module_code": "PYTHON_INIT",
-            "title": "Épreuve Pratique Machine : Algorithmes & Programmation",
-            "duration": 60,
-            "groups": ["DEV-IA", "GRP-1"]
-        },
-        # SYS-ADMIN
-        {
-            "id": "EXAM-SYS-THEO",
-            "module_code": "LINUX_ADMIN",
-            "title": "Examen Officiel : Architecture Linux & Réseaux (Théorie)",
-            "duration": 45,
-            "groups": ["SYS-ADMIN", "GRP-2"]
-        },
-        {
-            "id": "EXAM-SYS-PRAC",
-            "module_code": "LINUX_ADMIN",
-            "title": "Épreuve Pratique Machine : Administration Système Linux",
-            "duration": 60,
-            "groups": ["SYS-ADMIN", "GRP-2"]
-        },
-        # CYBER-SEC
-        {
-            "id": "EXAM-SEC-THEO",
-            "module_code": "CRYPTO",
-            "title": "Examen Officiel : Cryptographie Fondamentale (Théorie)",
-            "duration": 45,
-            "groups": ["CYBER-SEC"]
-        },
-        {
-            "id": "EXAM-SEC-PRAC",
-            "module_code": "CRYPTO",
-            "title": "Épreuve Pratique Machine : Cryptanalyse & Protocoles Réseau",
-            "duration": 60,
-            "groups": ["CYBER-SEC"]
-        },
-    ]
+    """Amorce exactement les 3 examens officiels et les résultats (piliers + examens) pour simuler la charge et valider les bulletins."""
+    from scripts.reset_and_seed_exact_3_exams import reset_and_seed_3_exams
+    
+    e1 = db.query(Exam).filter(Exam.id == "EXAM-THEO-PYTHON").first()
+    e2 = db.query(Exam).filter(Exam.id == "EXAM-PRAC-PYTHON").first()
+    e3 = db.query(Exam).filter(Exam.id == "EXAM-THEO-CRYPTO").first()
+    if not e1 or not e2 or not e3:
+        reset_and_seed_3_exams(db)
 
-    for spec in exams_spec:
-        ex = db.query(Exam).filter(Exam.id == spec["id"]).first()
-        if not ex:
-            ex = Exam(
-                id=spec["id"],
-                module_code=spec["module_code"],
-                title=spec["title"],
-                duration_minutes=spec["duration"],
-                global_points=20.0,
-                created_by="prof-01"
-            )
-            for gid in spec["groups"]:
-                grp = db.query(Group).filter(Group.id == gid).first()
-                if grp and grp not in ex.groups:
-                    ex.groups.append(grp)
-            db.add(ex)
-            db.flush()
-
-        sess_id = f"SESS-{spec['id']}"
+    for ex_id in ["EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON", "EXAM-THEO-CRYPTO"]:
+        sess_id = f"SESS-{ex_id}"
         sess = db.query(ExamSession).filter(ExamSession.id == sess_id).first()
         if not sess:
-            sess = ExamSession(
+            db.add(ExamSession(
                 id=sess_id,
-                exam_id=ex.id,
+                exam_id=ex_id,
                 room_id="SALLE-CENTRAL-01",
                 status="completed",
                 started_at=datetime.now(timezone.utc),
                 ended_at=datetime.now(timezone.utc),
-                launched_by="prof-01"
-            )
-            db.add(sess)
+                launched_by=None
+            ))
             db.flush()
 
     student_simulation = {
         # DEV-IA
-        "etu_dev1": ({"ALGO": 16.5, "PYTHON_INIT": 18.0, "CRYPTO": 14.0, "LINUX_ADMIN": 15.0}, 17.5, 18.0, "EXAM-DEV-THEO", "EXAM-DEV-PRAC"),
-        "etu_dev2": ({"ALGO": 12.0, "PYTHON_INIT": 14.0, "CRYPTO": 11.5, "LINUX_ADMIN": 12.0}, 13.0, 13.5, "EXAM-DEV-THEO", "EXAM-DEV-PRAC"),
-        "etu_dev3": ({"ALGO": 10.5, "PYTHON_INIT": 12.0, "CRYPTO": 9.5, "LINUX_ADMIN": 10.0}, 11.0, 10.5, "EXAM-DEV-THEO", "EXAM-DEV-PRAC"),
-        "etu_dev4": ({"ALGO": 8.0, "PYTHON_INIT": 9.0, "CRYPTO": 7.5, "LINUX_ADMIN": 8.5}, 8.0, 7.0, "EXAM-DEV-THEO", "EXAM-DEV-PRAC"),
+        "etu_dev1": ({"ALGO": 16.5, "PYTHON_INIT": 18.0, "CRYPTO": 14.0, "LINUX_ADMIN": 15.0}, 17.5, 18.0, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
+        "etu_dev2": ({"ALGO": 12.0, "PYTHON_INIT": 14.0, "CRYPTO": 11.5, "LINUX_ADMIN": 12.0}, 13.0, 13.5, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
+        "etu_dev3": ({"ALGO": 10.5, "PYTHON_INIT": 12.0, "CRYPTO": 9.5, "LINUX_ADMIN": 10.0}, 11.0, 10.5, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
+        "etu_dev4": ({"ALGO": 8.0, "PYTHON_INIT": 9.0, "CRYPTO": 7.5, "LINUX_ADMIN": 8.5}, 8.0, 7.0, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
         # SYS-ADMIN
-        "etu_sys1": ({"ALGO": 15.0, "PYTHON_INIT": 14.5, "CRYPTO": 16.0, "LINUX_ADMIN": 19.0}, 17.0, 18.5, "EXAM-SYS-THEO", "EXAM-SYS-PRAC"),
-        "etu_sys2": ({"ALGO": 11.5, "PYTHON_INIT": 12.0, "CRYPTO": 13.0, "LINUX_ADMIN": 15.0}, 14.0, 13.0, "EXAM-SYS-THEO", "EXAM-SYS-PRAC"),
-        "etu_sys3": ({"ALGO": 10.0, "PYTHON_INIT": 9.5, "CRYPTO": 10.5, "LINUX_ADMIN": 12.0}, 10.5, 10.0, "EXAM-SYS-THEO", "EXAM-SYS-PRAC"),
-        "etu_sys4": ({"ALGO": 7.0, "PYTHON_INIT": 8.0, "CRYPTO": 9.0, "LINUX_ADMIN": 10.0}, 8.5, 7.5, "EXAM-SYS-THEO", "EXAM-SYS-PRAC"),
+        "etu_sys1": ({"ALGO": 15.0, "PYTHON_INIT": 14.5, "CRYPTO": 16.0, "LINUX_ADMIN": 19.0}, 17.0, 18.5, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
+        "etu_sys2": ({"ALGO": 11.5, "PYTHON_INIT": 12.0, "CRYPTO": 13.0, "LINUX_ADMIN": 15.0}, 14.0, 13.0, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
+        "etu_sys3": ({"ALGO": 10.0, "PYTHON_INIT": 9.5, "CRYPTO": 10.5, "LINUX_ADMIN": 12.0}, 10.5, 10.0, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
+        "etu_sys4": ({"ALGO": 7.0, "PYTHON_INIT": 8.0, "CRYPTO": 9.0, "LINUX_ADMIN": 10.0}, 8.5, 7.5, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
         # CYBER-SEC
-        "etu_sec1": ({"ALGO": 16.0, "PYTHON_INIT": 15.0, "CRYPTO": 18.5, "LINUX_ADMIN": 16.0}, 18.0, 17.5, "EXAM-SEC-THEO", "EXAM-SEC-PRAC"),
-        "etu_sec2": ({"ALGO": 13.0, "PYTHON_INIT": 12.5, "CRYPTO": 15.0, "LINUX_ADMIN": 13.5}, 14.0, 13.5, "EXAM-SEC-THEO", "EXAM-SEC-PRAC"),
-        "etu_sec3": ({"ALGO": 10.0, "PYTHON_INIT": 10.5, "CRYPTO": 12.0, "LINUX_ADMIN": 11.0}, 10.5, 10.0, "EXAM-SEC-THEO", "EXAM-SEC-PRAC"),
-        "etu_sec4": ({"ALGO": 8.5, "PYTHON_INIT": 7.5, "CRYPTO": 9.0, "LINUX_ADMIN": 8.0}, 8.0, 7.0, "EXAM-SEC-THEO", "EXAM-SEC-PRAC"),
+        "etu_sec1": ({"ALGO": 16.0, "PYTHON_INIT": 15.0, "CRYPTO": 18.5, "LINUX_ADMIN": 16.0}, 18.0, 17.5, "EXAM-THEO-CRYPTO", "EXAM-PRAC-PYTHON"),
+        "etu_sec2": ({"ALGO": 13.0, "PYTHON_INIT": 12.5, "CRYPTO": 15.0, "LINUX_ADMIN": 13.5}, 14.0, 13.5, "EXAM-THEO-CRYPTO", "EXAM-PRAC-PYTHON"),
+        "etu_sec3": ({"ALGO": 10.0, "PYTHON_INIT": 10.5, "CRYPTO": 12.0, "LINUX_ADMIN": 11.0}, 10.5, 10.0, "EXAM-THEO-CRYPTO", "EXAM-PRAC-PYTHON"),
+        "etu_sec4": ({"ALGO": 8.5, "PYTHON_INIT": 7.5, "CRYPTO": 9.0, "LINUX_ADMIN": 8.0}, 8.0, 7.0, "EXAM-THEO-CRYPTO", "EXAM-PRAC-PYTHON"),
         # Étudiant initial par défaut
-        "etudiant1": ({"ALGO": 14.0, "PYTHON_INIT": 15.5, "CRYPTO": 13.0, "LINUX_ADMIN": 14.5}, 15.0, 16.0, "EXAM-DEV-THEO", "EXAM-DEV-PRAC"),
+        "etudiant1": ({"ALGO": 14.0, "PYTHON_INIT": 15.5, "CRYPTO": 13.0, "LINUX_ADMIN": 14.5}, 15.0, 16.0, "EXAM-THEO-PYTHON", "EXAM-PRAC-PYTHON"),
     }
 
     pillar_titles = {
@@ -394,6 +357,7 @@ app.include_router(student_exam.router)
 app.include_router(proctor.router)
 app.include_router(sync_io.router)
 app.include_router(training_python.router)
+app.include_router(training_linux.router)
 app.include_router(admin.router)
 
 @app.get("/api/health", tags=["Système"])

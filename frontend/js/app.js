@@ -8,6 +8,7 @@
 import { api } from './api.js';
 import { AntiCheatManager } from './anticheat.js';
 import { ExamRunner } from './exam-runner.js';
+import { LinuxRunner } from './linux/linux-runner.js';
 
 class AppController {
   constructor() {
@@ -16,9 +17,29 @@ class AppController {
     this.activeExamRunner = null;
     this.activeAntiCheat = null;
     this.lastStudentStats = null;
+    this.linuxRunner = null;
   }
 
   async init() {
+    window.app = this;
+    window.showToast = (msg, type = 'info', dur = 4000) => this.showToast(msg, type, dur);
+    this.linuxRunner = new LinuxRunner({ app: this, api });
+
+    // Remplacement des alerts natifs par des notifications toast modernes (sécurité résiduelle)
+    window.alert = (msg) => {
+      let type = 'info';
+      const text = String(msg || '');
+      if (text.includes('✅') || text.toLowerCase().includes('succès') || text.toLowerCase().includes('félicitations') || text.toLowerCase().includes('enregistré')) {
+        type = 'success';
+      } else if (text.includes('⚠️') || text.toLowerCase().includes('attention') || text.toLowerCase().includes('avertissement')) {
+        type = 'warning';
+      } else if (text.includes('❌') || text.toLowerCase().includes('erreur') || text.toLowerCase().includes('invalide') || text.toLowerCase().includes('impossible') || text.toLowerCase().includes('échoué')) {
+        type = 'danger';
+      }
+      this.showToast(text, type);
+    };
+
+    this.initTheme();
     this._attachGlobalListeners();
 
     // Vérifier si une session est déjà active
@@ -33,6 +54,30 @@ class AppController {
     } else {
       this.renderLogin();
     }
+  }
+
+  // --- Gestion du Thème (Clair / Sombre) ---
+  initTheme() {
+    const savedTheme = localStorage.getItem('exam_theme') || 'dark';
+    this.setTheme(savedTheme);
+
+    const toggleBtn = document.getElementById('btn-theme-toggle');
+    if (toggleBtn) {
+      toggleBtn.onclick = () => {
+        const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = cur === 'dark' ? 'light' : 'dark';
+        this.setTheme(next);
+      };
+    }
+  }
+
+  setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('exam_theme', theme);
+    const icon = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+    if (label) label.textContent = theme === 'dark' ? 'Mode Sombre' : 'Mode Clair';
   }
 
   _attachGlobalListeners() {
@@ -64,19 +109,26 @@ class AppController {
         const errorBox = document.getElementById('login-error');
 
         try {
-          if (errorBox) errorBox.style.display = 'none';
-          const authData = await api.login(usernameInput.value, passwordInput.value);
+          if (errorBox) {
+            errorBox.style.display = 'none';
+            errorBox.textContent = '';
+          }
+          const authData = await api.login(usernameInput.value.trim(), passwordInput.value);
           this.currentUser = authData.user;
 
           if (authData.must_change_password) {
-            alert("Première connexion détectée : Pensez à mettre à jour votre mot de passe.");
+            this.showToast("Première connexion détectée : Pensez à mettre à jour votre mot de passe.", "info");
           }
 
           this.renderDashboard(authData.user);
         } catch (err) {
           if (errorBox) {
-            errorBox.textContent = err.message;
+            let msg = err.message || "Identifiant ou mot de passe incorrect.";
+            msg = msg.replace(/^Erreur HTTP \d+:\s*/i, '');
+            errorBox.innerHTML = `⚠️ <strong>Identifiants invalides :</strong> ${this._escapeHtml(msg)}`;
             errorBox.style.display = 'block';
+            passwordInput.focus();
+            if (passwordInput.select) passwordInput.select();
           }
         }
       };
@@ -121,7 +173,16 @@ class AppController {
     const formCustomExam = document.getElementById('form-create-custom-exam');
 
     if (btnOpenCustomExam && modalCustomExam) {
-      btnOpenCustomExam.onclick = () => {
+      btnOpenCustomExam.onclick = async () => {
+        try {
+          const modules = await api.listAdminModules();
+          const selectModule = document.getElementById('create-exam-module');
+          if (selectModule && Array.isArray(modules) && modules.length > 0) {
+            selectModule.innerHTML = modules.map(m => `
+              <option value="${m.code}">${m.code} (${m.title})</option>
+            `).join('');
+          }
+        } catch (_) {}
         modalCustomExam.classList.add('active');
       };
     }
@@ -131,6 +192,7 @@ class AppController {
         e.preventDefault();
         const title = document.getElementById('create-exam-title')?.value.trim();
         const module_code = document.getElementById('create-exam-module')?.value;
+        const exam_type = document.getElementById('create-exam-type')?.value || 'theoretical';
         const duration_minutes = parseInt(document.getElementById('create-exam-duration')?.value, 10) || 45;
         const global_points = parseFloat(document.getElementById('create-exam-max-score')?.value) || 20.0;
         const room_id = document.getElementById('create-exam-room')?.value.trim() || 'SALLE-TP-1';
@@ -153,6 +215,7 @@ class AppController {
           const res = await api.createCustomExam({
             title,
             module_code,
+            exam_type,
             duration_minutes,
             global_points,
             room_id,
@@ -162,12 +225,14 @@ class AppController {
             shuffle_options
           });
 
-          alert(`✅ Épreuve officielle "${res.title}" créée avec succès (${res.question_count} questions) ! Salle ${room_id} prête.`);
+          this.showToast(`✅ Épreuve ${exam_type === 'practical' ? 'pratique' : 'théorique'} "${res.title}" créée avec succès (${res.question_count} questions) ! Salle ${room_id} prête.`, 'success');
           this.closeModal('modal-create-custom-exam');
           formCustomExam.reset();
           await this.renderTeacherView();
+          // Ouvrir directement l'atelier de gestion et d'édition des questions
+          await this.openManageQuestionsModal(res.id, res.title);
         } catch (err) {
-          alert(`Erreur de création d'examen : ${err.message}`);
+          this.showToast(`Erreur de création d'examen : ${err.message}`, 'danger');
         } finally {
           if (submitBtn) {
             submitBtn.disabled = false;
@@ -187,10 +252,10 @@ class AppController {
           const text = await file.text();
           const payload = JSON.parse(text);
           const res = await api.importExamTemplate(payload);
-          alert(`✅ Examen "${res.title}" importé avec succès (${res.question_count} questions). Il est prêt pour la surveillance.`);
+          this.showToast(`Examen "${res.title}" importé avec succès (${res.question_count} questions). Il est prêt pour la surveillance.`, "success");
           this.renderTeacherView();
         } catch (err) {
-          alert(`Erreur d'importation de l'examen JSON : ${err.message}`);
+          this.showToast(`Erreur d'importation de l'examen JSON : ${err.message}`, "danger");
         } finally {
           inputImportExam.value = '';
         }
@@ -205,10 +270,10 @@ class AppController {
         if (!file) return;
         try {
           const res = await api.importExamPackage(file);
-          alert(`✅ ${res.message || "Package d'examen importé avec succès !"}`);
+          this.showToast(res.message || "Package d'examen importé avec succès !", "success");
           await this.renderTeacherView();
         } catch (err) {
-          alert(`Erreur d'importation du package : ${err.message}`);
+          this.showToast(`Erreur d'importation du package : ${err.message}`, "danger");
         } finally {
           inputImportPackage.value = '';
         }
@@ -219,11 +284,11 @@ class AppController {
     const btnProctorExportZip = document.getElementById('btn-proctor-export-results-zip');
     if (btnProctorExportZip) {
       btnProctorExportZip.onclick = async () => {
-        if (!this.activeSessionId) return alert("Aucune session active sélectionnée.");
+        if (!this.activeSessionId) return this.showToast("Aucune session active sélectionnée.", "warning");
         try {
           await api.exportSessionResultsZip(this.activeSessionId);
         } catch (err) {
-          alert(`Erreur d'exportation de l'archive de résultats : ${err.message}`);
+          this.showToast(`Erreur d'exportation de l'archive de résultats : ${err.message}`, "danger");
         }
       };
     }
@@ -232,7 +297,7 @@ class AppController {
     const btnProctorItemAnalysis = document.getElementById('btn-proctor-item-analysis');
     if (btnProctorItemAnalysis) {
       btnProctorItemAnalysis.onclick = () => {
-        if (!this.activeSessionId) return alert("Aucune session active sélectionnée.");
+        if (!this.activeSessionId) return this.showToast("Aucune session active sélectionnée.", "warning");
         this.openSessionItemAnalysisModal(this.activeSessionId);
       };
     }
@@ -247,11 +312,11 @@ class AppController {
         if (!file) return;
         try {
           const res = await api.importResultsZip(file);
-          alert(`✅ ${res.message || "Archive de résultats réconciliée avec succès !"}`);
+          this.showToast(res.message || "Archive de résultats réconciliée avec succès !", "success");
           await this.loadAdminOverview();
           await this.loadAdminResults();
         } catch (err) {
-          alert(`Erreur lors de la réconciliation de l'archive : ${err.message}`);
+          this.showToast(`Erreur lors de la réconciliation de l'archive : ${err.message}`, "danger");
         } finally {
           inputAdminZip.value = '';
         }
@@ -265,7 +330,7 @@ class AppController {
         try {
           await api.downloadConsolidatedGradebook();
         } catch (err) {
-          alert(`Erreur de téléchargement : ${err.message}`);
+          this.showToast(`Erreur de téléchargement : ${err.message}`, "danger");
         }
       };
     }
@@ -282,7 +347,7 @@ class AppController {
             await api.downloadItemAnalysisCsv(this._currentAnalysisExamId);
           }
         } catch (err) {
-          alert(`Erreur d'exportation CSV : ${err.message}`);
+          this.showToast(`Erreur d'exportation CSV : ${err.message}`, "danger");
         }
       };
     }
@@ -308,7 +373,7 @@ class AppController {
           const payload = JSON.parse(text);
           if (!Array.isArray(payload)) throw new Error("Le fichier JSON doit contenir une liste de questions.");
           const res = await api.importQuestionsJson(this._currentManageExamId, payload);
-          alert(`✅ ${res.message || "Questions importées avec succès."}`);
+          this.showToast(res.message || "Questions importées avec succès.", "success");
           await this.openManageQuestionsModal(this._currentManageExamId, this._currentManageExamTitle);
           if (this.currentUser && this.currentUser.role === 'admin') {
             await this.loadAdminExams();
@@ -316,7 +381,7 @@ class AppController {
             await this.renderTeacherView();
           }
         } catch (err) {
-          alert(`Erreur d'importation JSON : ${err.message}`);
+          this.showToast(`Erreur d'importation JSON : ${err.message}`, "danger");
         } finally {
           inputImportQ.value = '';
         }
@@ -339,7 +404,7 @@ class AppController {
           window.URL.revokeObjectURL(url);
           a.remove();
         } catch (err) {
-          alert(`Erreur d'exportation : ${err.message}`);
+          this.showToast(`Erreur d'exportation : ${err.message}`, "danger");
         }
       };
     }
@@ -366,7 +431,15 @@ class AppController {
         const negative_penalty = parseFloat(document.getElementById('edit-question-penalty')?.value) || 0.0;
 
         // Extraction des options et réponses correctes selon le type
-        const { options_json, correct_answers_json } = this._extractOptionsAndAnswersFromForm(type);
+        let options_json, correct_answers_json;
+        try {
+          const extracted = this._extractOptionsAndAnswersFromForm(type);
+          options_json = extracted.options_json;
+          correct_answers_json = extracted.correct_answers_json;
+        } catch (err) {
+          this.showToast(`Saisie incomplète : ${err.message}`, "warning");
+          return;
+        }
 
         const payload = {
           ordering,
@@ -381,10 +454,10 @@ class AppController {
         try {
           if (qId) {
             await api.updateQuestion(examId, qId, payload);
-            alert("Question mise à jour avec succès.");
+            this.showToast("Question mise à jour avec succès.", "success");
           } else {
             await api.createQuestion(examId, payload);
-            alert("Nouvelle question ajoutée avec succès.");
+            this.showToast("Nouvelle question ajoutée avec succès.", "success");
           }
           this.closeModal('modal-edit-question');
           await this.openManageQuestionsModal(examId, this._currentManageExamTitle);
@@ -394,17 +467,62 @@ class AppController {
             await this.renderTeacherView();
           }
         } catch (err) {
-          alert(`Erreur lors de l'enregistrement de la question : ${err.message}`);
+          this.showToast(`Erreur lors de l'enregistrement de la question : ${err.message}`, "danger");
         }
       };
     }
 
-    // Fermeture générique des modales
+    // Fermeture générique des modales (Bouton, Échap, Clic Backdrop)
     document.querySelectorAll('.modal-close-btn').forEach(btn => {
       btn.onclick = () => {
         const target = btn.getAttribute('data-target');
         if (target) this.closeModal(target);
       };
+    });
+
+    // Fermeture par clic sur l'arrière-plan (backdrop)
+    document.querySelectorAll('.modal-overlay, .modal-backdrop').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          this.closeActiveModal();
+        }
+      });
+    });
+
+    // Écouteur délégué sur document pour toute modale active ou dynamique
+    document.addEventListener('click', (e) => {
+      if (e.target && (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-backdrop'))) {
+        this.closeActiveModal();
+      }
+    });
+
+    // Fermeture globale par appui sur la touche Échap (Escape)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        // 1. Si le panneau d'autocomplétion CodeMirror est affiché, le fermer en priorité
+        const hints = document.querySelector('.CodeMirror-hints');
+        if (hints) {
+          hints.remove();
+          if (window.activeExamRunner && window.activeExamRunner._cmInstance && window.activeExamRunner._cmInstance.state && window.activeExamRunner._cmInstance.state.completionActive) {
+            try { window.activeExamRunner._cmInstance.state.completionActive.close(); } catch (_) {}
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+
+        // 2. Pendant une épreuve pratique ou un exercice de code, désactiver Échap pour la sortie plein écran
+        const isExamActive = window.activeExamRunner && !window.activeExamRunner.isPracticeMode;
+        const isCodingActive = document.querySelector('.challenge-layout') || document.querySelector('.exam-layout.coding-mode');
+        if (isCodingActive) {
+          // La touche Échap sert uniquement au code/autocomplétion, pas à quitter le plein écran
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+
+        this.closeActiveModal();
+      }
     });
 
     // Navigation Centre Python Dédié
@@ -425,6 +543,17 @@ class AppController {
     const btnOpenDedicatedPython = document.getElementById('btn-open-dedicated-python-training');
     if (btnOpenDedicatedPython) {
       btnOpenDedicatedPython.onclick = () => this.renderTrainingCenterView();
+    }
+
+    // Navigation Centre Linux Dédié
+    const btnOpenLinuxCenter = document.getElementById('btn-open-linux-center');
+    if (btnOpenLinuxCenter) {
+      btnOpenLinuxCenter.onclick = () => this.renderLinuxTrainingCenter();
+    }
+
+    const btnOpenDedicatedLinux = document.getElementById('btn-open-dedicated-linux-training');
+    if (btnOpenDedicatedLinux) {
+      btnOpenDedicatedLinux.onclick = () => this.renderLinuxTrainingCenter();
     }
 
     // Modal Historique des Tests de Niveau
@@ -517,7 +646,9 @@ class AppController {
     });
 
     window.addEventListener('auth:expired', () => {
-      alert("Votre session a expiré. Veuillez vous reconnecter.");
+      if (this.currentView && this.currentView !== 'view-login') {
+        this.showToast("Votre session a expiré. Veuillez vous reconnecter.", "warning");
+      }
       this.renderLogin();
     });
   }
@@ -587,6 +718,7 @@ class AppController {
       const links = [
         { id: 'nav-dash', label: '📊 Mon Tableau de Bord', action: () => this.renderDashboard(user) },
         { id: 'nav-training', label: '🐍 Centre d\'Entraînement Python', action: () => this.renderTrainingCenterView() },
+        { id: 'nav-linux', label: '🐧 Centre d\'Entraînement Linux', action: () => this.renderLinuxTrainingCenter() },
         { id: 'nav-practice', label: '🎯 Tests de Niveau par Module', action: () => {
           this.renderDashboard(user);
           setTimeout(() => {
@@ -644,8 +776,14 @@ class AppController {
 
   // --- Vue : Connexion ---
   renderLogin() {
-    document.getElementById('header-user-info').style.display = 'none';
+    const headerInfo = document.getElementById('header-user-info');
+    if (headerInfo) headerInfo.style.display = 'none';
     this._renderRoleNav(null);
+    const errorBox = document.getElementById('login-error');
+    if (errorBox) {
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+    }
     this.switchView('view-login');
   }
 
@@ -751,26 +889,63 @@ class AppController {
         const card = document.createElement('div');
         card.className = 'exam-card';
         const isSubmitted = ex.attempt_status === 'submitted' || ex.attempt_status === 'completed' || ex.attempt_status === 'timed_out';
+        const isProgress = ex.attempt_status === 'in_progress';
+        const isWaiting = ex.attempt_status === 'waiting';
+        const isSuspended = ex.attempt_status === 'suspended';
         const hasScore = ex.final_mark !== null && ex.final_mark !== undefined;
 
         let actionAreaHtml = '';
+        let statusBadgeHtml = '';
+
         if (isSubmitted) {
           actionAreaHtml = `
             <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 12px; text-align: center; color: var(--success); font-weight: 700; margin-top: 10px;">
               ✅ Épreuve Soumise & Scellée ${hasScore ? `(${Number(ex.final_mark).toFixed(2)} / ${ex.global_points})` : ''}
             </div>
           `;
+          statusBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid #10b981; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">✅ Soumis</span>`;
+        } else if (isProgress) {
+          actionAreaHtml = `
+            <button class="btn btn-success" style="width:100%; margin-top: 10px; background:#059669; border-color:#047857; font-weight:700; box-shadow: 0 4px 14px rgba(5,150,105,0.35);" id="btn-start-exam-${ex.exam_id}">
+              🔄 Rejoindre l'épreuve en cours ➔
+            </button>
+          `;
+          statusBadgeHtml = `<span class="badge" style="background:#059669; color:#fff; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">● En cours</span>`;
+        } else if (isWaiting) {
+          actionAreaHtml = `
+            <button class="btn" style="width:100%; margin-top: 10px; background:#d97706; color:#fff; border-color:#b45309; font-weight:700; box-shadow: 0 4px 14px rgba(217,119,6,0.35);" id="btn-start-exam-${ex.exam_id}">
+              ⏳ Rejoindre la salle d'attente ➔
+            </button>
+          `;
+          statusBadgeHtml = `<span class="badge" style="background:#d97706; color:#fff; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">⏳ Salle d'attente</span>`;
+        } else if (isSuspended) {
+          actionAreaHtml = `
+            <button class="btn btn-danger" style="width:100%; margin-top: 10px; background:#dc2626; border-color:#b91c1c; font-weight:700; box-shadow: 0 4px 14px rgba(220,38,38,0.35);" id="btn-start-exam-${ex.exam_id}">
+              🔒 Épreuve Suspendue — Voir Statut ➔
+            </button>
+          `;
+          statusBadgeHtml = `<span class="badge" style="background:#dc2626; color:#fff; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">🔒 Suspendu</span>`;
         } else {
           actionAreaHtml = `
-            <button class="btn btn-primary" style="width:100%; margin-top: 10px;" id="btn-start-exam-${ex.exam_id}">
-              ${ex.attempt_status === 'in_progress' ? 'Reprendre mon épreuve ➔' : 'Commencer l\'épreuve ➔'}
+            <button class="btn btn-primary" style="width:100%; margin-top: 10px; font-weight:700;" id="btn-start-exam-${ex.exam_id}">
+              Commencer l'épreuve ➔
             </button>
           `;
         }
 
+        const typeBadge = ex.exam_type === 'practical'
+          ? `<span class="badge badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">💻 Épreuve Pratique</span>`
+          : `<span class="badge badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">📖 Épreuve Théorique</span>`;
+
         card.innerHTML = `
           <div>
-            <span class="exam-card-badge">${this._escapeHtml(ex.module_code)}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="exam-card-badge">${this._escapeHtml(ex.module_code)}</span>
+              <div style="display:inline-flex; gap:6px; align-items:center;">
+                ${typeBadge}
+                ${statusBadgeHtml}
+              </div>
+            </div>
             <h4>${this._escapeHtml(ex.title)}</h4>
             <p>${this._escapeHtml(ex.instructions || 'Aucune consigne particulière.')}</p>
           </div>
@@ -1081,7 +1256,167 @@ class AppController {
       }
 
     } catch (err) {
-      alert(`Erreur de chargement des statistiques : ${err.message}`);
+      this.showToast(`Erreur de chargement des statistiques : ${err.message}`, "danger");
+    }
+  }
+
+  // --- Vue Dédiée : Centre d'Entraînement Linux (Théorique & Pratique Shell) ---
+  async renderLinuxTrainingCenter() {
+    this.switchView('view-linux');
+    this.activeOriginView = 'view-linux';
+    if (!this.linuxRunner) {
+      this.linuxRunner = new LinuxRunner({ app: this, api });
+    }
+    this.linuxRunner.bindContainer(document.getElementById('view-linux'));
+    await this.linuxRunner.render();
+  }
+
+  // --- Lancement d'une Session Linux (Théorique ou Pratique) ---
+  async launchLinuxChapterSession(chapterId) {
+    const sessionType = this.selectedLinuxMode || 'practical';
+    try {
+      const session = await api.generateLinuxSession({
+        chapter_id: chapterId,
+        session_type: sessionType,
+        count: sessionType === 'theoretical' ? 6 : 2
+      });
+
+      if (!session.items || !session.items.length) {
+        this.showToast("Aucun exercice disponible pour ce chapitre.", "warning");
+        return;
+      }
+
+      this.activeOriginView = 'view-linux';
+      window.linuxChallengeResults = {};
+
+      const questions = session.items.map((q, idx) => {
+        if (q.type === 'linux_cmd') {
+          return {
+            id: q.id,
+            type: 'linux_cmd',
+            points: q.points || 2.0,
+            topic: q.topic || 'Linux Shell',
+            title: q.title || `Défi Shell ${idx + 1}`,
+            prompt_markdown: q.description || q.prompt || '',
+            starter_code: q.starter_code || '# Tapez vos commandes Linux\n',
+            initial_fs: q.initial_fs || {},
+            public_tests: q.public_tests || [],
+            hidden_tests: q.hidden_tests || []
+          };
+        }
+
+        let qType = q.type || 'single_choice';
+        if (qType === 'yesno') qType = 'boolean';
+        else if (qType === 'simple_blank') qType = 'fill_blank';
+
+        let formattedOpts = q.options;
+        if (Array.isArray(q.options)) {
+          formattedOpts = q.options.map((opt, oIdx) => {
+            if (typeof opt === 'object' && opt !== null) {
+              return { id: opt.id !== undefined ? opt.id : oIdx, text: opt.text || opt.label || '' };
+            }
+            return { id: oIdx, text: String(opt) };
+          });
+        }
+
+        return {
+          id: q.id,
+          type: qType,
+          points: q.points || 1.0,
+          topic: q.topic || 'Linux',
+          prompt_markdown: q.prompt || q.question || '',
+          options: formattedOpts,
+          pairs: q.pairs || (typeof q.options === 'object' && !Array.isArray(q.options) ? q.options : undefined)
+        };
+      });
+
+      const examData = {
+        attempt_id: null,
+        exam_title: session.title || 'Entraînement Linux',
+        questions: questions,
+        saved_answers: {},
+        remaining_seconds: session.time_limit_seconds || (25 * 60)
+      };
+
+      if (this.activeExamRunner) {
+        this.activeExamRunner.stop();
+      }
+      if (this.activeAntiCheat) {
+        this.activeAntiCheat.stop();
+        this.activeAntiCheat = null;
+      }
+      this.hideSuspensionScreen();
+
+      this.activeExamRunner = new ExamRunner(examData, {
+        isPracticeMode: true,
+        onPracticeSubmit: async (answers) => {
+          const submitAnswers = session.items.map(q => {
+            const studentAns = answers[q.id] !== undefined ? answers[q.id] : null;
+            let isCorrectFlag = null;
+            if (q.type === 'linux_cmd') {
+              isCorrectFlag = (window.linuxChallengeResults && window.linuxChallengeResults[q.id] && window.linuxChallengeResults[q.id].success) || false;
+            }
+            return {
+              id: q.id,
+              type: q.type,
+              topic: q.topic || 'Linux',
+              student_answer: studentAns,
+              is_correct: isCorrectFlag
+            };
+          });
+
+          try {
+            const res = await api.submitLinuxSession(submitAnswers);
+            this.showToast(`🎉 Séance Linux complétée ! Note : ${res.grade_20}/20`, "success", 5000);
+
+            this.renderPracticeResults({
+              module_title: session.title || 'Administration Système Linux',
+              grade_20: res.grade_20,
+              percentage: res.percentage,
+              total_awarded: res.total_awarded,
+              max_possible: res.max_possible,
+              detailed_results: (res.item_results || []).map(r => {
+                const matchedQ = session.items.find(item => String(item.id) === String(r.id));
+                const fullPrompt = matchedQ ? (matchedQ.prompt || matchedQ.description || matchedQ.question) : null;
+                return {
+                  question_id: String(r.id),
+                  prompt_markdown: fullPrompt || `**${r.topic}** (${r.type === 'linux_cmd' ? 'Défi Shell' : 'Question Théorique'})`,
+                  type: r.type,
+                  user_answer: answers[r.id] !== undefined ? answers[r.id] : 'Non répondu',
+                  correct_answer: r.type === 'linux_cmd' ? 'Commandes conformes' : 'Réponse exacte enregistrée',
+                  awarded_points: r.awarded,
+                  max_points: r.points,
+                  is_correct: r.is_correct,
+                  explanation: r.explanation || (r.is_correct ? '✅ Validé avec succès !' : 'À perfectionner.')
+                };
+              })
+            });
+          } catch (err) {
+            this.showToast(`Erreur soumission Linux : ${err.message}`, "danger");
+          }
+        }
+      });
+
+      window.activeExamRunner = this.activeExamRunner;
+      this.switchView('view-exam');
+      document.getElementById('exam-active-title').textContent = session.title || 'Entraînement Linux';
+
+      const quitBtn = document.getElementById('btn-exam-quit');
+      if (quitBtn) {
+        quitBtn.style.display = 'inline-flex';
+        quitBtn.onclick = () => {
+          if (confirm("Voulez-vous quitter cette session et retourner au Centre Linux ? Vos réponses en cours ne seront pas enregistrées.")) {
+            if (this.activeExamRunner) this.activeExamRunner.stop();
+            if (this.activeAntiCheat) this.activeAntiCheat.stop();
+            this.renderLinuxTrainingCenter();
+          }
+        };
+      }
+
+      this.activeExamRunner.start();
+
+    } catch (err) {
+      this.showToast(`Erreur préparation session Linux : ${err.message}`, "danger");
     }
   }
 
@@ -1477,7 +1812,7 @@ class AppController {
       try {
         this.currentPythonProgression = await api.getPythonProgression();
       } catch (err) {
-        alert("Erreur de récupération de la progression : " + err.message);
+        this.showToast("Erreur de récupération de la progression : " + err.message, "danger");
         return;
       }
     }
@@ -1515,19 +1850,20 @@ class AppController {
 
       const session = await api.generatePythonSession(payload);
       if (!session.items || session.items.length === 0) {
-        alert("Aucune question ou exercice disponible pour ce chapitre et ce palier de difficulté.");
+        this.showToast("Aucune question ou exercice disponible pour ce chapitre et ce palier de difficulté.", "warning");
         return;
       }
 
       this.launchUnifiedPythonExam(session, sessionTitle);
 
     } catch (err) {
-      alert(`Erreur lors de la préparation de la session : ${err.message}`);
+      this.showToast(`Erreur lors de la préparation de la session : ${err.message}`, "danger");
     }
   }
 
   // --- Lancement d'une Session Python dans l'ExamRunner Unifié (Même interface que les examens) ---
   launchUnifiedPythonExam(session, title) {
+    this.activeOriginView = 'view-python';
     window.pythonHintsUsed = {};
 
     const questions = session.items.map((q, idx) => {
@@ -1626,11 +1962,11 @@ class AppController {
 
           // Notifier l'étudiant en cas de montée de niveau XP ou nouveau badge
           if (res.level_up) {
-            alert(`🎉 FÉLICITATIONS ! Vous passez au Niveau ${res.gamification.level} (${res.gamification.level_name}) !`);
+            this.showToast(`🎉 FÉLICITATIONS ! Vous passez au Niveau ${res.gamification.level} (${res.gamification.level_name}) !`, "success", 6000);
           }
           if (res.new_badges && res.new_badges.length > 0) {
             const badgeNames = res.new_badges.map(b => `${b.emoji} ${b.name}`).join('\n• ');
-            alert(`🏆 NOUVEAU(X) BADGE(S) DÉBLOQUÉ(S) :\n• ${badgeNames}`);
+            this.showToast(`🏆 NOUVEAU(X) BADGE(S) DÉBLOQUÉ(S) :\n• ${badgeNames}`, "success", 6000);
           }
 
           // Afficher la page de corrigé et de résultat avec les vraies réponses (REV-06)
@@ -1659,7 +1995,7 @@ class AppController {
           });
 
         } catch (err) {
-          alert(`Erreur de validation de la session Python : ${err.message}`);
+          this.showToast(`Erreur de validation de la session Python : ${err.message}`, "danger");
         }
       }
     });
@@ -1678,7 +2014,7 @@ class AppController {
       },
       onMaxWarningsReached: async (reason) => {
         this._updateWarningBadge(4, 4);
-        alert("⚠️ 4 avertissements atteints : Le test prend fin immédiatement. Vos résultats sont enregistrés.");
+        this.showToast("⚠️ 4 avertissements atteints : Le test prend fin immédiatement. Vos résultats sont enregistrés.", "danger", 6000);
         if (this.activeExamRunner) {
           await this.activeExamRunner.submit();
         }
@@ -1692,10 +2028,15 @@ class AppController {
     if (quitBtn) {
       quitBtn.style.display = 'inline-flex';
       quitBtn.onclick = () => {
-        if (confirm("Voulez-vous quitter cette session et retourner au Centre Python ? Vos réponses en cours ne seront pas enregistrées.")) {
+        const destName = this.activeOriginView === 'view-linux' ? 'Centre Linux' : 'Centre Python';
+        if (confirm(`Voulez-vous quitter cette session et retourner au ${destName} ? Vos réponses en cours ne seront pas enregistrées.`)) {
           if (this.activeExamRunner) this.activeExamRunner.stop();
           if (this.activeAntiCheat) this.activeAntiCheat.stop();
-          this.renderTrainingCenterView();
+          if (this.activeOriginView === 'view-linux') {
+            this.renderLinuxTrainingCenter();
+          } else {
+            this.renderTrainingCenterView();
+          }
         }
       };
     }
@@ -1864,8 +2205,16 @@ class AppController {
     if (modal) modal.classList.remove('active');
   }
 
+  closeActiveModal() {
+    const activeModals = document.querySelectorAll('.modal-overlay.active, .modal-backdrop.active, .modal.active, [id^="modal-"].active');
+    activeModals.forEach(modal => {
+      modal.classList.remove('active');
+    });
+  }
+
   // --- Lancement d'un Examen Officiel (avec Salle d'Attente Interactive REV-25) ---
   async launchOfficialExam(examId) {
+    this.activeOriginView = 'view-student';
     try {
       const examData = await api.startOrResumeExam(examId);
 
@@ -1927,7 +2276,7 @@ class AppController {
 
       this._proceedLaunchOfficialExam(examData);
     } catch (err) {
-      alert(`Impossible de démarrer l'épreuve : ${err.message}`);
+      this.showToast(`Impossible de démarrer l'épreuve : ${err.message}`, "danger");
     }
   }
 
@@ -2030,7 +2379,7 @@ class AppController {
             const res = await api.submitPracticeExam(moduleCode, answers, warningsCount, questionIds);
             this.renderPracticeResults(res);
           } catch (err) {
-            alert(`Erreur de validation : ${err.message}`);
+            this.showToast(`Erreur de validation : ${err.message}`, "danger");
           }
         }
       });
@@ -2049,7 +2398,7 @@ class AppController {
         },
         onMaxWarningsReached: async (reason) => {
           this._updateWarningBadge(4, 4);
-          alert("⚠️ 4 avertissements atteints : Le test prend fin immédiatement. Vos résultats sont enregistrés.");
+          this.showToast("⚠️ 4 avertissements atteints : Le test prend fin immédiatement. Vos résultats sont enregistrés.", "danger", 6000);
           if (this.activeExamRunner) {
             await this.activeExamRunner.submit();
           }
@@ -2074,7 +2423,7 @@ class AppController {
       this.activeExamRunner.start();
 
     } catch (err) {
-      alert(`Erreur de chargement du test de niveau : ${err.message}`);
+      this.showToast(`Erreur de chargement du test de niveau : ${err.message}`, "danger");
     }
   }
 
@@ -2087,7 +2436,16 @@ class AppController {
 
     const backBtn = document.getElementById('btn-score-back-dashboard');
     const statsBtn = document.getElementById('btn-score-view-stats');
-    if (this.activeOriginView === 'view-python') {
+    if (this.activeOriginView === 'view-linux' || (res && res.module_title && res.module_title.toLowerCase().includes('linux'))) {
+      if (backBtn) {
+        backBtn.style.display = 'inline-flex';
+        backBtn.innerHTML = 'Retourner au Centre d\'Entraînement Linux ➔';
+        backBtn.onclick = () => this.renderLinuxTrainingCenter();
+      }
+      if (statsBtn) {
+        statsBtn.style.display = 'none';
+      }
+    } else if (this.activeOriginView === 'view-python' || (res && res.module_title && res.module_title.toLowerCase().includes('python'))) {
       if (backBtn) {
         backBtn.style.display = 'inline-flex';
         backBtn.innerHTML = '⬅️ Retourner au Centre d\'Entraînement Python';
@@ -2249,17 +2607,24 @@ class AppController {
     if (gradeElem) gradeElem.textContent = `${Number(finalMark).toFixed(2)} / ${globalPts}`;
     if (pctElem) pctElem.textContent = `${pct}% de réussite (${Number(rawScore).toFixed(2)} / ${maxScore} pts)`;
 
-    if (this.activeOriginView === 'view-python') {
+    if (this.activeOriginView === 'view-linux' || (res && res.title && res.title.toLowerCase().includes('linux') && !res.attempt_id)) {
       if (backBtn) {
         backBtn.style.display = 'inline-flex';
-        backBtn.innerHTML = '⬅️ Retourner au Centre d\'Entraînement Python';
+        backBtn.innerHTML = 'Retourner au Centre d\'Entraînement Linux ➔';
+        backBtn.onclick = () => this.renderLinuxTrainingCenter();
+      }
+      if (statsBtn) statsBtn.style.display = 'none';
+    } else if (this.activeOriginView === 'view-python' || (res && res.title && res.title.toLowerCase().includes('python') && !res.attempt_id)) {
+      if (backBtn) {
+        backBtn.style.display = 'inline-flex';
+        backBtn.innerHTML = 'Retourner au Centre d\'Entraînement Python ➔';
         backBtn.onclick = () => this.renderTrainingCenterView();
       }
       if (statsBtn) statsBtn.style.display = 'none';
     } else {
       if (backBtn) {
         backBtn.style.display = 'inline-flex';
-        backBtn.innerHTML = '⬅️ Retourner au Tableau de Bord';
+        backBtn.innerHTML = 'Retourner au Tableau de Bord ➔';
         backBtn.onclick = () => this.renderStudentDashboard();
       }
       if (statsBtn) statsBtn.style.display = 'inline-flex';
@@ -2306,52 +2671,87 @@ class AppController {
         return;
       }
 
-      container.innerHTML = '';
+      container.innerHTML = `
+        <div class="teacher-exams-table-wrap" style="width:100%; overflow-x:auto;">
+          <table class="teacher-exams-table" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--card-border); text-align:left; font-size:0.82rem; color:var(--text-muted); text-transform:uppercase;">
+                <th style="padding:12px 10px;">Module & Statut</th>
+                <th style="padding:12px 10px;">Titre de l'Épreuve</th>
+                <th style="padding:12px 10px;">Type</th>
+                <th style="padding:12px 10px;">Durée</th>
+                <th style="padding:12px 10px;">Questions</th>
+                <th style="padding:12px 10px;">Barème</th>
+                <th style="padding:12px 10px;">Cibles</th>
+                <th style="padding:12px 10px; text-align:center;">Actions Directes</th>
+              </tr>
+            </thead>
+            <tbody id="teacher-exams-tbody"></tbody>
+          </table>
+        </div>
+      `;
+
+      const tbody = container.querySelector('#teacher-exams-tbody');
       exams.forEach(ex => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.display = 'flex';
-        card.style.flexDirection = 'column';
-        card.style.justifyContent = 'space-between';
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
 
-        const assignedPills = (ex.assigned_groups || []).map(g => `<span class="badge" style="background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid #3b82f6; font-size:0.75rem; padding:2px 8px; border-radius:10px;">${g}</span>`).join(' ') || '<span style="color:var(--text-muted); font-size:0.75rem;">Tous</span>';
+        const assignedPills = (ex.assigned_groups || []).map(g => `<span class="badge" style="background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid #3b82f6; font-size:0.75rem; padding:2px 6px; border-radius:10px;">${g}</span>`).join(' ') || '<span style="color:var(--text-muted); font-size:0.75rem;">Tous</span>';
 
-        card.innerHTML = `
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-              <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border-color:#3b82f6;">${ex.module_code}</span>
-              <span class="badge" style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid #10b981; font-size:0.75rem; padding:3px 9px; border-radius:12px; font-weight:700;">🟢 Prêt</span>
+        const typeBadge = ex.exam_type === 'practical'
+          ? `<span class="badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">💻 Pratique</span>`
+          : `<span class="badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">📖 Théorique</span>`;
+
+        tr.innerHTML = `
+          <td style="padding:12px 10px; vertical-align:middle;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border-color:#3b82f6; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
+              <span class="badge" style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid #10b981; font-size:0.72rem; padding:2px 6px; border-radius:10px; font-weight:700;">🟢 Prêt</span>
             </div>
-            <h4 style="color:var(--text-primary); font-size:1.05rem; margin-bottom:8px; line-height:1.3;">${this._escapeHtml(ex.title)}</h4>
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.5;">
-              <div>⏱️ Durée : <strong>${ex.duration_minutes} min</strong> | 🎯 Barème : <strong>${ex.global_points} pts</strong></div>
-              <div>❓ Questions : <strong>${ex.question_count}</strong></div>
-              <div style="margin-top:6px;">👥 Cible : ${assignedPills}</div>
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle;">
+            <div style="font-weight:600; color:var(--text-primary); font-size:0.92rem; margin-bottom:2px;">${this._escapeHtml(ex.title)}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${this._escapeHtml(ex.instructions ? (ex.instructions.slice(0, 60) + (ex.instructions.length > 60 ? '...' : '')) : 'Sans consigne')}</div>
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle;">
+            ${typeBadge}
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; font-weight:600;">
+            ⏱️ ${ex.duration_minutes} min
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem;">
+            <span style="font-weight:700; color:#60a5fa;">${ex.question_count}</span> question(s)
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; font-weight:600;">
+            🎯 / ${ex.global_points}
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle;">
+            ${assignedPills}
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; text-align:center;">
+            <div style="display:inline-flex; flex-wrap:wrap; gap:6px; justify-content:center;">
+              <button class="btn btn-primary btn-open-proctor" data-exam-id="${ex.id}" style="font-size:0.78rem; padding:6px 10px;" title="Ouvrir la salle de surveillance">
+                👁️ Surveiller
+              </button>
+              <button class="btn btn-secondary btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-type="${ex.exam_type || 'theoretical'}" style="font-size:0.78rem; padding:6px 8px;" title="Gérer ou ajouter des questions">
+                📝 Questions
+              </button>
+              <button class="btn btn-secondary btn-exam-item-analysis" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Psychométrie & discrimination">
+                📊 Stats
+              </button>
+              <button class="btn btn-secondary btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;" title="Exporter en .exam.zip">
+                📦 Export
+              </button>
+              <button class="btn btn-danger btn-exam-delete" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" style="font-size:0.78rem; padding:6px 8px;" title="Supprimer cet examen">
+                🗑️
+              </button>
             </div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06);">
-            <div style="display:flex; gap:6px;">
-              <button class="btn btn-primary btn-open-proctor" data-exam-id="${ex.id}" style="flex:1; font-size:0.83rem; padding:8px 10px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                <span>👁️</span> Surveiller & Lancer
-              </button>
-              <button class="btn btn-secondary btn-exam-item-analysis" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-module="${ex.module_code}" style="font-size:0.83rem; padding:8px 10px; display:inline-flex; align-items:center; justify-content:center; gap:5px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Analyse psychométrique & discrimination">
-                <span>📊</span> Psychométrie
-              </button>
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" style="flex:1; font-size:0.80rem; padding:6px 8px; display:inline-flex; align-items:center; justify-content:center; gap:4px;">
-                <span>📝</span> Questions (${ex.question_count})
-              </button>
-              <button class="btn btn-secondary btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.80rem; padding:6px 8px; display:inline-flex; align-items:center; justify-content:center; gap:4px; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;" title="Exporter Package .exam.zip pour transfert USB">
-                <span>📦</span> Package (.exam.zip)
-              </button>
-            </div>
-          </div>
+          </td>
         `;
-        container.appendChild(card);
+        tbody.appendChild(tr);
       });
 
-      // Bind actions on exam cards
+      // Bind actions on exam table rows
       container.querySelectorAll('.btn-open-proctor').forEach(btn => {
         btn.onclick = () => {
           const examId = btn.getAttribute('data-exam-id');
@@ -2383,7 +2783,23 @@ class AppController {
           try {
             await api.exportExamPackage(examId, `examen_${moduleCode}_${examId}.exam.zip`);
           } catch (e) {
-            alert(`Erreur d'exportation du package : ${e.message}`);
+            this.showToast(`Erreur d'exportation du package : ${e.message}`, 'danger');
+          }
+        };
+      });
+
+      container.querySelectorAll('.btn-exam-delete').forEach(btn => {
+        btn.onclick = async () => {
+          const examId = btn.getAttribute('data-exam-id');
+          const title = btn.getAttribute('data-exam-title');
+          if (confirm(`Confirmez-vous la suppression définitive de l'épreuve "${title}" ? Cette action est irréversible.`)) {
+            try {
+              await api.deleteExam(examId);
+              this.showToast(`Épreuve "${title}" supprimée avec succès.`, 'success');
+              await this.renderTeacherView();
+            } catch (err) {
+              this.showToast(`Erreur de suppression : ${err.message}`, 'danger');
+            }
           }
         };
       });
@@ -2447,11 +2863,11 @@ class AppController {
           b.textContent = '⏳ Chargement...';
           try {
             const res = await api.loadExamTemplate(tid);
-            alert(`✅ Examen officiel "${res.title}" chargé avec succès (${res.question_count} questions) ! Il est prêt.`);
+            this.showToast(`Examen officiel "${res.title}" chargé avec succès (${res.question_count} questions) ! Il est prêt.`, "success");
             this.closeModal('modal-exam-template-picker');
             this.renderTeacherView();
           } catch (err) {
-            alert(`Erreur de chargement du modèle : ${err.message}`);
+            this.showToast(`Erreur de chargement du modèle : ${err.message}`, "danger");
             b.disabled = false;
             b.textContent = 'Charger ➔';
           }
@@ -2473,7 +2889,7 @@ class AppController {
       this.switchView('view-proctor-live');
       await this.initProctorMonitoringLive(sessionId);
     } catch (err) {
-      alert(`Erreur d'ouverture de la session de surveillance : ${err.message}`);
+      this.showToast(`Erreur d'ouverture de la session de surveillance : ${err.message}`, "danger");
     }
   }
 
@@ -2519,7 +2935,7 @@ class AppController {
             this._logProctorFeed("🚀 Lancement synchronisé de l'épreuve déclenché par le surveillant.");
             await this.refreshProctorOverview(sessionId);
           } catch (err) {
-            alert(`Erreur lors du lancement synchronisé : ${err.message}`);
+            this.showToast(`Erreur lors du lancement synchronisé : ${err.message}`, "danger");
           }
         }
       };
@@ -2533,9 +2949,9 @@ class AppController {
             await api.closeExamSession(sessionId);
             this._logProctorFeed("🛑 Clôture collective de l'épreuve par le surveillant : toutes les copies scellées.");
             await this.refreshProctorOverview(sessionId);
-            alert("✅ L'épreuve a été clôturée avec succès. Toutes les copies actives ont été soumises et scellées.");
+            this.showToast("L'épreuve a été clôturée avec succès. Toutes les copies actives ont été soumises et scellées.", "success");
           } catch (err) {
-            alert(`Erreur lors de la clôture : ${err.message}`);
+            this.showToast(`Erreur lors de la clôture : ${err.message}`, "danger");
           }
         }
       };
@@ -2549,7 +2965,7 @@ class AppController {
           this._logProctorFeed("⏱️ +5 minutes accordées à tous les étudiants de la salle.");
           await this.refreshProctorOverview(sessionId);
         } catch (err) {
-          alert(`Erreur : ${err.message}`);
+          this.showToast(`Erreur : ${err.message}`, "danger");
         }
       };
     }
@@ -2745,8 +3161,9 @@ class AppController {
               ${c.suspension_reason ? `<div style="font-size:0.75rem; color:#f87171; margin-top:2px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${this._escapeHtml(c.suspension_reason)}">${this._escapeHtml(c.suspension_reason)}</div>` : ''}
             ` : '<span style="color:var(--text-muted); font-size:0.8rem;">0 alerte</span>'}
           </td>
-          <td style="padding:12px 16px; font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono);">
-            ${c.status === 'in_progress' ? '<span style="color:#10b981;">● En direct</span>' : (c.status === 'submitted' ? 'Terminé' : 'En attente')}
+          <td style="padding:12px 16px; font-size:0.8rem; font-family:var(--font-mono);">
+            ${c.is_online ? '<span style="color:#10b981; font-weight:700; display:inline-flex; align-items:center; gap:5px;"><span style="width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981;"></span> En ligne</span>' : (c.status === 'in_progress' ? '<span style="color:#ef4444; font-weight:700; display:inline-flex; align-items:center; gap:5px;"><span style="width:7px; height:7px; border-radius:50%; background:#ef4444;"></span> Connexion perdue</span>' : (c.status === 'submitted' ? '<span style="color:#a855f7;">Terminé</span>' : (c.status === 'waiting' ? '<span style="color:#f59e0b;">En attente</span>' : '<span style="color:#64748b;">Absent</span>')))}
+            ${c.last_activity_seconds !== null && c.last_activity_seconds !== undefined ? `<div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Activité : il y a ${c.last_activity_seconds < 60 ? c.last_activity_seconds + 's' : Math.floor(c.last_activity_seconds / 60) + 'm'}</div>` : ''}
           </td>
           <td style="padding:12px 16px; text-align:right;">
             <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
@@ -2783,7 +3200,7 @@ class AppController {
             this._logProctorFeed(`🔓 Poste ${attId} débloqué par le surveillant. Compteur réinitialisé à 0.`);
             await this.refreshProctorOverview(sessionId);
           } catch (err) {
-            alert(`Erreur de déblocage : ${err.message}`);
+            this.showToast(`Erreur de déblocage : ${err.message}`, "danger");
           }
         };
       });
@@ -2798,7 +3215,7 @@ class AppController {
               this._logProctorFeed(`🛑 Épreuve de ${stName} soumise de force. Note : ${res.final_mark}/20.`);
               await this.refreshProctorOverview(sessionId);
             } catch (err) {
-              alert(`Erreur : ${err.message}`);
+              this.showToast(`Erreur : ${err.message}`, "danger");
             }
           }
         };
@@ -2812,7 +3229,7 @@ class AppController {
             this._logProctorFeed(`⏱️ +5 minutes accordées à l'étudiant ${stId}.`);
             await this.refreshProctorOverview(sessionId);
           } catch (err) {
-            alert(`Erreur : ${err.message}`);
+            this.showToast(`Erreur : ${err.message}`, "danger");
           }
         };
       });
@@ -2993,7 +3410,7 @@ class AppController {
           const spec = document.getElementById('admin-bulletins-filter-speciality')?.value || '';
           await api.downloadBulletinsZip('pdf', spec);
         } catch (e) {
-          alert(`Erreur d'exportation ZIP PDF : ${e.message}`);
+          this.showToast(`Erreur d'exportation ZIP PDF : ${e.message}`, "danger");
         }
       };
     }
@@ -3004,7 +3421,7 @@ class AppController {
           const spec = document.getElementById('admin-bulletins-filter-speciality')?.value || '';
           await api.downloadBulletinsZip('docx', spec);
         } catch (e) {
-          alert(`Erreur d'exportation ZIP Word : ${e.message}`);
+          this.showToast(`Erreur d'exportation ZIP Word : ${e.message}`, "danger");
         }
       };
     }
@@ -3018,7 +3435,7 @@ class AppController {
           const sortMod = document.getElementById('admin-bulletins-sort-module')?.value || 'AVG';
           await api.downloadSpecialityResultsPdf(spec, sortMod);
         } catch (e) {
-          alert(`Erreur d'exportation Palmarès PDF : ${e.message}`);
+          this.showToast(`Erreur d'exportation Palmarès PDF : ${e.message}`, "danger");
         }
       };
     }
@@ -3030,7 +3447,7 @@ class AppController {
           const sortMod = document.getElementById('admin-bulletins-sort-module')?.value || 'AVG';
           await api.downloadSpecialityResultsDocx(spec, sortMod);
         } catch (e) {
-          alert(`Erreur d'exportation Palmarès Word : ${e.message}`);
+          this.showToast(`Erreur d'exportation Palmarès Word : ${e.message}`, "danger");
         }
       };
     }
@@ -3046,7 +3463,7 @@ class AppController {
             await api.downloadStudentBulletinPdf(this.activeBulletinStudentId);
           }
         } catch (e) {
-          alert(`Erreur téléchargement PDF : ${e.message}`);
+          this.showToast(`Erreur téléchargement PDF : ${e.message}`, "danger");
         }
       };
     }
@@ -3060,7 +3477,7 @@ class AppController {
             await api.downloadStudentBulletinDocx(this.activeBulletinStudentId);
           }
         } catch (e) {
-          alert(`Erreur téléchargement Word : ${e.message}`);
+          this.showToast(`Erreur téléchargement Word : ${e.message}`, "danger");
         }
       };
     }
@@ -3090,6 +3507,7 @@ class AppController {
         const full_name = document.getElementById('admin-student-fullname').value.trim();
         const email = document.getElementById('admin-student-email').value.trim() || undefined;
         const group_id = document.getElementById('admin-student-group').value || undefined;
+        const enrollment_year = document.getElementById('admin-student-year')?.value.trim() || undefined;
         const password = document.getElementById('admin-student-password').value || undefined;
 
         try {
@@ -3100,24 +3518,26 @@ class AppController {
               full_name,
               email,
               group_id,
+              enrollment_year,
               password,
               role: 'student'
             });
-            alert(`✅ Étudiant "${full_name}" créé avec succès.`);
+            this.showToast(`Étudiant "${full_name}" créé avec succès.`, "success");
           } else {
             await api.updateUser(id, {
               full_name,
               email,
               group_id,
+              enrollment_year,
               password: password || undefined
             });
-            alert(`✅ Étudiant "${full_name}" mis à jour.`);
+            this.showToast(`Étudiant "${full_name}" mis à jour.`, "success");
           }
           this.closeModal('modal-admin-student');
           await this.loadAdminStudents();
           this.loadAdminOverview();
         } catch (err) {
-          alert(`Erreur : ${err.message}`);
+          this.showToast(`Erreur : ${err.message}`, "danger");
         }
       };
     }
@@ -3144,19 +3564,19 @@ class AppController {
               password,
               role: 'teacher'
             });
-            alert(`✅ Enseignant "${full_name}" créé avec succès.`);
+            this.showToast(`Enseignant "${full_name}" créé avec succès.`, "success");
           } else {
             await api.updateUser(id, {
               full_name,
               email
             });
-            alert(`✅ Enseignant "${full_name}" mis à jour.`);
+            this.showToast(`Enseignant "${full_name}" mis à jour.`, "success");
           }
           this.closeModal('modal-admin-teacher');
           await this.loadAdminTeachers();
           this.loadAdminOverview();
         } catch (err) {
-          alert(`Erreur : ${err.message}`);
+          this.showToast(`Erreur : ${err.message}`, "danger");
         }
       };
     }
@@ -3174,16 +3594,16 @@ class AppController {
         try {
           if (mode === 'create') {
             await api.createModule({ code, title, description });
-            alert(`✅ Module "${code} - ${title}" créé avec succès.`);
+            this.showToast(`Module "${code} - ${title}" créé avec succès.`, "success");
           } else {
             await api.updateModule(code, { title, description });
-            alert(`✅ Module "${code}" mis à jour.`);
+            this.showToast(`Module "${code}" mis à jour.`, "success");
           }
           this.closeModal('modal-admin-module');
           await this.loadAdminModules();
           this.loadAdminOverview();
         } catch (err) {
-          alert(`Erreur : ${err.message}`);
+          this.showToast(`Erreur : ${err.message}`, "danger");
         }
       };
     }
@@ -3200,7 +3620,7 @@ class AppController {
           await this.openAdminAssignModuleModal(moduleCode);
           this.loadAdminModules();
         } catch (err) {
-          alert(`Erreur d'affectation : ${err.message}`);
+          this.showToast(`Erreur d'affectation : ${err.message}`, "danger");
         }
       };
     }
@@ -3344,14 +3764,24 @@ class AppController {
   async loadAdminStudents() {
     const tbody = document.getElementById('admin-students-table-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">Chargement des étudiants...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Chargement des étudiants...</td></tr>';
     try {
-      const [students, groups] = await Promise.all([
+      const [students, groups, years] = await Promise.all([
         api.listUsers('student'),
-        api.listGroups()
+        api.listGroups(),
+        api.listEnrollmentYears()
       ]);
       this._adminStudentsList = students;
       this._adminGroupsList = groups;
+      this._adminYearsList = years;
+
+      const filterYear = document.getElementById('admin-students-filter-year');
+      if (filterYear) {
+        const curY = filterYear.value;
+        filterYear.innerHTML = '<option value="">Toutes les Années</option>' + (years || []).map(y => `<option value="${y}">${y}</option>`).join('');
+        filterYear.value = curY;
+        filterYear.onchange = () => this._renderAdminStudentsRows();
+      }
 
       const filterGroup = document.getElementById('admin-students-filter-group');
       const modalGroup = document.getElementById('admin-student-group');
@@ -3359,6 +3789,7 @@ class AppController {
         const cur = filterGroup.value;
         filterGroup.innerHTML = '<option value="">Toutes les Spécialités</option>' + groups.map(g => `<option value="${g.id}">${g.name || g.id}</option>`).join('');
         filterGroup.value = cur;
+        filterGroup.onchange = () => this._renderAdminStudentsRows();
       }
       if (modalGroup) {
         modalGroup.innerHTML = groups.map(g => `<option value="${g.id}">${g.name || g.id}</option>`).join('');
@@ -3366,17 +3797,21 @@ class AppController {
 
       this._renderAdminStudentsRows();
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--danger);">Erreur : ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--danger);">Erreur : ${err.message}</td></tr>`;
     }
   }
 
   _renderAdminStudentsRows() {
     const tbody = document.getElementById('admin-students-table-body');
     if (!tbody) return;
+    const filterYearVal = document.getElementById('admin-students-filter-year')?.value || '';
     const filterGroupVal = document.getElementById('admin-students-filter-group')?.value || '';
     const searchVal = (document.getElementById('admin-students-search')?.value || '').toLowerCase().trim();
 
     let list = this._adminStudentsList || [];
+    if (filterYearVal) {
+      list = list.filter(s => s.enrollment_year === filterYearVal);
+    }
     if (filterGroupVal) {
       list = list.filter(s => s.group_id === filterGroupVal);
     }
@@ -3385,6 +3820,7 @@ class AppController {
         (s.id && s.id.toLowerCase().includes(searchVal)) ||
         (s.username && s.username.toLowerCase().includes(searchVal)) ||
         (s.full_name && s.full_name.toLowerCase().includes(searchVal)) ||
+        (s.enrollment_year && s.enrollment_year.toLowerCase().includes(searchVal)) ||
         (s.email && s.email.toLowerCase().includes(searchVal))
       );
     }
@@ -3393,7 +3829,7 @@ class AppController {
     if (countEl) countEl.textContent = `${list.length} étudiant(s) affiché(s) (${(this._adminStudentsList || []).length} total)`;
 
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun étudiant ne correspond aux critères.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun étudiant ne correspond aux critères.</td></tr>';
       return;
     }
 
@@ -3405,6 +3841,7 @@ class AppController {
         <td style="padding:10px 14px; font-family:monospace; font-weight:600;">${this._escapeHtml(s.id)}</td>
         <td style="padding:10px 14px; font-weight:600; color:var(--text-primary);">${this._escapeHtml(s.username)}</td>
         <td style="padding:10px 14px;">${this._escapeHtml(s.full_name)}</td>
+        <td style="padding:10px 14px;"><span class="badge" style="background:rgba(52,211,153,0.15); color:#34d399; font-size:0.78rem; padding:2px 8px; border-radius:10px;">${this._escapeHtml(s.enrollment_year || '—')}</span></td>
         <td style="padding:10px 14px;"><span class="badge" style="background:rgba(99,102,241,0.15); color:#818cf8; font-size:0.78rem; padding:2px 8px; border-radius:10px;">${this._escapeHtml(s.group_id || '—')}</span></td>
         <td style="padding:10px 14px;"><span style="font-family:monospace; font-size:0.85rem; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px; border:1px solid var(--card-border); color:#38bdf8;">${this._escapeHtml(s.plain_password || '••••••••')}</span></td>
         <td style="padding:10px 14px; font-size:0.82rem; color:var(--text-secondary);">${this._escapeHtml(s.email || '—')}</td>
@@ -3433,11 +3870,11 @@ class AppController {
         if (confirm(`Confirmez-vous la suppression définitive de l'étudiant "${name}" (${id}) ?`)) {
           try {
             await api.deleteUser(id);
-            alert("Étudiant supprimé avec succès.");
+            this.showToast("Étudiant supprimé avec succès.", "success");
             await this.loadAdminStudents();
             this.loadAdminOverview();
           } catch (e) {
-            alert(`Erreur de suppression : ${e.message}`);
+            this.showToast(`Erreur de suppression : ${e.message}`, "danger");
           }
         }
       };
@@ -3454,6 +3891,7 @@ class AppController {
     const nameInput = document.getElementById('admin-student-fullname');
     const emailInput = document.getElementById('admin-student-email');
     const groupSelect = document.getElementById('admin-student-group');
+    const yearInput = document.getElementById('admin-student-year');
     const passInput = document.getElementById('admin-student-password');
 
     modeInput.value = mode;
@@ -3466,6 +3904,7 @@ class AppController {
       nameInput.value = data.full_name || '';
       emailInput.value = data.email || '';
       groupSelect.value = data.group_id || '';
+      if (yearInput) yearInput.value = data.enrollment_year || '';
       passInput.value = data.plain_password || '';
       passInput.placeholder = "Mot de passe étudiant";
       passInput.disabled = false;
@@ -3477,6 +3916,7 @@ class AppController {
       userInput.disabled = false;
       nameInput.value = '';
       emailInput.value = '';
+      if (yearInput) yearInput.value = '2025-2026';
       passInput.value = '';
       passInput.placeholder = "Mot de passe (ou vide = matricule)";
       passInput.disabled = false;
@@ -3540,11 +3980,11 @@ class AppController {
           if (confirm(`Confirmez-vous la suppression de l'enseignant "${name}" (${id}) ?`)) {
             try {
               await api.deleteUser(id);
-              alert("Enseignant supprimé avec succès.");
+              this.showToast("Enseignant supprimé avec succès.", "success");
               await this.loadAdminTeachers();
               this.loadAdminOverview();
             } catch (e) {
-              alert(`Erreur de suppression : ${e.message}`);
+              this.showToast(`Erreur de suppression : ${e.message}`, "danger");
             }
           }
         };
@@ -3612,8 +4052,13 @@ class AppController {
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--card-border)';
         const teachersBadges = (m.teachers && m.teachers.length > 0)
-          ? m.teachers.map(t => `<span class="badge" style="background:rgba(167,139,250,0.15); color:#a78bfa; font-size:0.75rem; padding:2px 8px; border-radius:10px; margin-right:4px;">${this._escapeHtml(t.full_name)}</span>`).join('')
-          : '<span style="color:var(--text-muted); font-size:0.8rem;">Aucun</span>';
+          ? m.teachers.map(t => {
+              const name = (typeof t === 'object' && t !== null)
+                ? (t.full_name || t.username || t.id || 'Enseignant')
+                : String(t || 'Enseignant');
+              return `<span class="badge" style="background:rgba(167,139,250,0.15); color:#a78bfa; font-size:0.75rem; padding:2px 8px; border-radius:10px; margin-right:4px;">${this._escapeHtml(name)}</span>`;
+            }).join('')
+          : '<span style="color:var(--text-muted); font-size:0.8rem;">Aucun enseignant</span>';
 
         tr.innerHTML = `
           <td style="padding:10px 14px; font-family:monospace; font-weight:700; color:#60a5fa;">${this._escapeHtml(m.code)}</td>
@@ -3653,11 +4098,11 @@ class AppController {
           if (confirm(`Confirmez-vous la suppression définitive du module "${title}" (${code}) ?`)) {
             try {
               await api.deleteModule(code);
-              alert("Module supprimé avec succès.");
+              this.showToast("Module supprimé avec succès.", "success");
               await this.loadAdminModules();
               this.loadAdminOverview();
             } catch (e) {
-              alert(`Erreur de suppression : ${e.message}`);
+              this.showToast(`Erreur de suppression : ${e.message}`, "danger");
             }
           }
         };
@@ -3706,7 +4151,7 @@ class AppController {
       ]);
 
       const assignedTeachers = modData.teachers || [];
-      const assignedIds = new Set(assignedTeachers.map(t => t.id));
+      const assignedIds = new Set(assignedTeachers.map(t => (typeof t === 'object' && t !== null) ? t.id : String(t)));
       const unassignedTeachers = allTeachers.filter(t => !assignedIds.has(t.id));
 
       const selectEl = document.getElementById('admin-assign-teacher-select');
@@ -3714,7 +4159,7 @@ class AppController {
         if (unassignedTeachers.length === 0) {
           selectEl.innerHTML = '<option value="">Tous les enseignants sont déjà affectés</option>';
         } else {
-          selectEl.innerHTML = unassignedTeachers.map(t => `<option value="${t.id}">${t.full_name} (@${t.username})</option>`).join('');
+          selectEl.innerHTML = unassignedTeachers.map(t => `<option value="${t.id}">${this._escapeHtml(t.full_name || t.username)} (@${this._escapeHtml(t.username)})</option>`).join('');
         }
       }
 
@@ -3727,12 +4172,15 @@ class AppController {
           assignedTeachers.forEach(t => {
             const row = document.createElement('div');
             row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; border:1px solid var(--card-border);';
+            const tid = (typeof t === 'object' && t !== null) ? (t.id || t.username || '') : String(t);
+            const tname = (typeof t === 'object' && t !== null) ? (t.full_name || t.username || t.id || 'Enseignant') : String(t);
+            const tuname = (typeof t === 'object' && t !== null) ? (t.username || t.id || '') : String(t);
             row.innerHTML = `
               <div>
-                <strong>${this._escapeHtml(t.full_name)}</strong>
-                <span style="font-size:0.8rem; color:var(--text-muted); margin-left:8px;">@${this._escapeHtml(t.username)} (${this._escapeHtml(t.id)})</span>
+                <strong>${this._escapeHtml(tname)}</strong>
+                <span style="font-size:0.8rem; color:var(--text-muted); margin-left:8px;">@${this._escapeHtml(tuname)} (${this._escapeHtml(tid)})</span>
               </div>
-              <button class="btn btn-danger btn-admin-remove-teacher-mod" data-tid="${t.id}" style="padding:3px 8px; font-size:0.75rem;">❌ Retirer</button>
+              <button class="btn btn-danger btn-admin-remove-teacher-mod" data-tid="${this._escapeHtml(tid)}" style="padding:3px 8px; font-size:0.75rem;">❌ Retirer</button>
             `;
             listEl.appendChild(row);
           });
@@ -3745,7 +4193,7 @@ class AppController {
                 await this.openAdminAssignModuleModal(moduleCode);
                 this.loadAdminModules();
               } catch (err) {
-                alert(`Erreur de retrait : ${err.message}`);
+                this.showToast(`Erreur de retrait : ${err.message}`, "danger");
               }
             };
           });
@@ -3754,7 +4202,7 @@ class AppController {
 
       modal.classList.add('active');
     } catch (err) {
-      alert(`Erreur lors du chargement des affectations : ${err.message}`);
+      this.showToast(`Erreur lors du chargement des affectations : ${err.message}`, "danger");
     }
   }
 
@@ -3830,7 +4278,7 @@ class AppController {
           try {
             await api.exportExamPackage(id, `examen_${moduleCode}_${id}.exam.zip`);
           } catch (e) {
-            alert(`Erreur d'exportation du package : ${e.message}`);
+            this.showToast(`Erreur d'exportation du package : ${e.message}`, "danger");
           }
         };
       });
@@ -3842,11 +4290,11 @@ class AppController {
           if (confirm(`Confirmez-vous la suppression de l'examen "${title}" ?\nToutes les sessions et questions associées seront supprimées.`)) {
             try {
               await api.deleteExam(id);
-              alert("Examen supprimé avec succès.");
+              this.showToast("Examen supprimé avec succès.", "success");
               await this.loadAdminExams();
               this.loadAdminOverview();
             } catch (e) {
-              alert(`Erreur de suppression : ${e.message}`);
+              this.showToast(`Erreur de suppression : ${e.message}`, "danger");
             }
           }
         };
@@ -4128,7 +4576,7 @@ class AppController {
         try {
           await api.downloadStudentBulletinPdf(btn.getAttribute('data-id'));
         } catch (e) {
-          alert(`Erreur téléchargement PDF : ${e.message}`);
+          this.showToast(`Erreur téléchargement PDF : ${e.message}`, "danger");
         }
       };
     });
@@ -4137,7 +4585,7 @@ class AppController {
         try {
           await api.downloadStudentBulletinDocx(btn.getAttribute('data-id'));
         } catch (e) {
-          alert(`Erreur téléchargement Word : ${e.message}`);
+          this.showToast(`Erreur téléchargement Word : ${e.message}`, "danger");
         }
       };
     });
@@ -4296,7 +4744,7 @@ class AppController {
       a.remove();
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
-      alert(`Erreur d'exportation : ${err.message}`);
+      this.showToast(`Erreur d'exportation : ${err.message}`, "danger");
     }
   }
 
@@ -4459,6 +4907,7 @@ class AppController {
     try {
       const examDetail = await api.getExamDetail(examId);
       this._currentExamQuestions = examDetail.questions || [];
+      this._currentExamType = examDetail.exam_type || 'theoretical';
 
       if (!this._currentExamQuestions.length) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Aucune question dans cet examen. Cliquez sur "➕ Ajouter une Question" ou "📥 Importer JSON".</td></tr>';
@@ -4501,7 +4950,7 @@ class AppController {
           if (confirm("Confirmez-vous la suppression de cette question ?")) {
             try {
               await api.deleteQuestion(examId, qId);
-              alert("Question supprimée avec succès.");
+              this.showToast("Question supprimée avec succès.", "success");
               await this.openManageQuestionsModal(examId, this._currentManageExamTitle);
               if (this.currentUser && this.currentUser.role === 'admin') {
                 await this.loadAdminExams();
@@ -4509,7 +4958,7 @@ class AppController {
                 await this.renderTeacherView();
               }
             } catch (err) {
-              alert(`Erreur de suppression : ${err.message}`);
+              this.showToast(`Erreur de suppression de la question : ${err.message}`, "danger");
             }
           }
         };
@@ -4536,6 +4985,23 @@ class AppController {
 
     if (inputExamId) inputExamId.value = examId;
 
+    // Adaptation des types de question selon le type d'épreuve (Théorique vs Pratique)
+    if (selectType) {
+      if (this._currentExamType === 'practical') {
+        selectType.innerHTML = `
+          <option value="coding" selected>💻 Défi de Programmation Python & Machine</option>
+        `;
+      } else {
+        selectType.innerHTML = `
+          <option value="single_choice" selected>🔘 QCM Choix Unique</option>
+          <option value="multi_choice">☑️ QCM Choix Multiple</option>
+          <option value="boolean">⚖️ Vrai / Faux</option>
+          <option value="fill_blank">✏️ Texte / Mot-Clé à trou</option>
+          <option value="matching">🔄 Correspondance / Appariement</option>
+        `;
+      }
+    }
+
     if (questionData) {
       if (titleEl) titleEl.textContent = `✏️ Modifier la Question N°${questionData.ordering}`;
       if (inputQId) inputQId.value = questionData.id;
@@ -4556,16 +5022,17 @@ class AppController {
 
       this._renderDynamicQuestionOptionsForm(questionData.type, parsedOptions, parsedCorrect);
     } else {
+      const defaultType = (this._currentExamType === 'practical') ? 'coding' : 'single_choice';
       if (titleEl) titleEl.textContent = "➕ Ajouter une Question";
       if (inputQId) inputQId.value = "";
-      if (selectType) selectType.value = "single_choice";
+      if (selectType) selectType.value = defaultType;
       const nextOrdering = (this._currentExamQuestions ? this._currentExamQuestions.length + 1 : 1);
       if (inputOrdering) inputOrdering.value = nextOrdering;
       if (textareaPrompt) textareaPrompt.value = "";
       if (inputPoints) inputPoints.value = 2.0;
       if (inputPenalty) inputPenalty.value = 0.5;
 
-      this._renderDynamicQuestionOptionsForm("single_choice", null, null);
+      this._renderDynamicQuestionOptionsForm(defaultType, null, null);
     }
   }
 
@@ -4673,6 +5140,100 @@ class AppController {
 
       html += `</div>`;
       container.innerHTML = html;
+    } else if (type === 'coding') {
+      let starterCode = '';
+      let pubTests = [
+        { input: '', expected_output: '' },
+        { input: '', expected_output: '' }
+      ];
+      let hidTests = [
+        { input: '', expected_output: '' }
+      ];
+
+      if (existingOptions && typeof existingOptions === 'object') {
+        if (existingOptions.starter_code) starterCode = existingOptions.starter_code;
+        if (Array.isArray(existingOptions.public_tests) && existingOptions.public_tests.length > 0) {
+          pubTests = existingOptions.public_tests;
+        }
+      }
+
+      if (Array.isArray(existingCorrect) && existingCorrect.length > 0) {
+        const h = existingCorrect.filter(t => t.is_public === false);
+        if (h.length > 0) hidTests = h;
+        const p = existingCorrect.filter(t => t.is_public !== false);
+        if (p.length > 0) pubTests = p;
+      }
+
+      while (pubTests.length < 2) {
+        pubTests.push({ input: '', expected_output: '' });
+      }
+      if (hidTests.length === 0) {
+        hidTests.push({ input: '', expected_output: '' });
+      }
+
+      let html = `
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem;">Code de Départ (Starter Code) :</label>
+            <textarea id="edit-coding-starter" class="form-control" rows="4" placeholder="# Squelette fourni à l'étudiant...\ndef solution():\n    pass" style="width:100%; font-family:var(--font-mono); font-size:0.83rem;">${this._escapeHtml(starterCode)}</textarea>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-weight:600; font-size:0.85rem; color:#60a5fa;">
+                Cas de Test Publics (Visibles par l'étudiant) - Au moins 2 requis :
+              </label>
+            </div>
+            <div id="coding-public-tests-container" style="display:flex; flex-direction:column; gap:8px;">
+      `;
+
+      pubTests.forEach((pt, idx) => {
+        html += `
+          <div class="coding-pub-test-row" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.06);">
+            <div>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Entrée (stdin) #${idx + 1} :</span>
+              <input type="text" class="form-control edit-pub-test-in" value="${this._escapeHtml(pt.input || '')}" placeholder="ex: 10 20" style="font-family:var(--font-mono); font-size:0.82rem; padding:4px 8px; width:100%;" />
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Sortie Attendue (stdout) #${idx + 1} :</span>
+              <input type="text" class="form-control edit-pub-test-out" value="${this._escapeHtml(pt.expected_output || pt.output || '')}" placeholder="ex: 30" style="font-family:var(--font-mono); font-size:0.82rem; padding:4px 8px; width:100%;" />
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+            </div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-weight:600; font-size:0.85rem; color:#f87171;">
+                Cas de Test Cachés (Strictement confidentiels - Évaluation finale anti-triche) :
+              </label>
+            </div>
+            <div id="coding-hidden-tests-container" style="display:flex; flex-direction:column; gap:8px;">
+      `;
+
+      hidTests.forEach((ht, idx) => {
+        html += `
+          <div class="coding-hid-test-row" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.06);">
+            <div>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Entrée Cachée #${idx + 1} :</span>
+              <input type="text" class="form-control edit-hid-test-in" value="${this._escapeHtml(ht.input || '')}" placeholder="ex: 999 1" style="font-family:var(--font-mono); font-size:0.82rem; padding:4px 8px; width:100%;" />
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Sortie Attendue #${idx + 1} :</span>
+              <input type="text" class="form-control edit-hid-test-out" value="${this._escapeHtml(ht.expected_output || ht.output || '')}" placeholder="ex: 1000" style="font-family:var(--font-mono); font-size:0.82rem; padding:4px 8px; width:100%;" />
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML = html;
     }
   }
 
@@ -4739,9 +5300,106 @@ class AppController {
         options_json: JSON.stringify({ left: leftList, right: rightList }),
         correct_answers_json: JSON.stringify(correctMap)
       };
+    } else if (type === 'coding') {
+      const starterCode = document.getElementById('edit-coding-starter')?.value || '';
+      const pubInInputs = document.querySelectorAll('.edit-pub-test-in');
+      const pubOutInputs = document.querySelectorAll('.edit-pub-test-out');
+      const hidInInputs = document.querySelectorAll('.edit-hid-test-in');
+      const hidOutInputs = document.querySelectorAll('.edit-hid-test-out');
+
+      const publicTests = [];
+      const allTests = [];
+
+      for (let i = 0; i < pubInInputs.length; i++) {
+        const inp = pubInInputs[i].value;
+        const out = pubOutInputs[i].value;
+        if (inp.trim() || out.trim()) {
+          const tc = { id: `pub_${i + 1}`, input: inp, expected_output: out, is_public: true };
+          publicTests.push(tc);
+          allTests.push(tc);
+        }
+      }
+
+      for (let j = 0; j < hidInInputs.length; j++) {
+        const inp = hidInInputs[j].value;
+        const out = hidOutInputs[j].value;
+        if (inp.trim() || out.trim()) {
+          const tc = { id: `hid_${j + 1}`, input: inp, expected_output: out, is_public: false };
+          allTests.push(tc);
+        }
+      }
+
+      if (publicTests.length < 2) {
+        throw new Error("Veuillez définir au moins 2 cas de test publics.");
+      }
+      if (allTests.filter(t => !t.is_public).length < 1) {
+        throw new Error("Veuillez définir au moins 1 cas de test caché pour l'évaluation confidentielle.");
+      }
+
+      return {
+        options_json: JSON.stringify({ starter_code: starterCode, public_tests: publicTests }),
+        correct_answers_json: JSON.stringify(allTests)
+      };
     }
 
     return { options_json: "[]", correct_answers_json: "[]" };
+  }
+
+  showToast(message, type = 'info', duration = 4000) {
+    let container = document.getElementById('app-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'app-toast-container';
+      container.className = 'app-toast-container';
+      document.body.appendChild(container);
+    }
+
+    let normalizedType = (type || 'info').toLowerCase();
+    if (normalizedType === 'error') normalizedType = 'danger';
+    if (!['success', 'danger', 'warning', 'info'].includes(normalizedType)) {
+      normalizedType = 'info';
+    }
+
+    let icon = 'ℹ️';
+    if (normalizedType === 'success') icon = '✅';
+    else if (normalizedType === 'danger') icon = '❌';
+    else if (normalizedType === 'warning') icon = '⚠️';
+
+    const toast = document.createElement('div');
+    toast.className = `app-toast toast-${normalizedType}`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+
+    toast.innerHTML = `
+      <span class="app-toast-icon toast-icon">${icon}</span>
+      <div class="app-toast-content toast-message">${this._escapeHtml(message)}</div>
+      <button class="app-toast-close toast-close" aria-label="Fermer">&times;</button>
+    `;
+
+    const closeBtn = toast.querySelector('.app-toast-close');
+    const dismiss = () => {
+      if (toast._isDismissed) return;
+      toast._isDismissed = true;
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(40px)';
+      setTimeout(() => {
+        if (toast.parentElement) toast.parentElement.removeChild(toast);
+      }, 260);
+    };
+
+    if (closeBtn) {
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        dismiss();
+      };
+    }
+
+    container.appendChild(toast);
+
+    if (duration > 0) {
+      setTimeout(dismiss, duration);
+    }
+    return toast;
   }
 
   _escapeHtml(str) {
@@ -4749,6 +5407,13 @@ class AppController {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 }
+
+// Exposer globalement window.showToast
+window.showToast = (msg, type = 'info', dur = 4000) => {
+  if (window.app && typeof window.app.showToast === 'function') {
+    return window.app.showToast(msg, type, dur);
+  }
+};
 
 // Initialisation au chargement du DOM
 window.addEventListener('DOMContentLoaded', () => {

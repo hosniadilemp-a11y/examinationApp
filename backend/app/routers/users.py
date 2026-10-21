@@ -13,23 +13,39 @@ router = APIRouter(prefix="/api/users", tags=["Gestion des Utilisateurs"])
 def list_users(
     role: Optional[str] = Query(None, pattern="^(admin|teacher|student)$"),
     group_id: Optional[str] = None,
+    enrollment_year: Optional[str] = None,
     is_active: Optional[bool] = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_teacher_or_admin)
 ):
-    """Liste les utilisateurs filtrés par rôle ou par groupe."""
+    """Liste les utilisateurs filtrés par rôle, groupe ou année d'inscription."""
     query = db.query(User)
     if role:
         query = query.filter(User.role == role)
     if group_id:
         query = query.filter(User.group_id == group_id)
+    if enrollment_year:
+        query = query.filter(User.enrollment_year == enrollment_year)
     if is_active is not None:
         query = query.filter(User.is_active == is_active)
         
     users = query.offset(skip).limit(limit).all()
     return users
+
+@router.get("/enrollment-years", response_model=List[str])
+def list_enrollment_years(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Retourne la liste ordonnée et distincte des promotions/années d'inscription."""
+    rows = db.query(User.enrollment_year).filter(
+        User.enrollment_year.isnot(None),
+        User.enrollment_year != ""
+    ).distinct().all()
+    years = [r[0] for r in rows if r[0]]
+    return sorted(years, reverse=True)
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(
@@ -75,6 +91,7 @@ def create_user(
         email=payload.email.strip() if payload.email else None,
         role=payload.role,
         group_id=payload.group_id,
+        enrollment_year=payload.enrollment_year.strip() if payload.enrollment_year else None,
         must_change_password=payload.must_change_password if payload.must_change_password is not None else True,
         is_active=True
     )
@@ -119,6 +136,8 @@ def update_user(
             if not group:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Groupe inexistant.")
         user.group_id = payload.group_id if payload.group_id else None
+    if payload.enrollment_year is not None:
+        user.enrollment_year = payload.enrollment_year.strip() if payload.enrollment_year else None
     if payload.is_active is not None:
         user.is_active = payload.is_active
     if payload.password is not None and payload.password.strip():

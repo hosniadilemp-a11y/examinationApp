@@ -387,8 +387,10 @@ def _build_student_bulletin(st: User, db: Session) -> dict:
     exam_scores = [s for s in [theo_score, prac_score] if s is not None]
     exams_avg = round(sum(exam_scores) / len(exam_scores), 2) if exam_scores else None
     
-    all_scores = f_scores + exam_scores
-    general_avg = round(sum(all_scores) / len(all_scores), 2) if all_scores else None
+    # Découplage strict R2 : La moyenne générale et les verdicts académiques (ADMIS / AJOURNÉ)
+    # sont calculés EXCLUSIVEMENT à partir des épreuves officielles du semestre (StudentAttempt).
+    official_scores = exam_scores
+    general_avg = round(sum(official_scores) / len(official_scores), 2) if official_scores else None
     
     if general_avg is not None:
         is_pass = general_avg >= 10.0
@@ -410,6 +412,11 @@ def _build_student_bulletin(st: User, db: Session) -> dict:
         "plain_password": st.plain_password or "—",
         "fundamentals": fundamentals,
         "fundamentals_average": fundamentals_avg,
+        "diagnostic_scores": {
+            "scores": f_scores,
+            "average": fundamentals_avg,
+            "details": fundamentals
+        },
         "exams": {
             "theoretical": {
                 "title": theo_att.session.exam.title if theo_att and theo_att.session and theo_att.session.exam else "Examen Théorique",
@@ -430,7 +437,7 @@ def _build_student_bulletin(st: User, db: Session) -> dict:
         "verdict": verdict,
         "verdict_label": verdict_label,
         "verdict_color": verdict_color,
-        "evaluations_count": len(all_scores)
+        "evaluations_count": len(official_scores)
     }
 
 @router.get("/bulletins")
