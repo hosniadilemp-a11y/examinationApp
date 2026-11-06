@@ -1,7 +1,7 @@
 [
   {
     "id": 9001,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Addition Basique",
     "topic": "Basics",
@@ -61,8 +61,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez `sys.stdin.read().split()` pour extraire les deux entiers indépendamment des espaces ou sauts de ligne.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    print(a + b)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    print(a + b)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La fonction `sys.stdin.read().split()` lit l'intégralité du flux d'entrée et le découpe selon les séparateurs blancs. On convertit les deux premiers tokens en entiers `int(tokens[0])` et `int(tokens[1])` puis on affiche leur somme arithmétique `a + b`.\n- **Complexité temporelle** : $O(1)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9002,
@@ -126,8 +128,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Après lecture de N et des éléments dans une liste, utilisez les fonctions natives Python `min()` et `max()`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    print(f\"{min(arr)} {max(arr)}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    print(f\"{min(arr)} {max(arr)}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On extrait le nombre d'éléments $N$ suivi des $N$ entiers. Les fonctions natives `min(arr)` et `max(arr)` effectuent chacune un parcours linéaire optimisé en C pour identifier les extremums.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9003,
@@ -191,12 +195,14 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Pour une matrice carrée N x N aplatie, l'élément (i, i) est à l'indice `i*n + i` et l'élément secondaire à `i*n + (n - 1 - i)`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    diag1 = sum(vals[i * n + i] for i in range(n))\n    diag2 = sum(vals[i * n + (n - 1 - i)] for i in range(n))\n    print(f\"{diag1} {diag2}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    diag1 = sum(vals[i * n + i] for i in range(n))\n    diag2 = sum(vals[i * n + (n - 1 - i)] for i in range(n))\n    print(f\"{diag1} {diag2}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour une matrice carrée de côté $N$, la diagonale principale est constituée des éléments $M[i][i]$ et la diagonale secondaire des éléments $M[i][N - 1 - i]$. On calcule la somme de chacune en un seul parcours de $i=0$ à $N-1$ et on affiche `diag1 diag2`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N^2)$"
   },
   {
     "id": 9004,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Premier Caractere Non Repeté",
     "topic": "Strings",
@@ -256,8 +262,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Comptez les fréquences avec `collections.Counter`, puis parcourez la chaîne originale pour trouver le premier élément de fréquence 1 (indice 1-based, ou 0 si absent).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nfrom collections import Counter\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    counts = Counter(s)\n    for idx, char in enumerate(s):\n        if counts[char] == 1:\n            print(idx + 1)\n            return\n    print(0)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nfrom collections import Counter\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    counts = Counter(s)\n    for idx, char in enumerate(s):\n        if counts[char] == 1:\n            print(idx + 1)\n            return\n    print(0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On procède en deux passes : la première compte les occurrences de chaque caractère dans une table de hachage (`Counter`). La seconde parcourt la chaîne de gauche à droite pour trouver le premier caractère dont le compteur vaut 1 et renvoie son indice 1-based (`idx + 1`). Si tous les caractères sont répétés, on affiche 0.\n- **Complexité temporelle** : $O(L)$\n- **Complexité spatiale** : $O(\\Sigma)$"
   },
   {
     "id": 9005,
@@ -321,8 +329,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Comparez la chaîne avec sa version inversée `s == s[::-1]` et affichez 'Vrai' ou 'Faux'.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    if s == s[::-1]:\n        print(\"Vrai\")\n    else:\n        print(\"Faux\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    if s == s[::-1]:\n        print(\"Vrai\")\n    else:\n        print(\"Faux\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Un mot ou une séquence est un palindrome s'il se lit de manière identique dans les deux sens. L'idiome Python `s[::-1]` génère le miroir de la chaîne en $O(L)$. On teste l'égalité et on affiche `Vrai` ou `Faux`.\n- **Complexité temporelle** : $O(L)$\n- **Complexité spatiale** : $O(L)$"
   },
   {
     "id": 9006,
@@ -386,12 +396,14 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Chargez les N entiers dans une liste et utilisez `arr.sort()` pour un tri in-place en O(N log N).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Python utilise l'algorithme Timsort (hybride tri fusion / insertion) via `arr.sort()`, qui s'exécute en $O(N \\log N)$ dans le pire des cas et $O(N)$ sur données quasi-triées. Les éléments sont ensuite affichés séparés par un espace.\n- **Complexité temporelle** : $O(N \\log N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9007,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Rotation Circulaire d'un Tableau",
     "topic": "Arrays",
@@ -451,8 +463,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Réduisez d'abord K avec `k = k % n`. La rotation circulaire à droite découpe le tableau en `arr[-k:] + arr[:-k]`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    k = int(tokens[n+1])\n    if n > 0:\n        k = k % n\n        if k > 0:\n            arr = arr[-k:] + arr[:-k]\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    k = int(tokens[n+1])\n    if n > 0:\n        k = k % n\n        if k > 0:\n            arr = arr[-k:] + arr[:-k]\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Une rotation circulaire à droite de $K$ positions équivaut à déplacer les $K$ derniers éléments au tout début du tableau. Pour gérer les cas où $K \\ge N$, on applique `k = k % n`. Le slicing Python effectue cette opération de façon vectorisée.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9008,
@@ -516,8 +530,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Appliquez l'algorithme de Kadane : maintenez la somme maximale locale `curr_max = max(x, curr_max + x)` et la somme maximale globale.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    max_so_far = arr[0]\n    curr_max = arr[0]\n    for x in arr[1:]:\n        curr_max = max(x, curr_max + x)\n        max_so_far = max(max_so_far, curr_max)\n    print(max_so_far)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    max_so_far = arr[0]\n    curr_max = arr[0]\n    for x in arr[1:]:\n        curr_max = max(x, curr_max + x)\n        max_so_far = max(max_so_far, curr_max)\n    print(max_so_far)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme de Kadane résout le problème du sous-tableau de somme maximale en un seul passage $O(N)$. À chaque étape, on décide soit d'étendre le sous-tableau courant (`curr_max + x`), soit de démarrer un nouveau sous-tableau à partir de l'élément courant (`x`).\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ hors stockage"
   },
   {
     "id": 9009,
@@ -581,12 +597,14 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Parcourez les pointeurs `nxt[curr]` depuis 0 en marquant les nœuds visités dans un ensemble `visited`. Si vous retombez sur un nœud déjà vu, il y a un cycle.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    visited = set()\n    curr = 0\n    while curr != -1 and curr < n:\n        if curr in visited:\n            print(\"Cycle\")\n            return\n        visited.add(curr)\n        curr = nxt[curr]\n    print(\"No Cycle\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    visited = set()\n    curr = 0\n    while curr != -1 and curr < n:\n        if curr in visited:\n            print(\"Cycle\")\n            return\n        visited.add(curr)\n        curr = nxt[curr]\n    print(\"No Cycle\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On modélise le graphe orienté représenté par le tableau de pointeurs suivants `index[]`. En maintenant un ensemble des indices déjà rencontrés (`set`), on détecte en temps $O(N)$ toute boucle fermée (`Cycle`). Si on atteint `-1`, la liste se termine (`No Cycle`).\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9010,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Milieu d'une Liste Chaînée",
     "topic": "Linked Lists",
@@ -646,8 +664,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Reconstituez la chaîne de nœuds depuis la tête 0 jusqu'à la fin (-1). La taille étant L, le milieu (deuxième si pair) est à l'indice 1-based `(L // 2) + 1`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    nodes = []\n    curr = 0\n    while curr != -1 and curr < n:\n        nodes.append((vals[curr], curr))\n        curr = nxt[curr]\n    l = len(nodes)\n    mid_pos = (l // 2) + 1\n    mid_val = nodes[mid_pos - 1][0]\n    print(f\"{mid_val} {mid_pos}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    nodes = []\n    curr = 0\n    while curr != -1 and curr < n:\n        nodes.append((vals[curr], curr))\n        curr = nxt[curr]\n    l = len(nodes)\n    mid_pos = (l // 2) + 1\n    mid_val = nodes[mid_pos - 1][0]\n    print(f\"{mid_val} {mid_pos}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On traverse la liste chaînée depuis l'indice 0 en suivant les pointeurs suivants jusqu'à la fin `-1`. En collectant les nœuds, on obtient la longueur totale $L$. Selon la spécification, pour une taille paire comme impaire, la position médiane (1-based) est `(L // 2) + 1`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9011,
@@ -711,8 +731,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Parcourez la liste chaînée ordonnée et filtrez les valeurs consécutives identiques à l'aide d'un ensemble ou en comparant avec le nœud précédent.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    res = []\n    curr = 0\n    seen = set()\n    while curr != -1 and curr < n:\n        v = vals[curr]\n        if v not in seen:\n            seen.add(v)\n            res.append(v)\n        curr = nxt[curr]\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    res = []\n    curr = 0\n    seen = set()\n    while curr != -1 and curr < n:\n        v = vals[curr]\n        if v not in seen:\n            seen.add(v)\n            res.append(v)\n        curr = nxt[curr]\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La liste chaînée étant ordonnée par valeur, les doublons se succèdent nécessairement. En parcourant les nœuds de la tête vers la queue et en ne conservant que les valeurs non encore rencontrées (`seen = set()`), on conserve une occurrence unique de chaque élément dans l'ordre originel.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9012,
@@ -776,12 +798,14 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez une pile (stack) : empilez les délimiteurs ouvrants `([{` et pour chaque fermant, vérifiez qu'il correspond au sommet de la pile avant de le dépiler.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    mapping = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif c in mapping:\n            if not stack or stack[-1] != mapping[c]:\n                print(\"Invalid\")\n                return\n            stack.pop()\n    if not stack:\n        print(\"Valid\")\n    else:\n        print(\"Invalid\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    mapping = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif c in mapping:\n            if not stack or stack[-1] != mapping[c]:\n                print(\"Invalid\")\n                return\n            stack.pop()\n    if not stack:\n        print(\"Valid\")\n    else:\n        print(\"Invalid\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Une expression de parenthèses est valide si et seulement si tout délimiteur fermant s'apparie avec le délimiteur ouvrant le plus récemment rencontré du même type. Une pile (LIFO) permet de vérifier cette concordance en $O(N)$. À la fin, la pile doit être vide.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9013,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Next Greater Element avec Pile Chaînée",
     "topic": "Stacks",
@@ -841,8 +865,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez une pile monotone décroissante d'indices. Lorsqu'un élément est strictement plus grand que l'élément au sommet de la pile, dépilez et enregistrez-le comme réponse.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    ans = [-1] * n\n    stack = []\n    for i in range(n):\n        while stack and arr[stack[-1]] < arr[i]:\n            ans[stack.pop()] = arr[i]\n        stack.append(i)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    ans = [-1] * n\n    stack = []\n    for i in range(n):\n        while stack and arr[stack[-1]] < arr[i]:\n            ans[stack.pop()] = arr[i]\n        stack.append(i)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La pile monotone permet de trouver le premier élément plus grand à droite (Next Greater Element) pour l'ensemble des éléments en temps amorti $O(N)$. Chaque indice est empilé au plus une fois et dépilé au plus une fois.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9014,
@@ -906,8 +932,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Parcourez les tokens : si c'est un nombre, empilez-le. Si c'est un opérateur (+, -, *, /), dépilez les deux opérandes b puis a, appliquez l'opération, et ré-empilez le résultat.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    stack = []\n    for t in tokens:\n        if t in ('+', '-', '*', '/'):\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    print(stack[0])\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    stack = []\n    for t in tokens:\n        if t in ('+', '-', '*', '/'):\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    print(stack[0])\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'évaluation d'une expression en notation polonaise inverse (RPN) s'effectue naturellement à l'aide d'une pile. Pour la division, on prend soin d'effectuer la division entière tronquée vers zéro (`int(a / b)`).\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9015,
@@ -971,12 +999,14 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Pour chaque entier i de 1 à N, convertissez-le en binaire à l'aide de `bin(i)[2:]` et joignez les résultats avec des espaces.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    res = [bin(i)[2:] for i in range(1, n + 1)]\n    print(\" \".join(res))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    res = [bin(i)[2:] for i in range(1, n + 1)]\n    print(\" \".join(res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La fonction native `bin(i)` renvoie une chaîne au format `'0b...'`. Le slicing `[2:]` extrait la représentation binaire brute. L'exercice peut également se résoudre algorithmiquement avec une file (BFS) générant les nombres binaires en enfilant successivement `s + '0'` et `s + '1'`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9016,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Tour Circulaire des Stations d'Essence",
     "topic": "Queues",
@@ -1036,8 +1066,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Maintenez la réserve totale `total_tank += petrol - dist` et la réserve courante. Si `curr_tank < 0`, réinitialisez le point de départ à `i + 1` et `curr_tank = 0`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    petrol = []\n    distance = []\n    idx = 1\n    for _ in range(n):\n        petrol.append(int(tokens[idx]))\n        distance.append(int(tokens[idx+1]))\n        idx += 2\n    total_tank = 0\n    curr_tank = 0\n    start = 0\n    for i in range(n):\n        diff = petrol[i] - distance[i]\n        total_tank += diff\n        curr_tank += diff\n        if curr_tank < 0:\n            start = i + 1\n            curr_tank = 0\n    if total_tank >= 0:\n        print(start)\n    else:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    petrol = []\n    distance = []\n    idx = 1\n    for _ in range(n):\n        petrol.append(int(tokens[idx]))\n        distance.append(int(tokens[idx+1]))\n        idx += 2\n    total_tank = 0\n    curr_tank = 0\n    start = 0\n    for i in range(n):\n        diff = petrol[i] - distance[i]\n        total_tank += diff\n        curr_tank += diff\n        if curr_tank < 0:\n            start = i + 1\n            curr_tank = 0\n    if total_tank >= 0:\n        print(start)\n    else:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "C'est le problème classique du circuit d'essence (Gas Station). Si la somme totale du carburant est supérieure ou égale à la somme totale des distances (`total_tank >= 0`), une solution unique existe nécessairement. On trouve le point de départ en un seul parcours glouton $O(N)$.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ hors entrées"
   },
   {
     "id": 9017,
@@ -1101,8 +1133,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Maintenez une file (`collections.deque`) des indices des nombres négatifs présents dans la fenêtre glissante courante de taille K.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nfrom collections import deque\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    arr = [int(x) for x in tokens[2:2+n]]\n    neg_indices = deque()\n    ans = []\n    for i in range(n):\n        if arr[i] < 0:\n            neg_indices.append(i)\n        if i >= k - 1:\n            while neg_indices and neg_indices[0] <= i - k:\n                neg_indices.popleft()\n            if neg_indices:\n                ans.append(arr[neg_indices[0]])\n            else:\n                ans.append(0)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nfrom collections import deque\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    arr = [int(x) for x in tokens[2:2+n]]\n    neg_indices = deque()\n    ans = []\n    for i in range(n):\n        if arr[i] < 0:\n            neg_indices.append(i)\n        if i >= k - 1:\n            while neg_indices and neg_indices[0] <= i - k:\n                neg_indices.popleft()\n            if neg_indices:\n                ans.append(arr[neg_indices[0]])\n            else:\n                ans.append(0)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour chaque fenêtre de taille $K$, on maintient dans une file double (`deque`) les indices des éléments strictement négatifs. À chaque glissement de la fenêtre, on élimine les indices qui sont sortis de la fenêtre (`idx <= i - K`). Le premier négatif est alors `arr[deque[0]]` s'il existe, ou 0 sinon.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(K)$"
   },
   {
     "id": 9045,
@@ -1166,12 +1200,14 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Multipliez successivement les entiers de 1 à N avec une boucle `for` ou utilisez `math.factorial(N)`. Rappel : 0! = 1.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    print(math.factorial(n))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    print(math.factorial(n))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La factorielle d'un entier naturel $N$ est le produit des entiers de 1 à $N$. Pour $N=0$, la convention mathématique pose $0! = 1$. L'algorithme itératif calcule la valeur en temps linéaire.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9046,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Nombre et Somme des Chiffres",
     "topic": "Basics",
@@ -1231,8 +1267,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Convertissez le nombre en chaîne de caractères `s = str(N)`. Le nombre de chiffres est `len(s)` et la somme est `sum(int(c) for c in s)`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    count = len(s)\n    total = sum(int(c) for c in s)\n    print(f\"{count} {total}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    count = len(s)\n    total = sum(int(c) for c in s)\n    print(f\"{count} {total}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On peut extraire les chiffres arithmétiquement via divisions et modulos successifs (`N % 10`, `N // 10`) ou via la représentation textuelle. Les deux grandeurs calculées sont le décompte des chiffres et la somme de leurs valeurs décimales.\n- **Complexité temporelle** : $O(\\log_{10} N)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9047,
@@ -1296,8 +1334,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez l'opérateur d'exponentiation `X ** Y` ou une boucle d'accumulation multipliant X par lui-même Y fois.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    x = int(tokens[0])\n    y = int(tokens[1])\n    print(x ** y)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    x = int(tokens[0])\n    y = int(tokens[1])\n    print(x ** y)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour tout entier $X$, $X^0 = 1$. Pour $Y > 0$, l'exponentiation effectue le produit accumulé de $X$ répété $Y$ fois. L'opérateur Python `X ** Y` gère automatiquement les entiers de précision arbitraire.\n- **Complexité temporelle** : $O(\\log Y)$ avec exponentiation binaire\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9048,
@@ -1361,12 +1401,14 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Faites une boucle `for i in range(1, k + 1):` et affichez la chaîne formatée `f'{n} x {i} = {n * i}'`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    for i in range(1, k + 1):\n        print(f\"{n} x {i} = {n * i}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    for i in range(1, k + 1):\n        print(f\"{n} x {i} = {n * i}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La table de multiplication demande d'afficher exactement $K$ lignes sous le format standard `'N x i = Resultat'`. Une simple itération de $1$ à $K$ produit les lignes requises.\n- **Complexité temporelle** : $O(K)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9049,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Test d'Année Bissextile",
     "topic": "Basics",
@@ -1426,8 +1468,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Une année est bissextile si `(annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0)`. Affichez 1 si vrai, 0 sinon.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    annee = int(tokens[0])\n    if (annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0):\n        print(1)\n    else:\n        print(0)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    annee = int(tokens[0])\n    if (annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0):\n        print(1)\n    else:\n        print(0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La règle grégorienne stipule qu'une année divisible par 4 est bissextile, à l'exception des années séculaires (divisibles par 100) qui ne le sont que si elles sont également divisibles par 400.\n- **Complexité temporelle** : $O(1)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9050,
@@ -1491,8 +1535,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez la conversion native `int(chaine_binaire, 2)` pour convertir directement la base 2 en base 10.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    print(int(s, 2))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    print(int(s, 2))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Chaque bit à la position $i$ (en partant de la droite à l'indice 0) a pour poids $2^i$. La fonction `int(s, 2)` de Python évalue ce polynôme binaire de manière optimale.\n- **Complexité temporelle** : $O(B)$ où $B$ est le nombre de bits\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9051,
@@ -1556,12 +1602,14 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Implémentez la boucle Collatz tant que N != 1. Si N est pair : N //= 2, sinon N = 3*N + 1. Comptez les étapes et suivez la valeur maximale.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    steps = 0\n    max_val = n\n    while n != 1:\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n        max_val = max(max_val, n)\n    print(f\"{steps} {max_val}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    steps = 0\n    max_val = n\n    while n != 1:\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n        max_val = max(max_val, n)\n    print(f\"{steps} {max_val}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La suite de Syracuse (ou problème de Collatz) applique des transformations arithmétiques jusqu'à atteindre la valeur 1. On maintient un compteur d'étapes incrémenté à chaque transition et un accumulateur `max_val` mémorisant l'apogée du vol.\n- **Complexité temporelle** : Variable selon $N$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9052,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "PGCD et PPCM par Euclide",
     "topic": "Basics",
@@ -1621,8 +1669,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Calculez le PGCD avec l'algorithme d'Euclide `math.gcd(a, b)`, puis déduisez le PPCM via `(a * b) // gcd`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    g = math.gcd(a, b)\n    l = (a * b) // g\n    print(f\"{g} {l}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    g = math.gcd(a, b)\n    l = (a * b) // g\n    print(f\"{g} {l}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme d'Euclide repose sur la propriété $\\text{PGCD}(a, b) = \\text{PGCD}(b, a \\pmod b)$. La relation fondamentale $\\text{PGCD}(a, b) \\times \\text{PPCM}(a, b) = a \\times b$ fournit immédiatement le PPCM par division entière.\n- **Complexité temporelle** : $O(\\log(\\min(a, b)))$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9053,
@@ -1686,8 +1736,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Testez les entiers successifs à partir de N + 1 avec un crible ou un test de primalité jusqu'à la racine carrée.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef is_prime(x):\n    if x < 2:\n        return False\n    if x in (2, 3):\n        return True\n    if x % 2 == 0 or x % 3 == 0:\n        return False\n    i = 5\n    while i * i <= x:\n        if x % i == 0 or x % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    candidate = n + 1\n    while not is_prime(candidate):\n        candidate += 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef is_prime(x):\n    if x < 2:\n        return False\n    if x in (2, 3):\n        return True\n    if x % 2 == 0 or x % 3 == 0:\n        return False\n    i = 5\n    while i * i <= x:\n        if x % i == 0 or x % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    candidate = n + 1\n    while not is_prime(candidate):\n        candidate += 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour trouver le plus petit nombre premier strictement supérieur à $N$, on teste successivement chaque entier $c = N + 1, N + 2, \\dots$. Le test de primalité vérifie la divisibilité par les entiers de la forme $6k \\pm 1$ jusqu'à $\\sqrt{c}$.\n- **Complexité temporelle** : $O(P \\sqrt{N})$ où $P$ est l'écart au premier suivant\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9054,
@@ -1751,12 +1803,14 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Divisez N par chaque facteur d = 2, 3, ... tant que d*d <= N en comptant l'exposant. Si N > 1 à la fin, c'est le dernier facteur premier.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    factors = []\n    d = 2\n    while d * d <= n:\n        if n % d == 0:\n            exp = 0\n            while n % d == 0:\n                exp += 1\n                n //= d\n            factors.append(f\"{d}^{exp}\")\n        d += 1\n    if n > 1:\n        factors.append(f\"{n}^1\")\n    print(\" * \".join(factors))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    factors = []\n    d = 2\n    while d * d <= n:\n        if n % d == 0:\n            exp = 0\n            while n % d == 0:\n                exp += 1\n                n //= d\n            factors.append(f\"{d}^{exp}\")\n        d += 1\n    if n > 1:\n        factors.append(f\"{n}^1\")\n    print(\" * \".join(factors))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le théorème fondamental de l'arithmétique garantit l'unicité de la factorisation en nombres premiers. On extrait les facteurs premiers par division successive. Si après la boucle jusqu'à $\\sqrt{N}$ il subsiste un entier $N > 1$, celui-ci est lui-même premier.\n- **Complexité temporelle** : $O(\\sqrt{N})$\n- **Complexité spatiale** : $O(1)$ hors formatage"
   },
   {
     "id": 9055,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Exponentiation Modulaire Rapide",
     "topic": "Basics",
@@ -1816,8 +1870,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez l'exponentiation modulaire rapide `pow(A, B, M)` qui applique la méthode des carrés successifs en O(log B).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    m = int(tokens[2])\n    print(pow(a, b, m))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    m = int(tokens[2])\n    print(pow(a, b, m))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le calcul naïf de $A^B$ produirait des nombres gigantesques impossibles à manipuler. L'algorithme des carrés successifs effectue chaque multiplication modulo $M$ à chaque étape binaire de l'exposant $B$, garantissant un temps d'exécution logarithmique $O(\\log B)$.\n- **Complexité temporelle** : $O(\\log B)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9056,
@@ -1881,8 +1937,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Appliquez la formule itérative de Héron : `x = 0.5 * (x + N / x)` pendant une quarantaine d'itérations, puis formatez avec `f'{x:.4f}'`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    x = float(n)\n    for _ in range(50):\n        x = 0.5 * (x + n / x)\n    print(f\"{x:.4f}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    x = float(n)\n    for _ in range(50):\n        x = 0.5 * (x + n / x)\n    print(f\"{x:.4f}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La méthode de Héron (variante de la méthode de Newton-Raphson appliquée à $f(x) = x^2 - N$) possède une convergence quadratique. En partant de $x_0 = N$, le nombre de décimales exactes double à chaque itération. On formate le résultat final à 4 décimales.\n- **Complexité temporelle** : $O(1)$ (convergence en moins de 30 étapes)\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9057,
@@ -1946,12 +2004,14 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Appliquez la formule de Legendre : additionnez `N // (5**k)` pour les puissances de 5 successives (5, 25, 125...).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    zeros = 0\n    p = 5\n    while p <= n:\n        zeros += n // p\n        p *= 5\n    print(zeros)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    zeros = 0\n    p = 5\n    while p <= n:\n        zeros += n // p\n        p *= 5\n    print(zeros)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Chaque zéro terminal dans $N!$ provient d'un facteur 10, produit de $2 \\times 5$. Les facteurs 2 étant surabondants, le nombre de zéros correspond au nombre de facteurs 5 dans la factorisation de $N!$, donné exactement par la formule de Legendre $\\sum_{k \\ge 1} \\lfloor N / 5^k \\rfloor$.\n- **Complexité temporelle** : $O(\\log_5 N)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9058,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Nombres Amicaux dans un Intervalle",
     "topic": "Basics",
@@ -2011,8 +2071,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Précalculez la somme des diviseurs stricts de chaque nombre jusqu'à Limite à l'aide d'un crible en O(Limite log Limite).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef sum_divs(limit):\n    s = [0] * (limit + 1)\n    for i in range(1, limit + 1):\n        for j in range(2 * i, limit + 1, i):\n            s[j] += i\n    return s\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    limit = int(tokens[0])\n    s = sum_divs(limit)\n    pairs = 0\n    for a in range(2, limit + 1):\n        b = s[a]\n        if a < b <= limit and s[b] == a:\n            pairs += 1\n    print(pairs)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef sum_divs(limit):\n    s = [0] * (limit + 1)\n    for i in range(1, limit + 1):\n        for j in range(2 * i, limit + 1, i):\n            s[j] += i\n    return s\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    limit = int(tokens[0])\n    s = sum_divs(limit)\n    pairs = 0\n    for a in range(2, limit + 1):\n        b = s[a]\n        if a < b <= limit and s[b] == a:\n            pairs += 1\n    print(pairs)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Deux entiers $A$ et $B$ sont amicaux si $\\sigma(A) - A = B$ et $\\sigma(B) - B = A$ avec $A \\neq B$. Un précalcul par crible (similaire au crible d'Ératosthène) calcule la somme des diviseurs de tous les nombres jusqu'à la limite en $O(L \\log L)$. On parcourt ensuite les paires $A < B \\le \\text{Limite}$.\n- **Complexité temporelle** : $O(L \\log L)$\n- **Complexité spatiale** : $O(L)$"
   },
   {
     "id": 9059,
@@ -2076,8 +2138,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Utilisez la récurrence dynamique de Josephus : `J = (J + K) % i` pour i allant de 1 à N, puis affichez `J + 1`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    j = 0\n    for i in range(1, n + 1):\n        j = (j + k) % i\n    print(j + 1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    j = 0\n    for i in range(1, n + 1):\n        j = (j + k) % i\n    print(j + 1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le problème de Josephus admet une résolution itérative élégante en $O(N)$ sans simuler explicitement la liste circulaire : en indexation 0, $J(1) = 0$ et $J(i) = (J(i-1) + K) \\pmod i$. La position finale du survivant en indexation 1 est $J(N) + 1$.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$"
   },
   {
     "id": 9060,
@@ -2141,12 +2205,14 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Calculez la somme avec `sum(arr)` puis la moyenne `sum(arr) / N`. Formatez la moyenne avec deux décimales `f'{mean:.2f}'`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    total = sum(arr)\n    mean = total / n\n    print(f\"{total} {mean:.2f}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    total = sum(arr)\n    mean = total / n\n    print(f\"{total} {mean:.2f}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On extrait $N$ puis les $N$ valeurs du tableau. La somme arithmétique est calculée en temps linéaire $O(N)$, et la moyenne s'obtient par division par $N$. Le résultat est formaté avec deux chiffres après la virgule.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9061,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Recherche Séquentielle et Indice",
     "topic": "Tableaux",
@@ -2206,8 +2272,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Cherchez la cible dans le tableau. Si elle est présente, affichez son premier indice (1-based : `index + 1`), sinon affichez `-1`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    try:\n        idx = arr.index(target)\n        print(idx + 1)\n    except ValueError:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    try:\n        idx = arr.index(target)\n        print(idx + 1)\n    except ValueError:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La recherche séquentielle inspecte les éléments du tableau un à un de gauche à droite jusqu'à rencontrer la cible. En cas de présence, l'indice 1-based correspond à la position trouvée. Si la boucle s'achève sans correspondance, on affiche `-1`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9062,
@@ -2271,8 +2339,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Inversez les éléments du tableau en échangeant les éléments symétriques `arr[i]` et `arr[N-1-i]` ou avec `arr.reverse()`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.reverse()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.reverse()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'inversion in-place d'un tableau permute chaque élément $i$ avec son symétrique $N - 1 - i$ pour $i$ variant de $0$ à $\\lfloor N/2 \\rfloor$. La méthode native `arr.reverse()` opère en temps linéaire avec une complexité spatiale auxiliaire $O(1)$.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
   },
   {
     "id": 9063,
@@ -2336,12 +2406,14 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Parcourez les N entiers et incrémentez trois compteurs distincts selon que x > 0, x < 0 ou x == 0.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    pos = sum(1 for x in arr if x > 0)\n    neg = sum(1 for x in arr if x < 0)\n    zer = sum(1 for x in arr if x == 0)\n    print(f\"{pos} {neg} {zer}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    pos = sum(1 for x in arr if x > 0)\n    neg = sum(1 for x in arr if x < 0)\n    zer = sum(1 for x in arr if x == 0)\n    print(f\"{pos} {neg} {zer}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Un seul parcours séquentiel permet de catégoriser chaque élément selon son signe arithmétique. Trois compteurs comptabilisent respectivement les valeurs strictement positives, strictement négatives et nulles.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9064,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Trace d'une Matrice Carrée",
     "topic": "Tableaux",
@@ -2401,8 +2473,10 @@
       }
     ],
     "points": 2.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Pour une matrice carrée N x N aplatie, la trace est la somme des éléments `vals[i * n + i]` pour i allant de 0 à N-1.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    trace = sum(vals[i * n + i] for i in range(n))\n    print(trace)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    trace = sum(vals[i * n + i] for i in range(n))\n    print(trace)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La trace d'une matrice carrée est définie comme la somme de tous les éléments situés sur sa diagonale principale ($M[i][i]$). Pour une matrice de taille $N \\times N$ contenant $N^2$ éléments, on ne lit que les $N$ éléments diagonaux.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N^2)$"
   },
   {
     "id": 9065,
@@ -2466,8 +2540,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Le tableau étant trié, parcourez-le en ne retenant que les éléments distincts du précédent. Affichez la nouvelle taille K sur la première ligne, puis les K entiers.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    unique = []\n    seen = set()\n    for x in arr:\n        if x not in seen:\n            seen.add(x)\n            unique.append(x)\n    print(len(unique))\n    print(\" \".join(str(x) for x in unique))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    unique = []\n    seen = set()\n    for x in arr:\n        if x not in seen:\n            seen.add(x)\n            unique.append(x)\n    print(len(unique))\n    print(\" \".join(str(x) for x in unique))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le compactage d'un tableau trié élimine les doublons consécutifs. On peut utiliser la technique des deux pointeurs (in-place) pour écraser les répétitions en $O(N)$, puis afficher le nombre d'éléments uniques $K$ et la suite compactée.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
   },
   {
     "id": 9066,
@@ -2531,12 +2607,14 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Le produit matriciel C(N x P) de A(N x M) et B(M x P) est défini par `C[i][j] = sum(A[i][k] * B[k][j] for k in range(M))`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    p = int(tokens[2])\n    idx = 3\n    a = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        a.append(row)\n        idx += m\n    b = []\n    for _ in range(m):\n        row = [int(tokens[idx + j]) for j in range(p)]\n        b.append(row)\n        idx += p\n    c = [[0] * p for _ in range(n)]\n    for i in range(n):\n        for j in range(p):\n            c[i][j] = sum(a[i][k] * b[k][j] for k in range(m))\n    for row in c:\n        print(\" \".join(str(x) for x in row))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    p = int(tokens[2])\n    idx = 3\n    a = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        a.append(row)\n        idx += m\n    b = []\n    for _ in range(m):\n        row = [int(tokens[idx + j]) for j in range(p)]\n        b.append(row)\n        idx += p\n    c = [[0] * p for _ in range(n)]\n    for i in range(n):\n        for j in range(p):\n            c[i][j] = sum(a[i][k] * b[k][j] for k in range(m))\n    for row in c:\n        print(\" \".join(str(x) for x in row))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La multiplication matricielle standard calcule chaque coefficient $C[i][j]$ comme le produit scalaire de la ligne $i$ de la matrice $A$ avec la colonne $j$ de la matrice $B$. On affiche ensuite les $N$ lignes de la matrice résultante.\n- **Complexité temporelle** : $O(N \\times M \\times P)$\n- **Complexité spatiale** : $O(N \\times P)$"
   },
   {
     "id": 9067,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Transposition de Matrice Carrée",
     "topic": "Tableaux",
@@ -2596,8 +2674,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "La transposée d'une matrice carrée échange lignes et colonnes : l'élément à la ligne j et colonne i devient `vals[i * n + j]`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    for j in range(n):\n        row = [str(vals[i * n + j]) for i in range(n)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    for j in range(n):\n        row = [str(vals[i * n + j]) for i in range(n)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La transposition transforme les lignes d'une matrice en colonnes ($M^T[j][i] = M[i][j]$). Pour chaque colonne $j$ de 0 à $N-1$, on affiche les éléments correspondants prélevés dans chaque ligne $i$.\n- **Complexité temporelle** : $O(N^2)$\n- **Complexité spatiale** : $O(N^2)$"
   },
   {
     "id": 9068,
@@ -2661,8 +2741,10 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Appliquez l'algorithme de vote majoritaire de Boyer-Moore avec un candidat et un compteur incrémenté/décrémenté.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    candidate = None\n    count = 0\n    for x in arr:\n        if count == 0:\n            candidate = x\n            count = 1\n        elif x == candidate:\n            count += 1\n        else:\n            count -= 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    candidate = None\n    count = 0\n    for x in arr:\n        if count == 0:\n            candidate = x\n            count = 1\n        elif x == candidate:\n            count += 1\n        else:\n            count -= 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme de vote de Boyer-Moore identifie l'élément majoritaire (apparaissant plus de $N/2$ fois) en temps linéaire $O(N)$ et espace $O(1)$. À chaque confrontation de deux éléments distincts, leurs voix s'annulent mutuellement ; seul l'élément majoritaire survit.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
   },
   {
     "id": 9069,
@@ -2726,12 +2808,14 @@
       }
     ],
     "points": 3.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Le tableau étant trié, utilisez deux pointeurs (left au début, right à la fin). Si la somme vaut la cible, affichez-les ; si elle est trop petite, avancez left ; sinon reculez right.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    left = 0\n    right = n - 1\n    found = False\n    while left < right:\n        s = arr[left] + arr[right]\n        if s == target:\n            print(f\"{arr[left]} {arr[right]}\")\n            found = True\n            break\n        elif s < target:\n            left += 1\n        else:\n            right -= 1\n    if not found:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    left = 0\n    right = n - 1\n    found = False\n    while left < right:\n        s = arr[left] + arr[right]\n        if s == target:\n            print(f\"{arr[left]} {arr[right]}\")\n            found = True\n            break\n        elif s < target:\n            left += 1\n        else:\n            right -= 1\n    if not found:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La technique des deux pointeurs (Two Sum sur tableau trié) exploite l'ordre croissant pour converger vers la solution en $O(N)$ sans table de hachage. Si les pointeurs se croisent sans succès, on affiche `-1`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
   },
   {
     "id": 9070,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Parcours en Spirale d'une Matrice",
     "topic": "Tableaux",
@@ -2791,8 +2875,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Maintenez quatre bornes (top, bottom, left, right). Parcourez le contour extérieur dans le sens horaire, puis resserrez les bornes jusqu'à épuisement.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    top = 0\n    bottom = n - 1\n    left = 0\n    right = m - 1\n    res = []\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            res.append(mat[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            res.append(mat[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                res.append(mat[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                res.append(mat[r][left])\n            left += 1\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    top = 0\n    bottom = n - 1\n    left = 0\n    right = m - 1\n    res = []\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            res.append(mat[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            res.append(mat[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                res.append(mat[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                res.append(mat[r][left])\n            left += 1\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le parcours en spirale décompose la matrice en anneaux concentriques parcourus successivement : de gauche à droite sur `top`, de haut en bas sur `right`, de droite à gauche sur `bottom`, puis de bas en haut sur `left`. On met à jour les frontières à chaque étape.\n- **Complexité temporelle** : $O(N \\times M)$\n- **Complexité spatiale** : $O(N \\times M)$"
   },
   {
     "id": 9071,
@@ -2856,8 +2942,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Une rotation de 90° dans le sens horaire transforme la colonne `c` de la matrice originale en ligne de la nouvelle matrice lue du bas vers le haut.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    idx = 1\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(n)]\n        mat.append(row)\n        idx += n\n    for col in range(n):\n        row = [str(mat[r][col]) for r in range(n - 1, -1, -1)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    idx = 1\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(n)]\n        mat.append(row)\n        idx += n\n    for col in range(n):\n        row = [str(mat[r][col]) for r in range(n - 1, -1, -1)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Une rotation de 90° horaire équivaut mathématiquement à une transposition suivie d'un renversement horizontal des colonnes. On peut l'afficher directement en parcourant pour chaque colonne $c$ les lignes de $N-1$ descendant jusqu'à 0.\n- **Complexité temporelle** : $O(N^2)$\n- **Complexité spatiale** : $O(N^2)$"
   },
   {
     "id": 9072,
@@ -2921,12 +3009,14 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Fixez la paire de lignes (top, bottom) et compressez les colonnes en un tableau 1D de sommes sur lequel vous appliquez Kadane 1D.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    max_sum = -float('inf')\n    for top in range(n):\n        col_sums = [0] * m\n        for bottom in range(top, n):\n            for c in range(m):\n                col_sums[c] += mat[bottom][c]\n            curr_max = col_sums[0]\n            max_so_far = col_sums[0]\n            for x in col_sums[1:]:\n                curr_max = max(x, curr_max + x)\n                max_so_far = max(max_so_far, curr_max)\n            max_sum = max(max_sum, max_so_far)\n    print(max_sum)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    max_sum = -float('inf')\n    for top in range(n):\n        col_sums = [0] * m\n        for bottom in range(top, n):\n            for c in range(m):\n                col_sums[c] += mat[bottom][c]\n            curr_max = col_sums[0]\n            max_so_far = col_sums[0]\n            for x in col_sums[1:]:\n                curr_max = max(x, curr_max + x)\n                max_so_far = max(max_so_far, curr_max)\n            max_sum = max(max_sum, max_so_far)\n    print(max_sum)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La recherche de la sous-matrice de somme maximale 2D se ramène à l'algorithme de Kadane 1D en fixant toutes les paires possibles de lignes supérieures et inférieures $(top, bottom)$. On accumule les sommes des colonnes et on applique Kadane en $O(M)$. Complexité globale $O(N^2 M)$.\n- **Complexité temporelle** : $O(N^2 \\times M)$\n- **Complexité spatiale** : $O(M)$ auxiliaire"
   },
   {
     "id": 9073,
-    "is_exam": false,
+    "is_exam": true,
     "type": "coding",
     "title": "Triplets de Somme Nulle",
     "topic": "Tableaux",
@@ -2986,8 +3076,10 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Triez le tableau, fixez le premier élément i, puis utilisez deux pointeurs (left et right) pour chercher arr[left] + arr[right] == -arr[i]. Utilisez un set pour éviter les doublons.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    triplets = set()\n    for i in range(n - 2):\n        left = i + 1\n        right = n - 1\n        while left < right:\n            s = arr[i] + arr[left] + arr[right]\n            if s == 0:\n                triplets.add((arr[i], arr[left], arr[right]))\n                left += 1\n                right -= 1\n            elif s < 0:\n                left += 1\n            else:\n                right -= 1\n    print(len(triplets))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    triplets = set()\n    for i in range(n - 2):\n        left = i + 1\n        right = n - 1\n        while left < right:\n            s = arr[i] + arr[left] + arr[right]\n            if s == 0:\n                triplets.add((arr[i], arr[left], arr[right]))\n                left += 1\n                right -= 1\n            elif s < 0:\n                left += 1\n            else:\n                right -= 1\n    print(len(triplets))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le problème 3Sum (LeetCode 15) demande le nombre de triplets uniques sommant à 0. Après un tri en $O(N \\log N)$, on fixe chaque premier terme et on applique les deux pointeurs en $O(N)$. Un ensemble (`set`) évite le comptage redondant des triplets identiques.\n- **Complexité temporelle** : $O(N^2)$\n- **Complexité spatiale** : $O(N)$"
   },
   {
     "id": 9074,
@@ -3051,7 +3143,9 @@
       }
     ],
     "points": 4.0,
-    "hint1": "Pensez aux cas limites (valeurs nulles, négatives, extrêmes).",
-    "hint2": "Vérifiez que la complexité temporelle est optimale pour éviter les dépassements de délai."
+    "hint1": "Démarrez dans le coin supérieur droit (row = 0, col = M - 1). Si la valeur courante est plus grande que la cible, reculez à gauche (col -= 1) ; si plus petite, descendez (row += 1).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    target = int(tokens[idx])\n    r = 0\n    c = m - 1\n    found = False\n    while r < n and c >= 0:\n        val = mat[r][c]\n        if val == target:\n            found = True\n            break\n        elif val > target:\n            c -= 1\n        else:\n            r += 1\n    print(1 if found else 0)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    target = int(tokens[idx])\n    r = 0\n    c = m - 1\n    found = False\n    while r < n and c >= 0:\n        val = mat[r][c]\n        if val == target:\n            found = True\n            break\n        elif val > target:\n            c -= 1\n        else:\n            r += 1\n    print(1 if found else 0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme de recherche en selle (Saddleback Search) exploite le fait que la matrice est triée par lignes et par colonnes. En partant du coin $(0, M-1)$, chaque comparaison élimine soit une colonne entière, soit une ligne entière, garantissant une recherche en $O(N + M)$ sans explorer toute la matrice.\n- **Complexité temporelle** : $O(N + M)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
   }
 ]

@@ -77,7 +77,7 @@ class ModuleResponse(ModuleBase):
 
 # --- Utilisateurs ---
 class UserBase(BaseModel):
-    username: str = Field(..., min_length=1, max_length=100)
+    username: Optional[str] = Field(default=None, max_length=100)
     full_name: str = Field(..., min_length=1, max_length=200)
     email: Optional[str] = None
     role: str = Field(default="student", pattern="^(admin|teacher|student)$")
@@ -85,11 +85,12 @@ class UserBase(BaseModel):
     enrollment_year: Optional[str] = None  # ex: '2024-2025', '2025-2026'
 
 class UserCreate(UserBase):
-    id: Optional[str] = None  # Si absent, utilise username
-    password: Optional[str] = None  # Si absent pour étudiant, initialisé avec l'id
-    must_change_password: Optional[bool] = True
+    id: Optional[str] = None  # Si absent, généré automatiquement
+    password: Optional[str] = None  # Si absent, généré automatiquement par le système
+    must_change_password: Optional[bool] = False
 
 class UserUpdate(BaseModel):
+    username: Optional[str] = None
     full_name: Optional[str] = None
     email: Optional[str] = None
     role: Optional[str] = Field(None, pattern="^(admin|teacher|student)$")
@@ -128,7 +129,7 @@ class CSVImportResponse(BaseModel):
 # --- Questions & Examens ---
 class QuestionBase(BaseModel):
     ordering: int = 1
-    type: str = Field(..., pattern="^(boolean|single_choice|multi_choice|fill_blank|matching|coding)$")
+    type: str = Field(..., pattern="^(boolean|single_choice|multi_choice|fill_blank|matching|coding|code|code_python)$")
     prompt_markdown: str
     points: float = 1.0
     negative_penalty: float = 0.5
@@ -140,7 +141,7 @@ class QuestionCreate(QuestionBase):
 
 class QuestionUpdate(BaseModel):
     ordering: Optional[int] = None
-    type: Optional[str] = Field(None, pattern="^(boolean|single_choice|multi_choice|fill_blank|matching|coding)$")
+    type: Optional[str] = Field(None, pattern="^(boolean|single_choice|multi_choice|fill_blank|matching|coding|code|code_python)$")
     prompt_markdown: Optional[str] = None
     points: Optional[float] = None
     negative_penalty: Optional[float] = None
@@ -212,6 +213,9 @@ class ExamResponse(ExamBase):
     created_at: datetime
     question_count: Optional[int] = 0
     assigned_groups: Optional[List[str]] = []
+    session_status: Optional[str] = "not_started"
+    active_session_id: Optional[str] = None
+    submitted_count: Optional[int] = 0
 
     model_config = ConfigDict(from_attributes=True)
 

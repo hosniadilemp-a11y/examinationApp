@@ -364,18 +364,77 @@ def submit_training_session(
             total_hints += hints_used
             hint_mult = 1.0 if hints_used == 0 else (0.5 if hints_used == 1 else 0.0)
 
+            clean_student = str(ans.student_answer or "").strip()
+            clean_sol = str(raw_item.get("solution", "")).strip()
+
             if ans.is_correct is True:
                 is_item_correct = True
                 awarded_pts = max_pts * hint_mult
-            elif ans.student_answer and raw_item.get("solution"):
-                clean_student = str(ans.student_answer).strip()
-                clean_sol = str(raw_item.get("solution", "")).strip()
-                if clean_student == clean_sol:
-                    is_item_correct = True
-                    awarded_pts = max_pts * hint_mult
+                explanation = "✅ Exercice validé avec succès !"
+            elif clean_student and clean_sol and clean_student == clean_sol:
+                is_item_correct = True
+                awarded_pts = max_pts * hint_mult
+                explanation = "✅ Exercice validé avec succès (solution identique à la référence) !"
+            elif clean_student:
+                # Évaluation dynamique et autoritaire via le bac à sable Python
+                test_cases_to_run = []
+                pub_tests = raw_item.get("public_tests") or []
+                hid_tests = raw_item.get("hidden_tests") or []
+                for idx, t in enumerate(pub_tests):
+                    test_cases_to_run.append({
+                        "id": f"pub_{idx+1}",
+                        "input": str(t.get("input", "")),
+                        "output": str(t.get("output", t.get("expected_output", ""))),
+                        "is_public": True
+                    })
+                for idx, t in enumerate(hid_tests):
+                    test_cases_to_run.append({
+                        "id": f"hid_{idx+1}",
+                        "input": str(t.get("input", "")),
+                        "output": str(t.get("output", t.get("expected_output", ""))),
+                        "is_public": False
+                    })
+                if not test_cases_to_run and "test_cases" in raw_item:
+                    for idx, t in enumerate(raw_item["test_cases"]):
+                        test_cases_to_run.append({
+                            "id": f"tc_{idx+1}",
+                            "input": str(t.get("input", "")),
+                            "output": str(t.get("output", t.get("expected_output", ""))),
+                            "is_public": t.get("is_public", True)
+                        })
+
+                if test_cases_to_run:
+                    exec_res = execute_user_code_against_tests(
+                        clean_student,
+                        test_cases_to_run,
+                        timeout_seconds=3.0,
+                        mask_hidden_output=True
+                    )
+                    if exec_res.get("all_passed") is True:
+                        is_item_correct = True
+                        awarded_pts = max_pts * hint_mult
+                        explanation = f"✅ Exercice validé avec succès ({exec_res.get('passed_count')}/{exec_res.get('total_count')} tests réussis) !"
+                    else:
+                        is_item_correct = False
+                        awarded_pts = 0.0
+                        passed_c = exec_res.get("passed_count", 0)
+                        tot_c = exec_res.get("total_count", len(test_cases_to_run))
+                        explanation = f"❌ Tests non validés ({passed_c}/{tot_c} réussis). Voir corrigé de référence ci-dessous."
+                else:
+                    is_item_correct = False
+                    awarded_pts = 0.0
+                    explanation = "Solution de référence : voir corrigé ci-dessous."
+            else:
+                is_item_correct = False
+                awarded_pts = 0.0
+                explanation = "Aucun code soumis."
+
+            pedagogical_exp = str(raw_item.get("explanation") or "").strip()
+            if pedagogical_exp:
+                explanation += f"\n\n💡 Analyse pédagogique :\n{pedagogical_exp}"
+
             solution_info = raw_item.get("solution", "")
             user_answer_display = ans.student_answer or "(Code non soumis)"
-            explanation = "✅ Exercice validé avec succès !" if is_item_correct else "Solution de référence : voir corrigé ci-dessous."
         else:
             max_pts = float(raw_item.get("points", 1.0))
             if item_raw_type in ("yesno", "boolean"):

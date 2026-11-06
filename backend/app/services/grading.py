@@ -178,7 +178,7 @@ def evaluate_answer(
         return float(max(floor_score, final_score)), is_exact, feedback
 
     # --- 6. Type : Exercice de Code Python (HackerRank / AlgoCompiler) ---
-    elif q_type in ["coding", "code"]:
+    elif q_type in ["coding", "code", "code_python"]:
         if not user_answer or not str(user_answer).strip():
             return 0.0, False, "Aucun code fourni."
 
@@ -189,7 +189,11 @@ def evaluate_answer(
         if isinstance(correct_answers, list):
             test_cases = correct_answers
         elif isinstance(correct_answers, dict):
-            test_cases = correct_answers.get("tests", correct_answers.get("test_cases", []))
+            test_cases = (
+                correct_answers.get("tests")
+                or correct_answers.get("test_cases")
+                or (list(correct_answers.get("public_tests", [])) + list(correct_answers.get("hidden_tests", [])))
+            )
 
         if not test_cases:
             return float(points), True, "Code soumis sans cas de test automatisés."

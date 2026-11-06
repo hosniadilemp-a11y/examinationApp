@@ -3226,3 +3226,212 @@ pre.code-block {
   overflow: hidden !important;
 }
 
+
+
+/* ==========================================================================
+   PERFECTIONNEMENT DU MODE THÈME CLAIR (REV-LIGHT-THEME-COMPLETE)
+   Garantit un contraste parfait et un rendu uniforme sur 100% des interfaces.
+   ========================================================================== */
+
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #e2e8f0;
+  --card-border: #e2e8f0;
+  --card-border-active: #2563eb;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+}
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] p {
+  color: #475569;
+}
+
+[data-theme="light"] .kpi-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .kpi-card .kpi-label {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .student-hero-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] #dash-student-welcome {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .level-badge-large {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #1e3a8a !important;
+}
+
+[data-theme="light"] .pillar-stat-pill {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .type-selection-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .type-selection-card:hover {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .type-selection-card.active,
+[data-theme="light"] .type-selection-card.active-practical {
+  border-color: #2563eb !important;
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .type-card-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .type-card-desc {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .type-card-meta-pill {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .challenge-item-card,
+[data-theme="light"] .chapter-item-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .challenge-item-card:hover,
+[data-theme="light"] .chapter-item-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .quiz-option-label {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .quiz-option-label:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .quiz-option-label span {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .table,
+[data-theme="light"] .proctor-table,
+[data-theme="light"] .stats-table {
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .table th,
+[data-theme="light"] .proctor-table th,
+[data-theme="light"] .stats-table th {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .table td,
+[data-theme="light"] .proctor-table td,
+[data-theme="light"] .stats-table td {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+[data-theme="light"] .table tbody tr:hover td,
+[data-theme="light"] .proctor-table tbody tr:hover td,
+[data-theme="light"] .stats-table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .modal-overlay {
+  background: rgba(15, 23, 42, 0.6) !important;
+}
+
+[data-theme="light"] .modal-box {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .modal-box label {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .exam-main,
+[data-theme="light"] .exam-sidebar {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .exam-sidebar {
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .question-palette-btn {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .question-palette-btn.current {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+}
+
+[data-theme="light"] .badge {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] #printable-bulletin-area {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .admin-tab-btn {
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .admin-tab-btn.active {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+}

@@ -1,0 +1,3151 @@
+[
+  {
+    "id": 9001,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Addition Basique",
+    "topic": "Basics",
+    "difficulty": "easy",
+    "description": "### Addition de deux entiers\n\nVous devez lire deux entiers et afficher leur somme.\n\nCe défi valide les bases de la lecture, de l'affectation et de l'affichage.\n\n#### Objectif\n- Lire `a` et `b`\n- Calculer `a + b`\n- Afficher le résultat\n\n#### Format d'entrée\n- Ligne 1: entier `a`\n- Ligne 2: entier `b`\n\n#### Format de sortie\n- Un entier: `a + b`\n\n#### Exemple\n**Entrée**\n```\n7\n5\n```\n**Sortie**\n```\n12\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n7\n",
+        "output": "12"
+      },
+      {
+        "input": "-10\n20\n",
+        "output": "10"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "0\n0\n",
+        "output": "0"
+      },
+      {
+        "input": "999\n1\n",
+        "output": "1000"
+      },
+      {
+        "input": "-5\n-6\n",
+        "output": "-11"
+      },
+      {
+        "input": "42\n-42\n",
+        "output": "0"
+      },
+      {
+        "input": "123\n456\n",
+        "output": "579"
+      },
+      {
+        "input": "1\n-999\n",
+        "output": "-998"
+      },
+      {
+        "input": "700\n300\n",
+        "output": "1000"
+      },
+      {
+        "input": "-1000\n1001\n",
+        "output": "1"
+      },
+      {
+        "input": "8\n8\n",
+        "output": "16"
+      },
+      {
+        "input": "-250\n50\n",
+        "output": "-200"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Utilisez `sys.stdin.read().split()` pour extraire les deux entiers indépendamment des espaces ou sauts de ligne.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    print(a + b)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    print(a + b)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La fonction `sys.stdin.read().split()` lit l'intégralité du flux d'entrée et le découpe selon les séparateurs blancs. On convertit les deux premiers tokens en entiers `int(tokens[0])` et `int(tokens[1])` puis on affiche leur somme arithmétique `a + b`.\n- **Complexité temporelle** : $O(1)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9002,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Min et Max d'un Tableau 1D",
+    "topic": "Arrays",
+    "difficulty": "easy",
+    "description": "### Min et Max d'un tableau 1D\n\nOn vous donne un tableau d'entiers de taille `N`.\n\nVous devez déterminer la plus petite valeur et la plus grande valeur.\n\n#### Objectif\n- Trouver `min(T)`\n- Trouver `max(T)`\n- Afficher `min max`\n\n#### Format d'entrée\n- Ligne 1: entier `N`\n- Ligne 2: `N` entiers\n\n#### Format de sortie\n- Deux entiers séparés par un espace: `min max`\n\n#### Exemple\n**Entrée**\n```\n5\n8 2 11 -3 7\n```\n**Sortie**\n```\n-3 11\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n4 -1 7 7 0\n",
+        "output": "-1 7"
+      },
+      {
+        "input": "1\n99\n",
+        "output": "99 99"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "4\n10 20 30 40\n",
+        "output": "10 40"
+      },
+      {
+        "input": "6\n-3 -8 -1 -9 -5 -2\n",
+        "output": "-9 -1"
+      },
+      {
+        "input": "7\n2 2 2 2 2 2 2\n",
+        "output": "2 2"
+      },
+      {
+        "input": "8\n5 -5 10 -10 15 -15 20 -20\n",
+        "output": "-20 20"
+      },
+      {
+        "input": "3\n1000 0 999\n",
+        "output": "0 1000"
+      },
+      {
+        "input": "5\n-1 0 1 0 -1\n",
+        "output": "-1 1"
+      },
+      {
+        "input": "9\n3 6 9 12 15 18 21 24 27\n",
+        "output": "3 27"
+      },
+      {
+        "input": "2\n-100 100\n",
+        "output": "-100 100"
+      },
+      {
+        "input": "10\n9 8 7 6 5 4 3 2 1 0\n",
+        "output": "0 9"
+      },
+      {
+        "input": "5\n42 42 41 42 42\n",
+        "output": "41 42"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Après lecture de N et des éléments dans une liste, utilisez les fonctions natives Python `min()` et `max()`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    print(f\"{min(arr)} {max(arr)}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    print(f\"{min(arr)} {max(arr)}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On extrait le nombre d'éléments $N$ suivi des $N$ entiers. Les fonctions natives `min(arr)` et `max(arr)` effectuent chacune un parcours linéaire optimisé en C pour identifier les extremums.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9003,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Somme des Diagonales d'une Matrice",
+    "topic": "Arrays",
+    "difficulty": "medium",
+    "description": "### Somme des diagonales d'une matrice carrée\n\nOn vous donne une matrice carrée `N x N`.\n\nCalculez la somme de la diagonale principale et de la diagonale secondaire.\n\nSi `N` est impair, l'élément central appartient aux deux diagonales et doit être compté une seule fois.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Puis `N` lignes, chacune avec `N` entiers\n\n#### Format de sortie\n- Un entier: la somme totale\n\n#### Exemple\n**Entrée**\n```\n3\n1 2 3\n4 5 6\n7 8 9\n```\n**Sortie**\n```\n25\n```\nExplication: `(1+5+9) + (3+5+7) - 5 = 25`.",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "3\n1 2 3\n4 5 6\n7 8 9\n",
+        "output": "15 15"
+      },
+      {
+        "input": "2\n4 1\n2 3\n",
+        "output": "7 3"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n9\n",
+        "output": "9 9"
+      },
+      {
+        "input": "3\n2 0 1\n3 4 5\n6 7 8\n",
+        "output": "14 11"
+      },
+      {
+        "input": "4\n1 1 1 1\n1 1 1 1\n1 1 1 1\n1 1 1 1\n",
+        "output": "4 4"
+      },
+      {
+        "input": "3\n-1 -2 -3\n-4 -5 -6\n-7 -8 -9\n",
+        "output": "-15 -15"
+      },
+      {
+        "input": "4\n5 0 0 1\n0 4 2 0\n0 3 6 0\n7 0 0 8\n",
+        "output": "23 13"
+      },
+      {
+        "input": "2\n10 -5\n-6 20\n",
+        "output": "30 -11"
+      },
+      {
+        "input": "5\n1 0 0 0 2\n0 3 0 4 0\n0 0 5 0 0\n0 6 0 7 0\n8 0 0 0 9\n",
+        "output": "25 25"
+      },
+      {
+        "input": "3\n9 8 7\n6 5 4\n3 2 1\n",
+        "output": "15 15"
+      },
+      {
+        "input": "3\n0 1 0\n2 0 2\n0 3 0\n",
+        "output": "0 0"
+      },
+      {
+        "input": "4\n2 3 4 5\n6 7 8 9\n1 0 -1 -2\n3 4 5 6\n",
+        "output": "14 16"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Pour une matrice carrée N x N aplatie, l'élément (i, i) est à l'indice `i*n + i` et l'élément secondaire à `i*n + (n - 1 - i)`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    diag1 = sum(vals[i * n + i] for i in range(n))\n    diag2 = sum(vals[i * n + (n - 1 - i)] for i in range(n))\n    print(f\"{diag1} {diag2}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    diag1 = sum(vals[i * n + i] for i in range(n))\n    diag2 = sum(vals[i * n + (n - 1 - i)] for i in range(n))\n    print(f\"{diag1} {diag2}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour une matrice carrée de côté $N$, la diagonale principale est constituée des éléments $M[i][i]$ et la diagonale secondaire des éléments $M[i][N - 1 - i]$. On calcule la somme de chacune en un seul parcours de $i=0$ à $N-1$ et on affiche `diag1 diag2`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N^2)$"
+  },
+  {
+    "id": 9004,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Premier Caractere Non Repeté",
+    "topic": "Strings",
+    "difficulty": "medium",
+    "description": "### Premier caractère non répété\n\nOn vous donne une chaîne.\n\nAffichez le premier caractère qui apparaît exactement une fois.\n\nSi tous les caractères se répètent, affichez `-1`.\n\n#### Format d'entrée\n- Une ligne: la chaîne `S`\n\n#### Format de sortie\n- Un caractère (ou `-1`)\n\n#### Exemple\n**Entrée**\n```\nswiss\n```\n**Sortie**\n```\nw\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "swiss\n",
+        "output": "2"
+      },
+      {
+        "input": "aabbcc\n",
+        "output": "0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "algo\n",
+        "output": "1"
+      },
+      {
+        "input": "aabccd\n",
+        "output": "3"
+      },
+      {
+        "input": "abcabcde\n",
+        "output": "7"
+      },
+      {
+        "input": "zzzz\n",
+        "output": "0"
+      },
+      {
+        "input": "x\n",
+        "output": "1"
+      },
+      {
+        "input": "abacabad\n",
+        "output": "4"
+      },
+      {
+        "input": "teeter\n",
+        "output": "6"
+      },
+      {
+        "input": "aabbc\n",
+        "output": "5"
+      },
+      {
+        "input": "bbaa\n",
+        "output": "0"
+      },
+      {
+        "input": "mamma\n",
+        "output": "0"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Comptez les fréquences avec `collections.Counter`, puis parcourez la chaîne originale pour trouver le premier élément de fréquence 1 (indice 1-based, ou 0 si absent).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nfrom collections import Counter\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    counts = Counter(s)\n    for idx, char in enumerate(s):\n        if counts[char] == 1:\n            print(idx + 1)\n            return\n    print(0)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nfrom collections import Counter\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    counts = Counter(s)\n    for idx, char in enumerate(s):\n        if counts[char] == 1:\n            print(idx + 1)\n            return\n    print(0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On procède en deux passes : la première compte les occurrences de chaque caractère dans une table de hachage (`Counter`). La seconde parcourt la chaîne de gauche à droite pour trouver le premier caractère dont le compteur vaut 1 et renvoie son indice 1-based (`idx + 1`). Si tous les caractères sont répétés, on affiche 0.\n- **Complexité temporelle** : $O(L)$\n- **Complexité spatiale** : $O(\\Sigma)$"
+  },
+  {
+    "id": 9005,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Palindrome",
+    "topic": "Strings",
+    "difficulty": "medium",
+    "description": "### Vérification de palindrome\n\nOn vous donne une chaîne.\n\nDéterminez si elle se lit de la même façon de gauche à droite et de droite à gauche.\n\n#### Format d'entrée\n- Une ligne: la chaîne\n\n#### Format de sortie\n- `Yes` si palindrome\n- `No` sinon\n\n#### Exemple\n**Entrée**\n```\nradar\n```\n**Sortie**\n```\nYes\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "kayak\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "algo\n",
+        "output": "Faux"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "radar\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "bonjour\n",
+        "output": "Faux"
+      },
+      {
+        "input": "abba\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "abcba\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "abca\n",
+        "output": "Faux"
+      },
+      {
+        "input": "a\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "aa\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "ab\n",
+        "output": "Faux"
+      },
+      {
+        "input": "level\n",
+        "output": "Vrai"
+      },
+      {
+        "input": "levels\n",
+        "output": "Faux"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Comparez la chaîne avec sa version inversée `s == s[::-1]` et affichez 'Vrai' ou 'Faux'.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    if s == s[::-1]:\n        print(\"Vrai\")\n    else:\n        print(\"Faux\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    if s == s[::-1]:\n        print(\"Vrai\")\n    else:\n        print(\"Faux\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Un mot ou une séquence est un palindrome s'il se lit de manière identique dans les deux sens. L'idiome Python `s[::-1]` génère le miroir de la chaîne en $O(L)$. On teste l'égalité et on affiche `Vrai` ou `Faux`.\n- **Complexité temporelle** : $O(L)$\n- **Complexité spatiale** : $O(L)$"
+  },
+  {
+    "id": 9006,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Tri de Tableau",
+    "topic": "Arrays",
+    "difficulty": "hard",
+    "description": "### Tri d'un tableau\n\nOn vous donne `N` entiers.\n\nTriez-les en ordre croissant puis affichez le tableau trié.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `N` entiers\n\n#### Format de sortie\n- Les `N` entiers triés, séparés par des espaces\n\n#### Exemple\n**Entrée**\n```\n6\n5 2 9 1 5 6\n```\n**Sortie**\n```\n1 2 5 5 6 9\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4\n10 -2 5 0\n",
+        "output": "-2 0 5 10"
+      },
+      {
+        "input": "5\n5 4 3 2 1\n",
+        "output": "1 2 3 4 5"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n1 2 3\n",
+        "output": "1 2 3"
+      },
+      {
+        "input": "1\n99\n",
+        "output": "99"
+      },
+      {
+        "input": "6\n-1 -3 -2 -5 -4 -6\n",
+        "output": "-6 -5 -4 -3 -2 -1"
+      },
+      {
+        "input": "8\n2 2 1 1 3 3 0 0\n",
+        "output": "0 0 1 1 2 2 3 3"
+      },
+      {
+        "input": "4\n1000 0 -1000 500\n",
+        "output": "-1000 0 500 1000"
+      },
+      {
+        "input": "7\n9 8 7 6 5 4 3\n",
+        "output": "3 4 5 6 7 8 9"
+      },
+      {
+        "input": "5\n0 0 0 0 0\n",
+        "output": "0 0 0 0 0"
+      },
+      {
+        "input": "6\n1 -1 1 -1 1 -1\n",
+        "output": "-1 -1 -1 1 1 1"
+      },
+      {
+        "input": "9\n3 14 15 9 26 5 35 89 79\n",
+        "output": "3 5 9 14 15 26 35 79 89"
+      },
+      {
+        "input": "2\n10 -10\n",
+        "output": "-10 10"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Chargez les N entiers dans une liste et utilisez `arr.sort()` pour un tri in-place en O(N log N).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Python utilise l'algorithme Timsort (hybride tri fusion / insertion) via `arr.sort()`, qui s'exécute en $O(N \\log N)$ dans le pire des cas et $O(N)$ sur données quasi-triées. Les éléments sont ensuite affichés séparés par un espace.\n- **Complexité temporelle** : $O(N \\log N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9007,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Rotation Circulaire d'un Tableau",
+    "topic": "Arrays",
+    "difficulty": "hard",
+    "description": "### Rotation circulaire d'un tableau\n\nOn vous donne un tableau de taille `N` et un entier `K`.\n\nEffectuez une rotation circulaire à droite de `K` positions.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `K`\n- Ligne 3: `N` entiers\n\n#### Format de sortie\n- Le tableau après rotation, séparé par des espaces\n\n#### Exemple\n**Entrée**\n```\n5\n2\n1 2 3 4 5\n```\n**Sortie**\n```\n4 5 1 2 3\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n1 2 3 4 5\n2\n",
+        "output": "4 5 1 2 3"
+      },
+      {
+        "input": "4\n10 20 30 40\n1\n",
+        "output": "40 10 20 30"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n1 2 3\n0\n",
+        "output": "1 2 3"
+      },
+      {
+        "input": "3\n1 2 3\n3\n",
+        "output": "1 2 3"
+      },
+      {
+        "input": "3\n1 2 3\n4\n",
+        "output": "3 1 2"
+      },
+      {
+        "input": "6\n0 1 2 3 4 5\n2\n",
+        "output": "4 5 0 1 2 3"
+      },
+      {
+        "input": "1\n99\n10\n",
+        "output": "99"
+      },
+      {
+        "input": "5\n-1 -2 -3 -4 -5\n2\n",
+        "output": "-4 -5 -1 -2 -3"
+      },
+      {
+        "input": "7\n7 6 5 4 3 2 1\n5\n",
+        "output": "5 4 3 2 1 7 6"
+      },
+      {
+        "input": "8\n1 1 1 2 2 2 3 3\n3\n",
+        "output": "2 3 3 1 1 1 2 2"
+      },
+      {
+        "input": "4\n100 200 300 400\n8\n",
+        "output": "100 200 300 400"
+      },
+      {
+        "input": "5\n9 0 8 0 7\n6\n",
+        "output": "7 9 0 8 0"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Réduisez d'abord K avec `k = k % n`. La rotation circulaire à droite découpe le tableau en `arr[-k:] + arr[:-k]`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    k = int(tokens[n+1])\n    if n > 0:\n        k = k % n\n        if k > 0:\n            arr = arr[-k:] + arr[:-k]\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    k = int(tokens[n+1])\n    if n > 0:\n        k = k % n\n        if k > 0:\n            arr = arr[-k:] + arr[:-k]\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Une rotation circulaire à droite de $K$ positions équivaut à déplacer les $K$ derniers éléments au tout début du tableau. Pour gérer les cas où $K \\ge N$, on applique `k = k % n`. Le slicing Python effectue cette opération de façon vectorisée.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9008,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Somme Maximale d'un Sous-Tableau",
+    "topic": "Algorithms",
+    "difficulty": "hard",
+    "description": "### Somme maximale d'un sous-tableau contigu\n\nOn vous donne un tableau d'entiers (positifs, négatifs ou nuls).\n\nTrouvez la plus grande somme possible d'un sous-tableau **contigu**.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `N` entiers\n\n#### Format de sortie\n- Un entier: la somme maximale\n\n#### Exemple\n**Entrée**\n```\n8\n-2 -3 4 -1 -2 1 5 -3\n```\n**Sortie**\n```\n7\n```\nLe sous-tableau `4 -1 -2 1 5` donne la somme maximale `7`.",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "8\n-2 -3 4 -1 -2 1 5 -3\n",
+        "output": "7"
+      },
+      {
+        "input": "5\n1 2 3 4 5\n",
+        "output": "15"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "4\n-1 -2 -3 -4\n",
+        "output": "-1"
+      },
+      {
+        "input": "1\n9\n",
+        "output": "9"
+      },
+      {
+        "input": "6\n3 -2 5 -1 6 -3\n",
+        "output": "11"
+      },
+      {
+        "input": "7\n0 0 0 0 0 0 0\n",
+        "output": "0"
+      },
+      {
+        "input": "9\n-5 4 -1 7 -8 6 2 -1 3\n",
+        "output": "12"
+      },
+      {
+        "input": "5\n-2 1 -3 4 -1\n",
+        "output": "4"
+      },
+      {
+        "input": "6\n2 -1 2 3 4 -5\n",
+        "output": "10"
+      },
+      {
+        "input": "6\n-2 -1 -2 -3 -4 -5\n",
+        "output": "-1"
+      },
+      {
+        "input": "10\n1 -1 1 -1 1 -1 1 -1 1 -1\n",
+        "output": "1"
+      },
+      {
+        "input": "8\n5 -9 6 -2 3 -1 2 -1\n",
+        "output": "8"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Appliquez l'algorithme de Kadane : maintenez la somme maximale locale `curr_max = max(x, curr_max + x)` et la somme maximale globale.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    max_so_far = arr[0]\n    curr_max = arr[0]\n    for x in arr[1:]:\n        curr_max = max(x, curr_max + x)\n        max_so_far = max(max_so_far, curr_max)\n    print(max_so_far)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    max_so_far = arr[0]\n    curr_max = arr[0]\n    for x in arr[1:]:\n        curr_max = max(x, curr_max + x)\n        max_so_far = max(max_so_far, curr_max)\n    print(max_so_far)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme de Kadane résout le problème du sous-tableau de somme maximale en un seul passage $O(N)$. À chaque étape, on décide soit d'étendre le sous-tableau courant (`curr_max + x`), soit de démarrer un nouveau sous-tableau à partir de l'élément courant (`x`).\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ hors stockage"
+  },
+  {
+    "id": 9009,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Détection de Cycle dans une Liste Chaînée",
+    "topic": "Linked Lists",
+    "difficulty": "medium",
+    "description": "### Détection de cycle dans une liste chaînée\n\nLa liste est fournie par:\n- `Val[0..N-1]`: valeurs des nœuds\n- `index[0..N-1]`: index du nœud suivant (`-1` signifie `NIL`)\n\nLa tête de liste est `liste[0]`.\n\nDétectez s'il existe un cycle en utilisant la technique du lièvre et de la tortue.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `N` entiers `Val[i]`\n- Ligne 3: `N` entiers `index[i]`\n\n#### Format de sortie\n- `Cycle` ou `No Cycle`\n\n#### Exemple\n**Entrée**\n```\n4\n1 2 3 4\n1 2 3 1\n```\n**Sortie**\n```\nCycle\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n10 20 30 40 50\n1 2 3 4 -1\n",
+        "output": "No Cycle"
+      },
+      {
+        "input": "4\n1 2 3 4\n1 2 3 1\n",
+        "output": "Cycle"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n99\n-1\n",
+        "output": "No Cycle"
+      },
+      {
+        "input": "1\n42\n0\n",
+        "output": "Cycle"
+      },
+      {
+        "input": "6\n5 6 7 8 9 10\n1 2 3 4 5 2\n",
+        "output": "Cycle"
+      },
+      {
+        "input": "6\n5 6 7 8 9 10\n1 2 3 4 5 -1\n",
+        "output": "No Cycle"
+      },
+      {
+        "input": "7\n3 1 4 1 5 9 2\n1 -1 3 4 5 6 -1\n",
+        "output": "No Cycle"
+      },
+      {
+        "input": "7\n3 1 4 1 5 9 2\n1 2 3 4 5 6 3\n",
+        "output": "Cycle"
+      },
+      {
+        "input": "2\n1 2\n1 -1\n",
+        "output": "No Cycle"
+      },
+      {
+        "input": "2\n1 2\n1 0\n",
+        "output": "Cycle"
+      },
+      {
+        "input": "8\n1 2 3 4 5 6 7 8\n1 2 3 4 5 6 7 4\n",
+        "output": "Cycle"
+      },
+      {
+        "input": "8\n1 2 3 4 5 6 7 8\n1 2 3 4 5 6 7 -1\n",
+        "output": "No Cycle"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Parcourez les pointeurs `nxt[curr]` depuis 0 en marquant les nœuds visités dans un ensemble `visited`. Si vous retombez sur un nœud déjà vu, il y a un cycle.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    visited = set()\n    curr = 0\n    while curr != -1 and curr < n:\n        if curr in visited:\n            print(\"Cycle\")\n            return\n        visited.add(curr)\n        curr = nxt[curr]\n    print(\"No Cycle\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    visited = set()\n    curr = 0\n    while curr != -1 and curr < n:\n        if curr in visited:\n            print(\"Cycle\")\n            return\n        visited.add(curr)\n        curr = nxt[curr]\n    print(\"No Cycle\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On modélise le graphe orienté représenté par le tableau de pointeurs suivants `index[]`. En maintenant un ensemble des indices déjà rencontrés (`set`), on détecte en temps $O(N)$ toute boucle fermée (`Cycle`). Si on atteint `-1`, la liste se termine (`No Cycle`).\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9010,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Milieu d'une Liste Chaînée",
+    "topic": "Linked Lists",
+    "difficulty": "easy",
+    "description": "### Trouver le milieu d'une liste chaînée\n\nLa liste est donnée avec `Val[]` et `index[]` (`-1` pour `NIL`), tête `liste[0]`.\n\nCalculez le nœud milieu par la méthode du lièvre et de la tortue.\n\nPour une taille paire, on retient le **deuxième** milieu.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `N` entiers `Val[i]`\n- Ligne 3: `N` entiers `index[i]`\n\n#### Format de sortie\n- `valeur_du_milieu position_milieu`\n- `position_milieu` commence à `1`\n\n#### Exemple\n**Entrée**\n```\n6\n1 2 3 4 5 6\n1 2 3 4 5 -1\n```\n**Sortie**\n```\n4 4\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n10 20 30 40 50\n1 2 3 4 -1\n",
+        "output": "30 3"
+      },
+      {
+        "input": "6\n1 2 3 4 5 6\n1 2 3 4 5 -1\n",
+        "output": "4 4"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n99\n-1\n",
+        "output": "99 1"
+      },
+      {
+        "input": "2\n8 9\n1 -1\n",
+        "output": "9 2"
+      },
+      {
+        "input": "7\n3 3 3 3 3 3 3\n1 2 3 4 5 6 -1\n",
+        "output": "3 4"
+      },
+      {
+        "input": "8\n5 1 9 2 7 4 6 8\n1 2 3 4 5 6 7 -1\n",
+        "output": "7 5"
+      },
+      {
+        "input": "3\n-5 -2 -1\n1 2 -1\n",
+        "output": "-2 2"
+      },
+      {
+        "input": "5\n7 9 11 13 15\n2 4 -1 1 3\n",
+        "output": "11 2"
+      },
+      {
+        "input": "2\n10 20\n1 -1\n",
+        "output": "20 2"
+      },
+      {
+        "input": "3\n1 2 3\n1 2 -1\n",
+        "output": "2 2"
+      },
+      {
+        "input": "4\n10 20 30 40\n1 2 3 -1\n",
+        "output": "30 3"
+      },
+      {
+        "input": "6\n5 10 15 20 25 30\n1 2 3 4 5 -1\n",
+        "output": "20 4"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Reconstituez la chaîne de nœuds depuis la tête 0 jusqu'à la fin (-1). La taille étant L, le milieu (deuxième si pair) est à l'indice 1-based `(L // 2) + 1`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    nodes = []\n    curr = 0\n    while curr != -1 and curr < n:\n        nodes.append((vals[curr], curr))\n        curr = nxt[curr]\n    l = len(nodes)\n    mid_pos = (l // 2) + 1\n    mid_val = nodes[mid_pos - 1][0]\n    print(f\"{mid_val} {mid_pos}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    nodes = []\n    curr = 0\n    while curr != -1 and curr < n:\n        nodes.append((vals[curr], curr))\n        curr = nxt[curr]\n    l = len(nodes)\n    mid_pos = (l // 2) + 1\n    mid_val = nodes[mid_pos - 1][0]\n    print(f\"{mid_val} {mid_pos}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On traverse la liste chaînée depuis l'indice 0 en suivant les pointeurs suivants jusqu'à la fin `-1`. En collectant les nœuds, on obtient la longueur totale $L$. Selon la spécification, pour une taille paire comme impaire, la position médiane (1-based) est `(L // 2) + 1`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9011,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Supprimer les Doublons d'une Liste Ordonnée",
+    "topic": "Linked Lists",
+    "difficulty": "medium",
+    "description": "### Supprimer les doublons d'une liste chaînée triée\n\nLa liste est fournie par:\n- `Val[0..N-1]`\n- `index[0..N-1]` (`-1` = fin)\n\nLa tête est `liste[0]`.\n\nLa liste est triée selon l'ordre de chaînage. Supprimez les répétitions pour conserver une occurrence de chaque valeur.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `N` entiers `Val[i]`\n- Ligne 3: `N` entiers `index[i]`\n\n#### Format de sortie\n- Les valeurs finales, séparées par des espaces\n\n#### Exemple\n**Entrée**\n```\n7\n1 1 2 3 3 4 4\n1 2 3 4 5 6 -1\n```\n**Sortie**\n```\n1 2 3 4\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "7\n1 1 2 3 3 4 4\n1 2 3 4 5 6 -1\n",
+        "output": "1 2 3 4"
+      },
+      {
+        "input": "5\n2 2 2 2 2\n1 2 3 4 -1\n",
+        "output": "2"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "6\n1 2 3 4 5 6\n1 2 3 4 5 -1\n",
+        "output": "1 2 3 4 5 6"
+      },
+      {
+        "input": "8\n-3 -3 -1 -1 0 2 2 9\n1 2 3 4 5 6 7 -1\n",
+        "output": "-3 -1 0 2 9"
+      },
+      {
+        "input": "1\n42\n-1\n",
+        "output": "42"
+      },
+      {
+        "input": "9\n1 1 1 2 2 3 4 4 5\n1 2 3 4 5 6 7 8 -1\n",
+        "output": "1 2 3 4 5"
+      },
+      {
+        "input": "4\n10 10 11 11\n1 2 3 -1\n",
+        "output": "10 11"
+      },
+      {
+        "input": "10\n0 0 0 0 1 1 2 3 3 3\n1 2 3 4 5 6 7 8 9 -1\n",
+        "output": "0 1 2 3"
+      },
+      {
+        "input": "3\n1 1 1\n1 2 -1\n",
+        "output": "1"
+      },
+      {
+        "input": "4\n2 2 3 3\n1 2 3 -1\n",
+        "output": "2 3"
+      },
+      {
+        "input": "5\n1 2 2 2 3\n1 2 3 4 -1\n",
+        "output": "1 2 3"
+      },
+      {
+        "input": "8\n5 5 5 5 10 10 15 15\n1 2 3 4 5 6 7 -1\n",
+        "output": "5 10 15"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Parcourez la liste chaînée ordonnée et filtrez les valeurs consécutives identiques à l'aide d'un ensemble ou en comparant avec le nœud précédent.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    res = []\n    curr = 0\n    seen = set()\n    while curr != -1 and curr < n:\n        v = vals[curr]\n        if v not in seen:\n            seen.add(v)\n            res.append(v)\n        curr = nxt[curr]\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:n+1]]\n    nxt = [int(x) for x in tokens[n+1:2*n+1]]\n    res = []\n    curr = 0\n    seen = set()\n    while curr != -1 and curr < n:\n        v = vals[curr]\n        if v not in seen:\n            seen.add(v)\n            res.append(v)\n        curr = nxt[curr]\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La liste chaînée étant ordonnée par valeur, les doublons se succèdent nécessairement. En parcourant les nœuds de la tête vers la queue et en ne conservant que les valeurs non encore rencontrées (`seen = set()`), on conserve une occurrence unique de chaque élément dans l'ordre originel.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9012,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Parenthèses Valides avec Pile (Liste Chaînée)",
+    "topic": "Stacks",
+    "difficulty": "easy",
+    "description": "### Parenthèses valides avec pile chaînée\n\nVérifiez si une expression contenant `()[]{}` est correctement parenthésée.\n\nUtilisez explicitement une pile implémentée avec une liste chaînée (`Empiler`, `Depiler`, `EstVide`).\n\n#### Format d'entrée\n- Une ligne: expression\n\n#### Format de sortie\n- `Valid` ou `Invalid`\n\n#### Exemple\n**Entrée**\n```\n([{}])\n```\n**Sortie**\n```\nValid\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "()[]{}\n",
+        "output": "Valid"
+      },
+      {
+        "input": "([{}])\n",
+        "output": "Valid"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "(]\n",
+        "output": "Invalid"
+      },
+      {
+        "input": "([)]\n",
+        "output": "Invalid"
+      },
+      {
+        "input": "(((())))\n",
+        "output": "Valid"
+      },
+      {
+        "input": "(((()))\n",
+        "output": "Invalid"
+      },
+      {
+        "input": "{[()]}[]\n",
+        "output": "Valid"
+      },
+      {
+        "input": "{[(])}\n",
+        "output": "Invalid"
+      },
+      {
+        "input": "()\n",
+        "output": "Valid"
+      },
+      {
+        "input": "({[]})\n",
+        "output": "Valid"
+      },
+      {
+        "input": "(((\n",
+        "output": "Invalid"
+      },
+      {
+        "input": "({[)})\n",
+        "output": "Invalid"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Utilisez une pile (stack) : empilez les délimiteurs ouvrants `([{` et pour chaque fermant, vérifiez qu'il correspond au sommet de la pile avant de le dépiler.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    mapping = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif c in mapping:\n            if not stack or stack[-1] != mapping[c]:\n                print(\"Invalid\")\n                return\n            stack.pop()\n    if not stack:\n        print(\"Valid\")\n    else:\n        print(\"Invalid\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    s = raw.split()[0]\n    mapping = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for c in s:\n        if c in '([{':\n            stack.append(c)\n        elif c in mapping:\n            if not stack or stack[-1] != mapping[c]:\n                print(\"Invalid\")\n                return\n            stack.pop()\n    if not stack:\n        print(\"Valid\")\n    else:\n        print(\"Invalid\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Une expression de parenthèses est valide si et seulement si tout délimiteur fermant s'apparie avec le délimiteur ouvrant le plus récemment rencontré du même type. Une pile (LIFO) permet de vérifier cette concordance en $O(N)$. À la fin, la pile doit être vide.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9013,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Next Greater Element avec Pile Chaînée",
+    "topic": "Stacks",
+    "difficulty": "medium",
+    "description": "### Next Greater Element avec pile chaînée\n\nPour chaque élément `T[i]`, trouvez le premier élément strictement plus grand à sa droite.\n\nSi aucun n'existe, la réponse pour cette position est `-1`.\n\nUtilisez une pile chaînée d'indices.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Ligne 2: `N` entiers\n\n#### Format de sortie\n- `N` entiers séparés par des espaces\n\n#### Exemple\n**Entrée**\n```\n4\n4 5 2 25\n```\n**Sortie**\n```\n5 25 25 -1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4\n4 5 2 25\n",
+        "output": "5 25 25 -1"
+      },
+      {
+        "input": "5\n13 7 6 12 10\n",
+        "output": "-1 12 12 -1 -1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n1 2 3\n",
+        "output": "2 3 -1"
+      },
+      {
+        "input": "3\n3 2 1\n",
+        "output": "-1 -1 -1"
+      },
+      {
+        "input": "6\n2 1 2 4 3 5\n",
+        "output": "4 2 4 5 5 -1"
+      },
+      {
+        "input": "1\n9\n",
+        "output": "-1"
+      },
+      {
+        "input": "5\n5 5 5 5 5\n",
+        "output": "-1 -1 -1 -1 -1"
+      },
+      {
+        "input": "7\n1 3 2 4 2 6 1\n",
+        "output": "3 4 4 6 6 -1 -1"
+      },
+      {
+        "input": "2\n10 20\n",
+        "output": "20 -1"
+      },
+      {
+        "input": "2\n20 10\n",
+        "output": "-1 -1"
+      },
+      {
+        "input": "5\n6 8 0 1 3\n",
+        "output": "8 -1 1 3 -1"
+      },
+      {
+        "input": "4\n1 3 2 4\n",
+        "output": "3 4 4 -1"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Utilisez une pile monotone décroissante d'indices. Lorsqu'un élément est strictement plus grand que l'élément au sommet de la pile, dépilez et enregistrez-le comme réponse.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    ans = [-1] * n\n    stack = []\n    for i in range(n):\n        while stack and arr[stack[-1]] < arr[i]:\n            ans[stack.pop()] = arr[i]\n        stack.append(i)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    ans = [-1] * n\n    stack = []\n    for i in range(n):\n        while stack and arr[stack[-1]] < arr[i]:\n            ans[stack.pop()] = arr[i]\n        stack.append(i)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La pile monotone permet de trouver le premier élément plus grand à droite (Next Greater Element) pour l'ensemble des éléments en temps amorti $O(N)$. Chaque indice est empilé au plus une fois et dépilé au plus une fois.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9014,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Évaluation d'une Expression Postfixée (Pile Chaînée)",
+    "topic": "Stacks",
+    "difficulty": "hard",
+    "description": "### Évaluation d'une expression postfixée avec pile chaînée\n\nÉvaluez une expression en notation postfixée (RPN).\n\nLes tokens sont séparés par des espaces, opérateurs autorisés: `+ - * /`.\n\nUtilisez une pile chaînée d'entiers.\n\n#### Format d'entrée\n- Une ligne: expression postfixée\n\n#### Format de sortie\n- Un entier\n\n#### Exemple\n**Entrée**\n```\n5 1 2 + 4 * + 3 -\n```\n**Sortie**\n```\n14\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2 3 +\n",
+        "output": "5"
+      },
+      {
+        "input": "5 1 2 + 4 * + 3 -\n",
+        "output": "14"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "10 2 /\n",
+        "output": "5"
+      },
+      {
+        "input": "8 3 - 2 *\n",
+        "output": "10"
+      },
+      {
+        "input": "7 2 3 * -\n",
+        "output": "1"
+      },
+      {
+        "input": "9 5 2 + *\n",
+        "output": "63"
+      },
+      {
+        "input": "12 3 / 2 +\n",
+        "output": "6"
+      },
+      {
+        "input": "4 2 + 3 5 1 - * +\n",
+        "output": "18"
+      },
+      {
+        "input": "4 2 +\n",
+        "output": "6"
+      },
+      {
+        "input": "5 1 2 + 4 * + 3 -\n",
+        "output": "14"
+      },
+      {
+        "input": "100 200 +\n",
+        "output": "300"
+      },
+      {
+        "input": "20 4 / 2 *\n",
+        "output": "10"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Parcourez les tokens : si c'est un nombre, empilez-le. Si c'est un opérateur (+, -, *, /), dépilez les deux opérandes b puis a, appliquez l'opération, et ré-empilez le résultat.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    stack = []\n    for t in tokens:\n        if t in ('+', '-', '*', '/'):\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    print(stack[0])\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    stack = []\n    for t in tokens:\n        if t in ('+', '-', '*', '/'):\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    print(stack[0])\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'évaluation d'une expression en notation polonaise inverse (RPN) s'effectue naturellement à l'aide d'une pile. Pour la division, on prend soin d'effectuer la division entière tronquée vers zéro (`int(a / b)`).\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9015,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Générer les N Premiers Binaires avec File Chaînée",
+    "topic": "Queues",
+    "difficulty": "easy",
+    "description": "### Générer les N premiers binaires avec file chaînée\n\nGénérez les représentations binaires des entiers de `1` à `N`.\n\nUtilisez une file chaînée (`Enfiler`, `Defiler`) de chaînes.\n\n#### Format d'entrée\n- Un entier `N`\n\n#### Format de sortie\n- Les `N` binaires séparés par des espaces\n\n#### Exemple\n**Entrée**\n```\n5\n```\n**Sortie**\n```\n1 10 11 100 101\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "1\n",
+        "output": "1"
+      },
+      {
+        "input": "5\n",
+        "output": "1 10 11 100 101"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "2\n",
+        "output": "1 10"
+      },
+      {
+        "input": "3\n",
+        "output": "1 10 11"
+      },
+      {
+        "input": "6\n",
+        "output": "1 10 11 100 101 110"
+      },
+      {
+        "input": "7\n",
+        "output": "1 10 11 100 101 110 111"
+      },
+      {
+        "input": "8\n",
+        "output": "1 10 11 100 101 110 111 1000"
+      },
+      {
+        "input": "10\n",
+        "output": "1 10 11 100 101 110 111 1000 1001 1010"
+      },
+      {
+        "input": "4\n",
+        "output": "1 10 11 100"
+      },
+      {
+        "input": "5\n",
+        "output": "1 10 11 100 101"
+      },
+      {
+        "input": "2 \n",
+        "output": "1 10"
+      },
+      {
+        "input": "3\n\n",
+        "output": "1 10 11"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Pour chaque entier i de 1 à N, convertissez-le en binaire à l'aide de `bin(i)[2:]` et joignez les résultats avec des espaces.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    res = [bin(i)[2:] for i in range(1, n + 1)]\n    print(\" \".join(res))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    res = [bin(i)[2:] for i in range(1, n + 1)]\n    print(\" \".join(res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La fonction native `bin(i)` renvoie une chaîne au format `'0b...'`. Le slicing `[2:]` extrait la représentation binaire brute. L'exercice peut également se résoudre algorithmiquement avec une file (BFS) générant les nombres binaires en enfilant successivement `s + '0'` et `s + '1'`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9016,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Tour Circulaire des Stations d'Essence",
+    "topic": "Queues",
+    "difficulty": "hard",
+    "description": "### Tour circulaire des stations d'essence\n\nVous avez `N` stations en cercle.\n\nPour chaque station `i`:\n- `petrol[i]`: carburant disponible\n- `distance[i]`: carburant nécessaire pour aller à la station suivante\n\nTrouvez l'indice de départ (0-based) permettant de compléter un tour entier.\n\nSinon, affichez `-1`.\n\n#### Format d'entrée\n- Ligne 1: `N`\n- Puis `N` lignes: `petrol distance`\n\n#### Format de sortie\n- Un entier\n\n#### Exemple\n**Entrée**\n```\n4\n4 6\n6 5\n7 3\n4 5\n```\n**Sortie**\n```\n1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4\n4 6\n6 5\n7 3\n4 5\n",
+        "output": "1"
+      },
+      {
+        "input": "3\n1 5\n10 3\n3 4\n",
+        "output": "1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n2 3\n3 4\n4 3\n",
+        "output": "-1"
+      },
+      {
+        "input": "2\n1 2\n2 3\n",
+        "output": "-1"
+      },
+      {
+        "input": "5\n6 4\n3 6\n7 3\n4 5\n5 2\n",
+        "output": "2"
+      },
+      {
+        "input": "1\n5 5\n",
+        "output": "0"
+      },
+      {
+        "input": "1\n3 4\n",
+        "output": "-1"
+      },
+      {
+        "input": "4\n8 4\n1 4\n2 3\n4 4\n",
+        "output": "0"
+      },
+      {
+        "input": "2\n4 2\n2 4\n",
+        "output": "0"
+      },
+      {
+        "input": "3\n1 2\n2 1\n3 3\n",
+        "output": "1"
+      },
+      {
+        "input": "4\n2 3\n4 2\n3 4\n1 1\n",
+        "output": "1"
+      },
+      {
+        "input": "2\n1 5\n2 5\n",
+        "output": "-1"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Maintenez la réserve totale `total_tank += petrol - dist` et la réserve courante. Si `curr_tank < 0`, réinitialisez le point de départ à `i + 1` et `curr_tank = 0`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    petrol = []\n    distance = []\n    idx = 1\n    for _ in range(n):\n        petrol.append(int(tokens[idx]))\n        distance.append(int(tokens[idx+1]))\n        idx += 2\n    total_tank = 0\n    curr_tank = 0\n    start = 0\n    for i in range(n):\n        diff = petrol[i] - distance[i]\n        total_tank += diff\n        curr_tank += diff\n        if curr_tank < 0:\n            start = i + 1\n            curr_tank = 0\n    if total_tank >= 0:\n        print(start)\n    else:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    petrol = []\n    distance = []\n    idx = 1\n    for _ in range(n):\n        petrol.append(int(tokens[idx]))\n        distance.append(int(tokens[idx+1]))\n        idx += 2\n    total_tank = 0\n    curr_tank = 0\n    start = 0\n    for i in range(n):\n        diff = petrol[i] - distance[i]\n        total_tank += diff\n        curr_tank += diff\n        if curr_tank < 0:\n            start = i + 1\n            curr_tank = 0\n    if total_tank >= 0:\n        print(start)\n    else:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "C'est le problème classique du circuit d'essence (Gas Station). Si la somme totale du carburant est supérieure ou égale à la somme totale des distances (`total_tank >= 0`), une solution unique existe nécessairement. On trouve le point de départ en un seul parcours glouton $O(N)$.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ hors entrées"
+  },
+  {
+    "id": 9017,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Premier Négatif dans Chaque Fenêtre (File Chaînée)",
+    "topic": "Queues",
+    "difficulty": "medium",
+    "description": "### Premier négatif dans chaque fenêtre (file chaînée)\n\nPour chaque fenêtre glissante de taille `K`, affichez le premier nombre négatif.\n\nS'il n'y a aucun négatif dans la fenêtre, affichez `0`.\n\nUtilisez une file chaînée d'indices.\n\n#### Format d'entrée\n- Ligne 1: `N K`\n- Ligne 2: `N` entiers\n\n#### Format de sortie\n- `N-K+1` entiers séparés par des espaces\n\n#### Exemple\n**Entrée**\n```\n8 3\n12 -1 -7 8 -15 30 16 28\n```\n**Sortie**\n```\n-1 -1 -7 -15 -15 0\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "8 3\n12 -1 -7 8 -15 30 16 28\n",
+        "output": "-1 -1 -7 -15 -15 0"
+      },
+      {
+        "input": "5 2\n1 2 3 4 5\n",
+        "output": "0 0 0 0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "6 3\n-5 -2 -3 4 5 6\n",
+        "output": "-5 -2 -3 0"
+      },
+      {
+        "input": "5 1\n2 -1 3 -4 5\n",
+        "output": "0 -1 0 -4 0"
+      },
+      {
+        "input": "7 4\n1 -2 3 -4 5 -6 7\n",
+        "output": "-2 -2 -4 -4"
+      },
+      {
+        "input": "4 4\n-1 2 3 4\n",
+        "output": "-1"
+      },
+      {
+        "input": "4 4\n1 2 3 4\n",
+        "output": "0"
+      },
+      {
+        "input": "9 3\n-1 2 -3 4 -5 6 -7 8 -9\n",
+        "output": "-1 -3 -3 -5 -5 -7 -7"
+      },
+      {
+        "input": "4 2\n-1 2 3 -4\n",
+        "output": "-1 0 -4"
+      },
+      {
+        "input": "5 2\n1 2 3 4 5\n",
+        "output": "0 0 0 0"
+      },
+      {
+        "input": "5 3\n-1 -2 -3 -4 -5\n",
+        "output": "-1 -2 -3"
+      },
+      {
+        "input": "6 2\n1 -2 -3 4 -5 6\n",
+        "output": "-2 -2 -3 -5 -5"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Maintenez une file (`collections.deque`) des indices des nombres négatifs présents dans la fenêtre glissante courante de taille K.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nfrom collections import deque\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    arr = [int(x) for x in tokens[2:2+n]]\n    neg_indices = deque()\n    ans = []\n    for i in range(n):\n        if arr[i] < 0:\n            neg_indices.append(i)\n        if i >= k - 1:\n            while neg_indices and neg_indices[0] <= i - k:\n                neg_indices.popleft()\n            if neg_indices:\n                ans.append(arr[neg_indices[0]])\n            else:\n                ans.append(0)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nfrom collections import deque\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    arr = [int(x) for x in tokens[2:2+n]]\n    neg_indices = deque()\n    ans = []\n    for i in range(n):\n        if arr[i] < 0:\n            neg_indices.append(i)\n        if i >= k - 1:\n            while neg_indices and neg_indices[0] <= i - k:\n                neg_indices.popleft()\n            if neg_indices:\n                ans.append(arr[neg_indices[0]])\n            else:\n                ans.append(0)\n    print(\" \".join(str(x) for x in ans))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour chaque fenêtre de taille $K$, on maintient dans une file double (`deque`) les indices des éléments strictement négatifs. À chaque glissement de la fenêtre, on élimine les indices qui sont sortis de la fenêtre (`idx <= i - K`). Le premier négatif est alors `arr[deque[0]]` s'il existe, ou 0 sinon.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(K)$"
+  },
+  {
+    "id": 9045,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Factorielle d'un Entier",
+    "topic": "Basics",
+    "difficulty": "easy",
+    "description": "### Calcul de la Factorielle d'un Entier\n\nÉcrivez un algorithme qui lit un entier positif ou nul `N` et calcule sa factorielle `N!`.\n\n#### Contexte & Objectif\nLa factorielle d'un entier naturel `N` est le produit des nombres entiers strictement positifs inférieurs ou égaux à `N`. Par convention, `0! = 1`.\n\n#### Format d'entrée\n- Une seule ligne contenant l'entier `N` (avec `0 <= N <= 12`).\n\n#### Format de sortie attendu\n- Un seul entier représentant la valeur de `N!`.\n\n#### Exemple concret\n**Entrée :**\n```\n5\n```\n**Sortie attendue :**\n```\n120\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n",
+        "output": "120"
+      },
+      {
+        "input": "0\n",
+        "output": "1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n",
+        "output": "1"
+      },
+      {
+        "input": "2\n",
+        "output": "2"
+      },
+      {
+        "input": "3\n",
+        "output": "6"
+      },
+      {
+        "input": "4\n",
+        "output": "24"
+      },
+      {
+        "input": "6\n",
+        "output": "720"
+      },
+      {
+        "input": "7\n",
+        "output": "5040"
+      },
+      {
+        "input": "8\n",
+        "output": "40320"
+      },
+      {
+        "input": "9\n",
+        "output": "362880"
+      },
+      {
+        "input": "10\n",
+        "output": "3628800"
+      },
+      {
+        "input": "12\n",
+        "output": "479001600"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Multipliez successivement les entiers de 1 à N avec une boucle `for` ou utilisez `math.factorial(N)`. Rappel : 0! = 1.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    print(math.factorial(n))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    print(math.factorial(n))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La factorielle d'un entier naturel $N$ est le produit des entiers de 1 à $N$. Pour $N=0$, la convention mathématique pose $0! = 1$. L'algorithme itératif calcule la valeur en temps linéaire.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9046,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Nombre et Somme des Chiffres",
+    "topic": "Basics",
+    "difficulty": "easy",
+    "description": "### Analyse des Chiffres d'un Nombre\n\nÉcrivez un algorithme qui lit un entier positif ou nul `N`, puis détermine le nombre total de chiffres qui le composent ainsi que la somme de ses chiffres.\n\n#### Contexte & Objectif\nEn utilisant des divisions entières successives par 10 (`div 10`) et des restes (`mod 10`), extrayez chaque chiffre pour les compter et les additionner.\n\n#### Format d'entrée\n- Une seule ligne contenant l'entier `N` (`0 <= N <= 1000000`).\n\n#### Format de sortie attendu\n- Deux entiers séparés par un espace : le nombre de chiffres suivi de la somme des chiffres.\n\n#### Exemple concret\n**Entrée :**\n```\n4821\n```\n**Sortie attendue :**\n```\n4 15\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4821\n",
+        "output": "4 15"
+      },
+      {
+        "input": "0\n",
+        "output": "1 0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "7\n",
+        "output": "1 7"
+      },
+      {
+        "input": "10\n",
+        "output": "2 1"
+      },
+      {
+        "input": "999\n",
+        "output": "3 27"
+      },
+      {
+        "input": "1000\n",
+        "output": "4 1"
+      },
+      {
+        "input": "50505\n",
+        "output": "5 15"
+      },
+      {
+        "input": "123456\n",
+        "output": "6 21"
+      },
+      {
+        "input": "90807\n",
+        "output": "5 24"
+      },
+      {
+        "input": "100000\n",
+        "output": "6 1"
+      },
+      {
+        "input": "88\n",
+        "output": "2 16"
+      },
+      {
+        "input": "314159\n",
+        "output": "6 23"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Convertissez le nombre en chaîne de caractères `s = str(N)`. Le nombre de chiffres est `len(s)` et la somme est `sum(int(c) for c in s)`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    count = len(s)\n    total = sum(int(c) for c in s)\n    print(f\"{count} {total}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    count = len(s)\n    total = sum(int(c) for c in s)\n    print(f\"{count} {total}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On peut extraire les chiffres arithmétiquement via divisions et modulos successifs (`N % 10`, `N // 10`) ou via la représentation textuelle. Les deux grandeurs calculées sont le décompte des chiffres et la somme de leurs valeurs décimales.\n- **Complexité temporelle** : $O(\\log_{10} N)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9047,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Calcul de Puissance Entière",
+    "topic": "Basics",
+    "difficulty": "easy",
+    "description": "### Calcul de Puissance X^Y\n\nÉcrivez un algorithme qui calcule `X` élevé à la puissance `Y` à l'aide d'une boucle d'accumulation.\n\n#### Contexte & Objectif\nPar définition, pour tout entier `X != 0`, `X^0 = 1`. Pour `Y > 0`, `X^Y = X * X * ... * X` (`Y` fois).\n\n#### Format d'entrée\n- Ligne 1 : L'entier de base `X` (`0 <= X <= 20`).\n- Ligne 2 : L'exposant `Y` (`0 <= Y <= 15`).\n\n#### Format de sortie attendu\n- Un seul entier représentant `X^Y`.\n\n#### Exemple concret\n**Entrée :**\n```\n2\n6\n```\n**Sortie attendue :**\n```\n64\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2\n6\n",
+        "output": "64"
+      },
+      {
+        "input": "5\n0\n",
+        "output": "1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n1\n",
+        "output": "3"
+      },
+      {
+        "input": "10\n3\n",
+        "output": "1000"
+      },
+      {
+        "input": "2\n10\n",
+        "output": "1024"
+      },
+      {
+        "input": "7\n2\n",
+        "output": "49"
+      },
+      {
+        "input": "4\n4\n",
+        "output": "256"
+      },
+      {
+        "input": "1\n20\n",
+        "output": "1"
+      },
+      {
+        "input": "0\n5\n",
+        "output": "0"
+      },
+      {
+        "input": "3\n5\n",
+        "output": "243"
+      },
+      {
+        "input": "9\n3\n",
+        "output": "729"
+      },
+      {
+        "input": "2\n15\n",
+        "output": "32768"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Utilisez l'opérateur d'exponentiation `X ** Y` ou une boucle d'accumulation multipliant X par lui-même Y fois.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    x = int(tokens[0])\n    y = int(tokens[1])\n    print(x ** y)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    x = int(tokens[0])\n    y = int(tokens[1])\n    print(x ** y)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour tout entier $X$, $X^0 = 1$. Pour $Y > 0$, l'exponentiation effectue le produit accumulé de $X$ répété $Y$ fois. L'opérateur Python `X ** Y` gère automatiquement les entiers de précision arbitraire.\n- **Complexité temporelle** : $O(\\log Y)$ avec exponentiation binaire\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9048,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Table de Multiplication Personnalisée",
+    "topic": "Basics",
+    "difficulty": "easy",
+    "description": "### Table de Multiplication de N jusqu'à K\n\nÉcrivez un algorithme qui lit deux entiers `N` et `K` et affiche les `K` premières lignes de la table de multiplication de `N`.\n\n#### Format d'entrée\n- Ligne 1 : L'entier `N`.\n- Ligne 2 : Le nombre de lignes `K` (`K >= 1`).\n\n#### Format de sortie attendu\n- `K` lignes au format exact `N x i = Resultat`.\n\n#### Exemple concret\n**Entrée :**\n```\n7\n3\n```\n**Sortie attendue :**\n```\n7 x 1 = 7\n7 x 2 = 14\n7 x 3 = 21\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "7\n3\n",
+        "output": "7 x 1 = 7\n7 x 2 = 14\n7 x 3 = 21"
+      },
+      {
+        "input": "5\n1\n",
+        "output": "5 x 1 = 5"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "12\n4\n",
+        "output": "12 x 1 = 12\n12 x 2 = 24\n12 x 3 = 36\n12 x 4 = 48"
+      },
+      {
+        "input": "1\n5\n",
+        "output": "1 x 1 = 1\n1 x 2 = 2\n1 x 3 = 3\n1 x 4 = 4\n1 x 5 = 5"
+      },
+      {
+        "input": "9\n2\n",
+        "output": "9 x 1 = 9\n9 x 2 = 18"
+      },
+      {
+        "input": "6\n6\n",
+        "output": "6 x 1 = 6\n6 x 2 = 12\n6 x 3 = 18\n6 x 4 = 24\n6 x 5 = 30\n6 x 6 = 36"
+      },
+      {
+        "input": "8\n5\n",
+        "output": "8 x 1 = 8\n8 x 2 = 16\n8 x 3 = 24\n8 x 4 = 32\n8 x 5 = 40"
+      },
+      {
+        "input": "10\n3\n",
+        "output": "10 x 1 = 10\n10 x 2 = 20\n10 x 3 = 30"
+      },
+      {
+        "input": "3\n4\n",
+        "output": "3 x 1 = 3\n3 x 2 = 6\n3 x 3 = 9\n3 x 4 = 12"
+      },
+      {
+        "input": "11\n3\n",
+        "output": "11 x 1 = 11\n11 x 2 = 22\n11 x 3 = 33"
+      },
+      {
+        "input": "4\n7\n",
+        "output": "4 x 1 = 4\n4 x 2 = 8\n4 x 3 = 12\n4 x 4 = 16\n4 x 5 = 20\n4 x 6 = 24\n4 x 7 = 28"
+      },
+      {
+        "input": "2\n8\n",
+        "output": "2 x 1 = 2\n2 x 2 = 4\n2 x 3 = 6\n2 x 4 = 8\n2 x 5 = 10\n2 x 6 = 12\n2 x 7 = 14\n2 x 8 = 16"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Faites une boucle `for i in range(1, k + 1):` et affichez la chaîne formatée `f'{n} x {i} = {n * i}'`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    for i in range(1, k + 1):\n        print(f\"{n} x {i} = {n * i}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    for i in range(1, k + 1):\n        print(f\"{n} x {i} = {n * i}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La table de multiplication demande d'afficher exactement $K$ lignes sous le format standard `'N x i = Resultat'`. Une simple itération de $1$ à $K$ produit les lignes requises.\n- **Complexité temporelle** : $O(K)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9049,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Test d'Année Bissextile",
+    "topic": "Basics",
+    "difficulty": "easy",
+    "description": "### Détection d'Année Bissextile\n\nÉcrivez un algorithme qui détermine si une année donnée est bissextile.\n\n#### Règle du calendrier grégorien\nUne année est bissextile si :\n- Elle est divisible par 4 ET non divisible par 100,\n- OU si elle est divisible par 400.\n\n#### Format d'entrée\n- Un entier positif `Annee`.\n\n#### Format de sortie attendu\n- Affichez `1` si l'année est bissextile, ou `0` sinon.\n\n#### Exemple concret\n**Entrée :**\n```\n2024\n```\n**Sortie attendue :**\n```\n1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2024\n",
+        "output": "1"
+      },
+      {
+        "input": "1900\n",
+        "output": "0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "2000\n",
+        "output": "1"
+      },
+      {
+        "input": "2023\n",
+        "output": "0"
+      },
+      {
+        "input": "2020\n",
+        "output": "1"
+      },
+      {
+        "input": "2100\n",
+        "output": "0"
+      },
+      {
+        "input": "2400\n",
+        "output": "1"
+      },
+      {
+        "input": "1996\n",
+        "output": "1"
+      },
+      {
+        "input": "1982\n",
+        "output": "0"
+      },
+      {
+        "input": "2004\n",
+        "output": "1"
+      },
+      {
+        "input": "2018\n",
+        "output": "0"
+      },
+      {
+        "input": "1600\n",
+        "output": "1"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Une année est bissextile si `(annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0)`. Affichez 1 si vrai, 0 sinon.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    annee = int(tokens[0])\n    if (annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0):\n        print(1)\n    else:\n        print(0)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    annee = int(tokens[0])\n    if (annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0):\n        print(1)\n    else:\n        print(0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La règle grégorienne stipule qu'une année divisible par 4 est bissextile, à l'exception des années séculaires (divisibles par 100) qui ne le sont que si elles sont également divisibles par 400.\n- **Complexité temporelle** : $O(1)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9050,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Conversion Binaire en Décimal",
+    "topic": "Basics",
+    "difficulty": "medium",
+    "description": "### Conversion de Binaire vers Décimal\n\nÉcrivez un algorithme qui lit un nombre binaire (représenté comme un entier composé uniquement de 0 et 1) et calcule sa valeur équivalente en base 10.\n\n#### Principe\nEn décomposant par modulo 10, chaque chiffre binaire extrait à la position $i$ contribue pour $bit \\times 2^i$ au total décimal.\n\n#### Format d'entrée\n- Un entier composé uniquement des chiffres 0 et 1 (ex: `1101`).\n\n#### Format de sortie attendu\n- Un seul entier représentant la valeur décimale.\n\n#### Exemple concret\n**Entrée :**\n```\n1101\n```\n**Sortie attendue :**\n```\n13\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "1101\n",
+        "output": "13"
+      },
+      {
+        "input": "10\n",
+        "output": "2"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "0\n",
+        "output": "0"
+      },
+      {
+        "input": "1\n",
+        "output": "1"
+      },
+      {
+        "input": "111\n",
+        "output": "7"
+      },
+      {
+        "input": "1000\n",
+        "output": "8"
+      },
+      {
+        "input": "1010\n",
+        "output": "10"
+      },
+      {
+        "input": "1111\n",
+        "output": "15"
+      },
+      {
+        "input": "10000\n",
+        "output": "16"
+      },
+      {
+        "input": "10101\n",
+        "output": "21"
+      },
+      {
+        "input": "111111\n",
+        "output": "63"
+      },
+      {
+        "input": "1001001\n",
+        "output": "73"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Utilisez la conversion native `int(chaine_binaire, 2)` pour convertir directement la base 2 en base 10.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    print(int(s, 2))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    s = tokens[0]\n    print(int(s, 2))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Chaque bit à la position $i$ (en partant de la droite à l'indice 0) a pour poids $2^i$. La fonction `int(s, 2)` de Python évalue ce polynôme binaire de manière optimale.\n- **Complexité temporelle** : $O(B)$ où $B$ est le nombre de bits\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9051,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Longueur du Vol de Syracuse",
+    "topic": "Basics",
+    "difficulty": "medium",
+    "description": "### Suite de Collatz (Problème de Syracuse)\n\nSoit la suite définie pour un entier $N > 0$ par :\n- Si $N$ est pair : $N \\leftarrow N / 2$\n- Si $N$ est impair : $N \\leftarrow 3N + 1$\nLa conjecture de Collatz affirme que toute valeur finit par atteindre 1.\n\n#### Objectif\nCalculer le nombre total d'étapes pour atteindre 1, ainsi que la valeur maximale atteinte au cours du vol.\n\n#### Format d'entrée\n- Un entier $N \\ge 1$.\n\n#### Format de sortie attendu\n- Deux entiers séparés par un espace : `Etapes Max`.\n\n#### Exemple concret\n**Entrée :**\n```\n6\n```\n**Sortie attendue :**\n```\n8 16\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "6\n",
+        "output": "8 16"
+      },
+      {
+        "input": "1\n",
+        "output": "0 1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "2\n",
+        "output": "1 2"
+      },
+      {
+        "input": "3\n",
+        "output": "7 16"
+      },
+      {
+        "input": "5\n",
+        "output": "5 16"
+      },
+      {
+        "input": "7\n",
+        "output": "16 52"
+      },
+      {
+        "input": "11\n",
+        "output": "14 52"
+      },
+      {
+        "input": "15\n",
+        "output": "17 160"
+      },
+      {
+        "input": "27\n",
+        "output": "111 9232"
+      },
+      {
+        "input": "12\n",
+        "output": "9 16"
+      },
+      {
+        "input": "10\n",
+        "output": "6 16"
+      },
+      {
+        "input": "20\n",
+        "output": "7 20"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Implémentez la boucle Collatz tant que N != 1. Si N est pair : N //= 2, sinon N = 3*N + 1. Comptez les étapes et suivez la valeur maximale.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    steps = 0\n    max_val = n\n    while n != 1:\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n        max_val = max(max_val, n)\n    print(f\"{steps} {max_val}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    steps = 0\n    max_val = n\n    while n != 1:\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n        max_val = max(max_val, n)\n    print(f\"{steps} {max_val}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La suite de Syracuse (ou problème de Collatz) applique des transformations arithmétiques jusqu'à atteindre la valeur 1. On maintient un compteur d'étapes incrémenté à chaque transition et un accumulateur `max_val` mémorisant l'apogée du vol.\n- **Complexité temporelle** : Variable selon $N$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9052,
+    "is_exam": true,
+    "type": "coding",
+    "title": "PGCD et PPCM par Euclide",
+    "topic": "Basics",
+    "difficulty": "medium",
+    "description": "### Calcul du PGCD et du PPCM\n\nÉcrivez un algorithme qui lit deux entiers strictement positifs `A` et `B`, calcule leur Plus Grand Commun Diviseur (PGCD) à l'aide de l'algorithme d'Euclide, puis leur Plus Petit Commun Multiple (PPCM).\n\n#### Formule\n$$\\text{PPCM}(A, B) = \\frac{A \\times B}{\\text{PGCD}(A, B)}$$\n\n#### Format d'entrée\n- Ligne 1 : L'entier `A`.\n- Ligne 2 : L'entier `B`.\n\n#### Format de sortie attendu\n- Deux entiers séparés par un espace : `PGCD PPCM`.\n\n#### Exemple concret\n**Entrée :**\n```\n48\n18\n```\n**Sortie attendue :**\n```\n6 144\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "48\n18\n",
+        "output": "6 144"
+      },
+      {
+        "input": "15\n25\n",
+        "output": "5 75"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "7\n13\n",
+        "output": "1 91"
+      },
+      {
+        "input": "100\n10\n",
+        "output": "10 100"
+      },
+      {
+        "input": "12\n18\n",
+        "output": "6 36"
+      },
+      {
+        "input": "21\n14\n",
+        "output": "7 42"
+      },
+      {
+        "input": "35\n49\n",
+        "output": "7 245"
+      },
+      {
+        "input": "17\n19\n",
+        "output": "1 323"
+      },
+      {
+        "input": "54\n24\n",
+        "output": "6 216"
+      },
+      {
+        "input": "80\n60\n",
+        "output": "20 240"
+      },
+      {
+        "input": "9\n9\n",
+        "output": "9 9"
+      },
+      {
+        "input": "120\n45\n",
+        "output": "15 360"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Calculez le PGCD avec l'algorithme d'Euclide `math.gcd(a, b)`, puis déduisez le PPCM via `(a * b) // gcd`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    g = math.gcd(a, b)\n    l = (a * b) // g\n    print(f\"{g} {l}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\nimport math\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    g = math.gcd(a, b)\n    l = (a * b) // g\n    print(f\"{g} {l}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme d'Euclide repose sur la propriété $\\text{PGCD}(a, b) = \\text{PGCD}(b, a \\pmod b)$. La relation fondamentale $\\text{PGCD}(a, b) \\times \\text{PPCM}(a, b) = a \\times b$ fournit immédiatement le PPCM par division entière.\n- **Complexité temporelle** : $O(\\log(\\min(a, b)))$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9053,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Prochain Nombre Premier",
+    "topic": "Basics",
+    "difficulty": "medium",
+    "description": "### Trouver le Plus Petit Premier Strictement Supérieur à N\n\nÉcrivez un algorithme qui lit un entier `N` et trouve le premier nombre premier strictement supérieur à `N`.\n\n#### Format d'entrée\n- Un entier positif `N` (`1 <= N <= 2000`).\n\n#### Format de sortie attendu\n- Un seul entier : le prochain nombre premier.\n\n#### Exemple concret\n**Entrée :**\n```\n14\n```\n**Sortie attendue :**\n```\n17\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "14\n",
+        "output": "17"
+      },
+      {
+        "input": "2\n",
+        "output": "3"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n",
+        "output": "2"
+      },
+      {
+        "input": "19\n",
+        "output": "23"
+      },
+      {
+        "input": "20\n",
+        "output": "23"
+      },
+      {
+        "input": "31\n",
+        "output": "37"
+      },
+      {
+        "input": "50\n",
+        "output": "53"
+      },
+      {
+        "input": "97\n",
+        "output": "101"
+      },
+      {
+        "input": "113\n",
+        "output": "127"
+      },
+      {
+        "input": "199\n",
+        "output": "211"
+      },
+      {
+        "input": "250\n",
+        "output": "251"
+      },
+      {
+        "input": "500\n",
+        "output": "503"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Testez les entiers successifs à partir de N + 1 avec un crible ou un test de primalité jusqu'à la racine carrée.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef is_prime(x):\n    if x < 2:\n        return False\n    if x in (2, 3):\n        return True\n    if x % 2 == 0 or x % 3 == 0:\n        return False\n    i = 5\n    while i * i <= x:\n        if x % i == 0 or x % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    candidate = n + 1\n    while not is_prime(candidate):\n        candidate += 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef is_prime(x):\n    if x < 2:\n        return False\n    if x in (2, 3):\n        return True\n    if x % 2 == 0 or x % 3 == 0:\n        return False\n    i = 5\n    while i * i <= x:\n        if x % i == 0 or x % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    candidate = n + 1\n    while not is_prime(candidate):\n        candidate += 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Pour trouver le plus petit nombre premier strictement supérieur à $N$, on teste successivement chaque entier $c = N + 1, N + 2, \\dots$. Le test de primalité vérifie la divisibilité par les entiers de la forme $6k \\pm 1$ jusqu'à $\\sqrt{c}$.\n- **Complexité temporelle** : $O(P \\sqrt{N})$ où $P$ est l'écart au premier suivant\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9054,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Décomposition en Facteurs Premiers",
+    "topic": "Basics",
+    "difficulty": "medium",
+    "description": "### Décomposition d'un Nombre en Facteurs Premiers\n\nÉcrivez un algorithme qui décompose un entier `N` en facteurs premiers sous la forme `p1^e1 * p2^e2 * ...`.\n\n#### Format d'entrée\n- Un entier `N` (`N >= 2`).\n\n#### Format de sortie attendu\n- Une ligne contenant la décomposition avec le format exact `facteur^puissance` séparés par ` * `.\n\n#### Exemple concret\n**Entrée :**\n```\n60\n```\n**Sortie attendue :**\n```\n2^2 * 3^1 * 5^1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "60\n",
+        "output": "2^2 * 3^1 * 5^1"
+      },
+      {
+        "input": "13\n",
+        "output": "13^1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "18\n",
+        "output": "2^1 * 3^2"
+      },
+      {
+        "input": "100\n",
+        "output": "2^2 * 5^2"
+      },
+      {
+        "input": "84\n",
+        "output": "2^2 * 3^1 * 7^1"
+      },
+      {
+        "input": "32\n",
+        "output": "2^5"
+      },
+      {
+        "input": "49\n",
+        "output": "7^2"
+      },
+      {
+        "input": "210\n",
+        "output": "2^1 * 3^1 * 5^1 * 7^1"
+      },
+      {
+        "input": "128\n",
+        "output": "2^7"
+      },
+      {
+        "input": "315\n",
+        "output": "3^2 * 5^1 * 7^1"
+      },
+      {
+        "input": "97\n",
+        "output": "97^1"
+      },
+      {
+        "input": "720\n",
+        "output": "2^4 * 3^2 * 5^1"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Divisez N par chaque facteur d = 2, 3, ... tant que d*d <= N en comptant l'exposant. Si N > 1 à la fin, c'est le dernier facteur premier.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    factors = []\n    d = 2\n    while d * d <= n:\n        if n % d == 0:\n            exp = 0\n            while n % d == 0:\n                exp += 1\n                n //= d\n            factors.append(f\"{d}^{exp}\")\n        d += 1\n    if n > 1:\n        factors.append(f\"{n}^1\")\n    print(\" * \".join(factors))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    factors = []\n    d = 2\n    while d * d <= n:\n        if n % d == 0:\n            exp = 0\n            while n % d == 0:\n                exp += 1\n                n //= d\n            factors.append(f\"{d}^{exp}\")\n        d += 1\n    if n > 1:\n        factors.append(f\"{n}^1\")\n    print(\" * \".join(factors))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le théorème fondamental de l'arithmétique garantit l'unicité de la factorisation en nombres premiers. On extrait les facteurs premiers par division successive. Si après la boucle jusqu'à $\\sqrt{N}$ il subsiste un entier $N > 1$, celui-ci est lui-même premier.\n- **Complexité temporelle** : $O(\\sqrt{N})$\n- **Complexité spatiale** : $O(1)$ hors formatage"
+  },
+  {
+    "id": 9055,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Exponentiation Modulaire Rapide",
+    "topic": "Basics",
+    "difficulty": "hard",
+    "description": "### Calcul de (A^B) mod M en Temps Logarithmique\n\nÉcrivez un algorithme qui calcule `(A^B) mod M` efficacement en $O(\\log B)$ par élévation au carré modulaire, évitant tout débordement d'entier.\n\n#### Format d'entrée\n- Ligne 1 : `A` (base)\n- Ligne 2 : `B` (exposant)\n- Ligne 3 : `M` (modulo)\n\n#### Format de sortie attendu\n- Un entier représentant `(A^B) mod M`.\n\n#### Exemple concret\n**Entrée :**\n```\n3\n13\n7\n```\n**Sortie attendue :**\n```\n3\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "3\n13\n7\n",
+        "output": "3"
+      },
+      {
+        "input": "2\n10\n1000\n",
+        "output": "24"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "5\n3\n13\n",
+        "output": "8"
+      },
+      {
+        "input": "2\n20\n17\n",
+        "output": "16"
+      },
+      {
+        "input": "7\n100\n13\n",
+        "output": "9"
+      },
+      {
+        "input": "3\n25\n11\n",
+        "output": "1"
+      },
+      {
+        "input": "4\n15\n19\n",
+        "output": "11"
+      },
+      {
+        "input": "6\n8\n23\n",
+        "output": "18"
+      },
+      {
+        "input": "11\n13\n100\n",
+        "output": "31"
+      },
+      {
+        "input": "2\n30\n105\n",
+        "output": "64"
+      },
+      {
+        "input": "9\n9\n10\n",
+        "output": "9"
+      },
+      {
+        "input": "13\n17\n31\n",
+        "output": "17"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Utilisez l'exponentiation modulaire rapide `pow(A, B, M)` qui applique la méthode des carrés successifs en O(log B).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    m = int(tokens[2])\n    print(pow(a, b, m))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    a = int(tokens[0])\n    b = int(tokens[1])\n    m = int(tokens[2])\n    print(pow(a, b, m))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le calcul naïf de $A^B$ produirait des nombres gigantesques impossibles à manipuler. L'algorithme des carrés successifs effectue chaque multiplication modulo $M$ à chaque étape binaire de l'exposant $B$, garantissant un temps d'exécution logarithmique $O(\\log B)$.\n- **Complexité temporelle** : $O(\\log B)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9056,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Racine Carrée par la Méthode de Héron",
+    "topic": "Basics",
+    "difficulty": "hard",
+    "description": "### Approximation Numérique de la Racine Carrée\n\nCalculez la racine carrée d'un nombre entier `N` par la méthode itérative de Héron d'Alexandrie :\n$$x_{k+1} = \\frac{1}{2} \\left( x_k + \\frac{N}{x_k} \\right)$$\n\n#### Format d'entrée\n- Un entier `N` (`N >= 1`).\n\n#### Format de sortie attendu\n- La valeur approchée arrondie à 4 chiffres après la virgule.\n\n#### Exemple concret\n**Entrée :**\n```\n2\n```\n**Sortie attendue :**\n```\n1.4142\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2\n",
+        "output": "1.4142"
+      },
+      {
+        "input": "9\n",
+        "output": "3.0000"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "10\n",
+        "output": "3.1623"
+      },
+      {
+        "input": "16\n",
+        "output": "4.0000"
+      },
+      {
+        "input": "25\n",
+        "output": "5.0000"
+      },
+      {
+        "input": "50\n",
+        "output": "7.0711"
+      },
+      {
+        "input": "100\n",
+        "output": "10.0000"
+      },
+      {
+        "input": "3\n",
+        "output": "1.7321"
+      },
+      {
+        "input": "7\n",
+        "output": "2.6458"
+      },
+      {
+        "input": "81\n",
+        "output": "9.0000"
+      },
+      {
+        "input": "144\n",
+        "output": "12.0000"
+      },
+      {
+        "input": "200\n",
+        "output": "14.1421"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Appliquez la formule itérative de Héron : `x = 0.5 * (x + N / x)` pendant une quarantaine d'itérations, puis formatez avec `f'{x:.4f}'`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    x = float(n)\n    for _ in range(50):\n        x = 0.5 * (x + n / x)\n    print(f\"{x:.4f}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    x = float(n)\n    for _ in range(50):\n        x = 0.5 * (x + n / x)\n    print(f\"{x:.4f}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La méthode de Héron (variante de la méthode de Newton-Raphson appliquée à $f(x) = x^2 - N$) possède une convergence quadratique. En partant de $x_0 = N$, le nombre de décimales exactes double à chaque itération. On formate le résultat final à 4 décimales.\n- **Complexité temporelle** : $O(1)$ (convergence en moins de 30 étapes)\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9057,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Comptage des Zéros Terminaux de Factorielle",
+    "topic": "Basics",
+    "difficulty": "hard",
+    "description": "### Combien de Zéros terminent N! ?\n\nDéterminez par combien de zéros se termine l'écriture décimale de `N!` sans calculer explicitement la factorielle (formule de Legendre sur les facteurs 5).\n\n#### Formule de Legendre\n$$\\sum_{k=1}^{\\infty} \\lfloor \\frac{N}{5^k} \\rfloor$$\n\n#### Format d'entrée\n- Un entier `N` (`0 <= N <= 100000`).\n\n#### Format de sortie attendu\n- Un entier représentant le nombre de zéros terminaux.\n\n#### Exemple concret\n**Entrée :**\n```\n100\n```\n**Sortie attendue :**\n```\n24\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "100\n",
+        "output": "24"
+      },
+      {
+        "input": "5\n",
+        "output": "1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "10\n",
+        "output": "2"
+      },
+      {
+        "input": "25\n",
+        "output": "6"
+      },
+      {
+        "input": "50\n",
+        "output": "12"
+      },
+      {
+        "input": "125\n",
+        "output": "31"
+      },
+      {
+        "input": "200\n",
+        "output": "49"
+      },
+      {
+        "input": "500\n",
+        "output": "124"
+      },
+      {
+        "input": "1000\n",
+        "output": "249"
+      },
+      {
+        "input": "10000\n",
+        "output": "2499"
+      },
+      {
+        "input": "4\n",
+        "output": "0"
+      },
+      {
+        "input": "26\n",
+        "output": "6"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Appliquez la formule de Legendre : additionnez `N // (5**k)` pour les puissances de 5 successives (5, 25, 125...).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    zeros = 0\n    p = 5\n    while p <= n:\n        zeros += n // p\n        p *= 5\n    print(zeros)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    zeros = 0\n    p = 5\n    while p <= n:\n        zeros += n // p\n        p *= 5\n    print(zeros)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Chaque zéro terminal dans $N!$ provient d'un facteur 10, produit de $2 \\times 5$. Les facteurs 2 étant surabondants, le nombre de zéros correspond au nombre de facteurs 5 dans la factorisation de $N!$, donné exactement par la formule de Legendre $\\sum_{k \\ge 1} \\lfloor N / 5^k \\rfloor$.\n- **Complexité temporelle** : $O(\\log_5 N)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9058,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Nombres Amicaux dans un Intervalle",
+    "topic": "Basics",
+    "difficulty": "hard",
+    "description": "### Détection de Paires de Nombres Amicaux\n\nDeux nombres distincts `A` et `B` sont dits **amicaux** si la somme des diviseurs stricts de `A` est égale à `B`, et réciproquement.\nExemple : 220 et 284 sont amicaux.\n\n#### Objectif\nCompter le nombre total de paires amicales uniques `(A, B)` où `A < B <= Limite`.\n\n#### Format d'entrée\n- Un entier `Limite` (`Limite <= 10000`).\n\n#### Format de sortie attendu\n- Le nombre de paires amicales trouvées.\n\n#### Exemple concret\n**Entrée :**\n```\n300\n```\n**Sortie attendue :**\n```\n1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "300\n",
+        "output": "1"
+      },
+      {
+        "input": "200\n",
+        "output": "0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1200\n",
+        "output": "1"
+      },
+      {
+        "input": "1500\n",
+        "output": "2"
+      },
+      {
+        "input": "2000\n",
+        "output": "2"
+      },
+      {
+        "input": "3000\n",
+        "output": "3"
+      },
+      {
+        "input": "5000\n",
+        "output": "3"
+      },
+      {
+        "input": "6000\n",
+        "output": "4"
+      },
+      {
+        "input": "7000\n",
+        "output": "5"
+      },
+      {
+        "input": "10000\n",
+        "output": "5"
+      },
+      {
+        "input": "150\n",
+        "output": "0"
+      },
+      {
+        "input": "500\n",
+        "output": "1"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Précalculez la somme des diviseurs stricts de chaque nombre jusqu'à Limite à l'aide d'un crible en O(Limite log Limite).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef sum_divs(limit):\n    s = [0] * (limit + 1)\n    for i in range(1, limit + 1):\n        for j in range(2 * i, limit + 1, i):\n            s[j] += i\n    return s\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    limit = int(tokens[0])\n    s = sum_divs(limit)\n    pairs = 0\n    for a in range(2, limit + 1):\n        b = s[a]\n        if a < b <= limit and s[b] == a:\n            pairs += 1\n    print(pairs)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef sum_divs(limit):\n    s = [0] * (limit + 1)\n    for i in range(1, limit + 1):\n        for j in range(2 * i, limit + 1, i):\n            s[j] += i\n    return s\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    limit = int(tokens[0])\n    s = sum_divs(limit)\n    pairs = 0\n    for a in range(2, limit + 1):\n        b = s[a]\n        if a < b <= limit and s[b] == a:\n            pairs += 1\n    print(pairs)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Deux entiers $A$ et $B$ sont amicaux si $\\sigma(A) - A = B$ et $\\sigma(B) - B = A$ avec $A \\neq B$. Un précalcul par crible (similaire au crible d'Ératosthène) calcule la somme des diviseurs de tous les nombres jusqu'à la limite en $O(L \\log L)$. On parcourt ensuite les paires $A < B \\le \\text{Limite}$.\n- **Complexité temporelle** : $O(L \\log L)$\n- **Complexité spatiale** : $O(L)$"
+  },
+  {
+    "id": 9059,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Problème de Josephus Arithmétique",
+    "topic": "Basics",
+    "difficulty": "hard",
+    "description": "### Le Problème de Josephus\n\n`N` personnes sont disposées en cercle et numérotées de 1 à `N`. En commençant par la personne 1, on élimine chaque `K`-ième personne vivante jusqu'à ce qu'il n'en reste qu'une seule.\n\n#### Objectif\nDéterminer la position finale du survivant en utilisant la formule itérative :\n$$J(1, K) = 0$$\n$$J(i, K) = (J(i-1, K) + K) \\pmod i$$\navec conversion finale en indexation 1 ($J + 1$).\n\n#### Format d'entrée\n- Ligne 1 : `N` (nombre de personnes, `N >= 1`).\n- Ligne 2 : `K` (pas d'élimination, `K >= 1`).\n\n#### Format de sortie attendu\n- Un seul entier représentant la position du survivant.\n\n#### Exemple concret\n**Entrée :**\n```\n7\n3\n```\n**Sortie attendue :**\n```\n4\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "7\n3\n",
+        "output": "4"
+      },
+      {
+        "input": "5\n2\n",
+        "output": "3"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n2\n",
+        "output": "1"
+      },
+      {
+        "input": "6\n5\n",
+        "output": "1"
+      },
+      {
+        "input": "10\n2\n",
+        "output": "5"
+      },
+      {
+        "input": "8\n3\n",
+        "output": "7"
+      },
+      {
+        "input": "12\n4\n",
+        "output": "1"
+      },
+      {
+        "input": "15\n3\n",
+        "output": "5"
+      },
+      {
+        "input": "20\n2\n",
+        "output": "9"
+      },
+      {
+        "input": "14\n2\n",
+        "output": "13"
+      },
+      {
+        "input": "100\n2\n",
+        "output": "73"
+      },
+      {
+        "input": "40\n7\n",
+        "output": "24"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Utilisez la récurrence dynamique de Josephus : `J = (J + K) % i` pour i allant de 1 à N, puis affichez `J + 1`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    j = 0\n    for i in range(1, n + 1):\n        j = (j + k) % i\n    print(j + 1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    k = int(tokens[1])\n    j = 0\n    for i in range(1, n + 1):\n        j = (j + k) % i\n    print(j + 1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le problème de Josephus admet une résolution itérative élégante en $O(N)$ sans simuler explicitement la liste circulaire : en indexation 0, $J(1) = 0$ et $J(i) = (J(i-1) + K) \\pmod i$. La position finale du survivant en indexation 1 est $J(N) + 1$.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$"
+  },
+  {
+    "id": 9060,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Somme et Moyenne d'un Tableau 1D",
+    "topic": "Tableaux",
+    "difficulty": "easy",
+    "description": "### Calcul de la Somme et de la Moyenne d'un Tableau\n\nÉcrivez un algorithme qui lit la taille `N` d'un tableau d'entiers, puis les `N` éléments, et calcule la somme arithmétique ainsi que la moyenne des éléments.\n\n#### Format d'entrée\n- Ligne 1 : Entier `N` (`N >= 1`).\n- Les `N` lignes suivantes : Les entiers du tableau.\n\n#### Format de sortie attendu\n- Deux valeurs : `Somme Moyenne` (avec la moyenne arrondie à 2 décimales).\n\n#### Exemple concret\n**Entrée :**\n```\n4\n10\n20\n30\n40\n```\n**Sortie attendue :**\n```\n100 25.00\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4\n10\n20\n30\n40\n",
+        "output": "100 25.00"
+      },
+      {
+        "input": "1\n5\n",
+        "output": "5 5.00"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "5\n1\n2\n3\n4\n5\n",
+        "output": "15 3.00"
+      },
+      {
+        "input": "4\n0\n0\n0\n0\n",
+        "output": "0 0.00"
+      },
+      {
+        "input": "4\n-10\n10\n-5\n5\n",
+        "output": "0 0.00"
+      },
+      {
+        "input": "3\n100\n200\n300\n",
+        "output": "600 200.00"
+      },
+      {
+        "input": "6\n7\n14\n21\n28\n35\n42\n",
+        "output": "147 24.50"
+      },
+      {
+        "input": "4\n12\n18\n24\n30\n",
+        "output": "84 21.00"
+      },
+      {
+        "input": "4\n-1\n-2\n-3\n-4\n",
+        "output": "-10 -2.50"
+      },
+      {
+        "input": "5\n15\n25\n35\n45\n55\n",
+        "output": "175 35.00"
+      },
+      {
+        "input": "6\n2\n4\n8\n16\n32\n64\n",
+        "output": "126 21.00"
+      },
+      {
+        "input": "3\n9\n18\n27\n",
+        "output": "54 18.00"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Calculez la somme avec `sum(arr)` puis la moyenne `sum(arr) / N`. Formatez la moyenne avec deux décimales `f'{mean:.2f}'`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    total = sum(arr)\n    mean = total / n\n    print(f\"{total} {mean:.2f}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    total = sum(arr)\n    mean = total / n\n    print(f\"{total} {mean:.2f}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "On extrait $N$ puis les $N$ valeurs du tableau. La somme arithmétique est calculée en temps linéaire $O(N)$, et la moyenne s'obtient par division par $N$. Le résultat est formaté avec deux chiffres après la virgule.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9061,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Recherche Séquentielle et Indice",
+    "topic": "Tableaux",
+    "difficulty": "easy",
+    "description": "### Recherche Linéaire dans un Tableau 1D\n\nÉcrivez un algorithme qui recherche la première apparition d'une valeur `Cible` dans un tableau de taille `N`.\n\n#### Format d'entrée\n- Ligne 1 : `N` (taille du tableau)\n- Lignes 2 à N+1 : Les `N` entiers du tableau\n- Ligne N+2 : L'entier `Cible`\n\n#### Format de sortie attendu\n- L'indice (base 1) de la première occurrence, ou `-1` si la valeur n'est pas présente.\n\n#### Exemple concret\n**Entrée :**\n```\n5\n4\n8\n15\n16\n23\n15\n```\n**Sortie attendue :**\n```\n3\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n4\n8\n15\n16\n23\n15\n",
+        "output": "3"
+      },
+      {
+        "input": "3\n10\n20\n30\n99\n",
+        "output": "-1"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n5\n5\n5\n5\n",
+        "output": "1"
+      },
+      {
+        "input": "5\n1\n3\n5\n7\n9\n1\n",
+        "output": "1"
+      },
+      {
+        "input": "5\n1\n3\n5\n7\n9\n9\n",
+        "output": "5"
+      },
+      {
+        "input": "1\n42\n42\n",
+        "output": "1"
+      },
+      {
+        "input": "1\n42\n0\n",
+        "output": "-1"
+      },
+      {
+        "input": "5\n-5\n-2\n0\n4\n8\n0\n",
+        "output": "3"
+      },
+      {
+        "input": "3\n-10\n-20\n-30\n-20\n",
+        "output": "2"
+      },
+      {
+        "input": "5\n100\n200\n300\n400\n500\n350\n",
+        "output": "-1"
+      },
+      {
+        "input": "5\n7\n14\n21\n28\n35\n28\n",
+        "output": "4"
+      },
+      {
+        "input": "6\n2\n4\n6\n8\n10\n12\n2\n",
+        "output": "1"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Cherchez la cible dans le tableau. Si elle est présente, affichez son premier indice (1-based : `index + 1`), sinon affichez `-1`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    try:\n        idx = arr.index(target)\n        print(idx + 1)\n    except ValueError:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    try:\n        idx = arr.index(target)\n        print(idx + 1)\n    except ValueError:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La recherche séquentielle inspecte les éléments du tableau un à un de gauche à droite jusqu'à rencontrer la cible. En cas de présence, l'indice 1-based correspond à la position trouvée. Si la boucle s'achève sans correspondance, on affiche `-1`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9062,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Inversion d'un Tableau en Place",
+    "topic": "Tableaux",
+    "difficulty": "easy",
+    "description": "### Inverser les Éléments d'un Tableau\n\nÉcrivez un algorithme qui inverse l'ordre des éléments d'un tableau de taille `N` en échangeant les éléments symétriques par rapport au milieu.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Les `N` lignes suivantes : Les entiers du tableau\n\n#### Format de sortie attendu\n- Les éléments du tableau inversé affichés sur une seule ligne séparés par des espaces.\n\n#### Exemple concret\n**Entrée :**\n```\n5\n1\n2\n3\n4\n5\n```\n**Sortie attendue :**\n```\n5 4 3 2 1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "5\n1\n2\n3\n4\n5\n",
+        "output": "5 4 3 2 1"
+      },
+      {
+        "input": "2\n10\n20\n",
+        "output": "20 10"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n7\n",
+        "output": "7"
+      },
+      {
+        "input": "4\n1\n1\n1\n1\n",
+        "output": "1 1 1 1"
+      },
+      {
+        "input": "3\n-3\n0\n3\n",
+        "output": "3 0 -3"
+      },
+      {
+        "input": "6\n4\n8\n15\n16\n23\n42\n",
+        "output": "42 23 16 15 8 4"
+      },
+      {
+        "input": "5\n9\n7\n5\n3\n1\n",
+        "output": "1 3 5 7 9"
+      },
+      {
+        "input": "4\n100\n-200\n300\n-400\n",
+        "output": "-400 300 -200 100"
+      },
+      {
+        "input": "5\n0\n1\n0\n1\n0\n",
+        "output": "0 1 0 1 0"
+      },
+      {
+        "input": "6\n5\n4\n3\n2\n1\n0\n",
+        "output": "0 1 2 3 4 5"
+      },
+      {
+        "input": "4\n12\n34\n56\n78\n",
+        "output": "78 56 34 12"
+      },
+      {
+        "input": "7\n99\n88\n77\n66\n55\n44\n33\n",
+        "output": "33 44 55 66 77 88 99"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Inversez les éléments du tableau en échangeant les éléments symétriques `arr[i]` et `arr[N-1-i]` ou avec `arr.reverse()`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.reverse()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.reverse()\n    print(\" \".join(str(x) for x in arr))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'inversion in-place d'un tableau permute chaque élément $i$ avec son symétrique $N - 1 - i$ pour $i$ variant de $0$ à $\\lfloor N/2 \\rfloor$. La méthode native `arr.reverse()` opère en temps linéaire avec une complexité spatiale auxiliaire $O(1)$.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
+  },
+  {
+    "id": 9063,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Comptage des Positifs, Négatifs et Zéros",
+    "topic": "Tableaux",
+    "difficulty": "easy",
+    "description": "### Dénombrement selon le Signe\n\nÉcrivez un algorithme qui lit `N` entiers et compte simultanément le nombre d'éléments strictement positifs, strictement négatifs, et nuls.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Lignes 2 à N+1 : Les `N` entiers\n\n#### Format de sortie attendu\n- Trois entiers séparés par des espaces : `Positifs Negatifs Zeros`.\n\n#### Exemple concret\n**Entrée :**\n```\n6\n-3\n0\n5\n12\n-7\n0\n```\n**Sortie attendue :**\n```\n2 2 2\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "6\n-3\n0\n5\n12\n-7\n0\n",
+        "output": "2 2 2"
+      },
+      {
+        "input": "3\n1\n2\n3\n",
+        "output": "3 0 0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n-1\n-2\n-3\n",
+        "output": "0 3 0"
+      },
+      {
+        "input": "3\n0\n0\n0\n",
+        "output": "0 0 3"
+      },
+      {
+        "input": "2\n10\n-10\n",
+        "output": "1 1 0"
+      },
+      {
+        "input": "3\n-5\n0\n5\n",
+        "output": "1 1 1"
+      },
+      {
+        "input": "7\n100\n-200\n300\n0\n-400\n0\n500\n",
+        "output": "3 2 2"
+      },
+      {
+        "input": "5\n-1\n-1\n0\n1\n1\n",
+        "output": "2 2 1"
+      },
+      {
+        "input": "1\n42\n",
+        "output": "1 0 0"
+      },
+      {
+        "input": "1\n-42\n",
+        "output": "0 1 0"
+      },
+      {
+        "input": "1\n0\n",
+        "output": "0 0 1"
+      },
+      {
+        "input": "8\n7\n-3\n0\n8\n-4\n0\n9\n-5\n",
+        "output": "3 3 2"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Parcourez les N entiers et incrémentez trois compteurs distincts selon que x > 0, x < 0 ou x == 0.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    pos = sum(1 for x in arr if x > 0)\n    neg = sum(1 for x in arr if x < 0)\n    zer = sum(1 for x in arr if x == 0)\n    print(f\"{pos} {neg} {zer}\")\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    pos = sum(1 for x in arr if x > 0)\n    neg = sum(1 for x in arr if x < 0)\n    zer = sum(1 for x in arr if x == 0)\n    print(f\"{pos} {neg} {zer}\")\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Un seul parcours séquentiel permet de catégoriser chaque élément selon son signe arithmétique. Trois compteurs comptabilisent respectivement les valeurs strictement positives, strictement négatives et nulles.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9064,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Trace d'une Matrice Carrée",
+    "topic": "Tableaux",
+    "difficulty": "easy",
+    "description": "### Somme de la Diagonale Principale d'une Matrice Carrée\n\nÉcrivez un algorithme qui lit la dimension `N` d'une matrice carrée `N x N`, puis ses éléments, et calcule sa trace (somme des éléments `M[i][i]`).\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Les $N \\times N$ lignes suivantes : Les éléments de la matrice lus ligne par ligne\n\n#### Format de sortie attendu\n- Un seul entier représentant la trace de la matrice.\n\n#### Exemple concret\n**Entrée :**\n```\n2\n1\n2\n3\n4\n```\n**Sortie attendue :**\n```\n5\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2\n1\n2\n3\n4\n",
+        "output": "5"
+      },
+      {
+        "input": "1\n5\n",
+        "output": "5"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n1\n0\n0\n0\n1\n0\n0\n0\n1\n",
+        "output": "3"
+      },
+      {
+        "input": "3\n2\n1\n3\n4\n5\n6\n7\n8\n9\n",
+        "output": "16"
+      },
+      {
+        "input": "2\n-1\n2\n3\n-4\n",
+        "output": "-5"
+      },
+      {
+        "input": "2\n10\n20\n30\n40\n",
+        "output": "50"
+      },
+      {
+        "input": "4\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n",
+        "output": "34"
+      },
+      {
+        "input": "2\n0\n1\n1\n0\n",
+        "output": "0"
+      },
+      {
+        "input": "3\n7\n-5\n2\n1\n-3\n4\n9\n0\n10\n",
+        "output": "14"
+      },
+      {
+        "input": "1\n-5\n",
+        "output": "-5"
+      },
+      {
+        "input": "2\n100\n200\n300\n400\n",
+        "output": "500"
+      },
+      {
+        "input": "3\n4\n2\n1\n5\n6\n7\n8\n9\n3\n",
+        "output": "13"
+      }
+    ],
+    "points": 2.0,
+    "hint1": "Pour une matrice carrée N x N aplatie, la trace est la somme des éléments `vals[i * n + i]` pour i allant de 0 à N-1.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    trace = sum(vals[i * n + i] for i in range(n))\n    print(trace)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    trace = sum(vals[i * n + i] for i in range(n))\n    print(trace)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La trace d'une matrice carrée est définie comme la somme de tous les éléments situés sur sa diagonale principale ($M[i][i]$). Pour une matrice de taille $N \\times N$ contenant $N^2$ éléments, on ne lit que les $N$ éléments diagonaux.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(N^2)$"
+  },
+  {
+    "id": 9065,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Suppression des Doublons In-Place",
+    "topic": "Tableaux",
+    "difficulty": "medium",
+    "description": "### Compactage d'un Tableau Trié\n\nÉtant donné un tableau trié dans l'ordre croissant contenant des doublons, compactez le tableau pour éliminer les occurrences répétées et conserver uniquement les éléments uniques.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Lignes 2 à N+1 : Les `N` entiers triés\n\n#### Format de sortie attendu\n- Ligne 1 : La nouvelle taille `K` du tableau\n- Ligne 2 : Les `K` éléments uniques séparés par des espaces\n\n#### Exemple concret\n**Entrée :**\n```\n6\n1\n1\n2\n3\n3\n4\n```\n**Sortie attendue :**\n```\n4\n1 2 3 4\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "6\n1\n1\n2\n3\n3\n4\n",
+        "output": "4\n1 2 3 4"
+      },
+      {
+        "input": "4\n5\n5\n5\n5\n",
+        "output": "1\n5"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "5\n1\n2\n3\n4\n5\n",
+        "output": "5\n1 2 3 4 5"
+      },
+      {
+        "input": "1\n10\n",
+        "output": "1\n10"
+      },
+      {
+        "input": "6\n-5\n-5\n-2\n0\n0\n4\n",
+        "output": "4\n-5 -2 0 4"
+      },
+      {
+        "input": "6\n1\n1\n1\n2\n2\n3\n",
+        "output": "3\n1 2 3"
+      },
+      {
+        "input": "10\n0\n0\n1\n1\n1\n2\n2\n3\n3\n4\n",
+        "output": "5\n0 1 2 3 4"
+      },
+      {
+        "input": "6\n-10\n-10\n-5\n0\n5\n5\n",
+        "output": "4\n-10 -5 0 5"
+      },
+      {
+        "input": "5\n7\n7\n8\n9\n9\n",
+        "output": "3\n7 8 9"
+      },
+      {
+        "input": "7\n2\n4\n4\n6\n8\n8\n10\n",
+        "output": "5\n2 4 6 8 10"
+      },
+      {
+        "input": "4\n-1\n0\n0\n1\n",
+        "output": "3\n-1 0 1"
+      },
+      {
+        "input": "6\n100\n100\n200\n300\n300\n400\n",
+        "output": "4\n100 200 300 400"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Le tableau étant trié, parcourez-le en ne retenant que les éléments distincts du précédent. Affichez la nouvelle taille K sur la première ligne, puis les K entiers.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    unique = []\n    seen = set()\n    for x in arr:\n        if x not in seen:\n            seen.add(x)\n            unique.append(x)\n    print(len(unique))\n    print(\" \".join(str(x) for x in unique))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    unique = []\n    seen = set()\n    for x in arr:\n        if x not in seen:\n            seen.add(x)\n            unique.append(x)\n    print(len(unique))\n    print(\" \".join(str(x) for x in unique))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le compactage d'un tableau trié élimine les doublons consécutifs. On peut utiliser la technique des deux pointeurs (in-place) pour écraser les répétitions en $O(N)$, puis afficher le nombre d'éléments uniques $K$ et la suite compactée.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
+  },
+  {
+    "id": 9066,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Produit de Deux Matrices",
+    "topic": "Tableaux",
+    "difficulty": "medium",
+    "description": "### Multiplication Matricielle (N x M) par (M x P)\n\nÉcrivez un algorithme qui multiplie une matrice `A` de dimension `N x M` par une matrice `B` de dimension `M x P` pour produire la matrice `C` de dimension `N x P`.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Ligne 2 : `M`\n- Ligne 3 : `P`\n- Les $N \\times M$ lignes suivantes : Éléments de la matrice `A`\n- Les $M \\times P$ lignes suivantes : Éléments de la matrice `B`\n\n#### Format de sortie attendu\n- Les `N` lignes de la matrice produit `C`, les colonnes étant séparées par des espaces.\n\n#### Exemple concret\n**Entrée :**\n```\n2\n2\n2\n1\n0\n0\n1\n5\n6\n7\n8\n```\n**Sortie attendue :**\n```\n5 6\n7 8\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2\n3\n2\n1\n2\n3\n4\n5\n6\n7\n8\n9\n1\n2\n3\n",
+        "output": "31 19\n85 55"
+      },
+      {
+        "input": "2\n2\n2\n1\n0\n0\n1\n5\n6\n7\n8\n",
+        "output": "5 6\n7 8"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n2\n1\n2\n3\n4\n5\n",
+        "output": "23"
+      },
+      {
+        "input": "2\n2\n2\n1\n2\n3\n4\n2\n0\n1\n2\n",
+        "output": "4 4\n10 8"
+      },
+      {
+        "input": "3\n2\n2\n1\n2\n3\n4\n5\n6\n1\n1\n1\n1\n",
+        "output": "3 3\n7 7\n11 11"
+      },
+      {
+        "input": "2\n2\n1\n1\n2\n3\n4\n5\n6\n",
+        "output": "17\n39"
+      },
+      {
+        "input": "1\n1\n1\n7\n8\n",
+        "output": "56"
+      },
+      {
+        "input": "2\n2\n2\n0\n1\n1\n0\n0\n1\n1\n0\n",
+        "output": "1 0\n0 1"
+      },
+      {
+        "input": "2\n3\n1\n1\n-1\n2\n0\n3\n-2\n2\n4\n1\n",
+        "output": "0\n10"
+      },
+      {
+        "input": "2\n2\n2\n-1\n2\n3\n-4\n2\n-1\n0\n3\n",
+        "output": "-2 7\n6 -15"
+      },
+      {
+        "input": "3\n1\n2\n2\n3\n4\n5\n6\n",
+        "output": "10 12\n15 18\n20 24"
+      },
+      {
+        "input": "2\n2\n2\n10\n20\n30\n40\n1\n2\n3\n4\n",
+        "output": "70 100\n150 220"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Le produit matriciel C(N x P) de A(N x M) et B(M x P) est défini par `C[i][j] = sum(A[i][k] * B[k][j] for k in range(M))`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    p = int(tokens[2])\n    idx = 3\n    a = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        a.append(row)\n        idx += m\n    b = []\n    for _ in range(m):\n        row = [int(tokens[idx + j]) for j in range(p)]\n        b.append(row)\n        idx += p\n    c = [[0] * p for _ in range(n)]\n    for i in range(n):\n        for j in range(p):\n            c[i][j] = sum(a[i][k] * b[k][j] for k in range(m))\n    for row in c:\n        print(\" \".join(str(x) for x in row))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    p = int(tokens[2])\n    idx = 3\n    a = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        a.append(row)\n        idx += m\n    b = []\n    for _ in range(m):\n        row = [int(tokens[idx + j]) for j in range(p)]\n        b.append(row)\n        idx += p\n    c = [[0] * p for _ in range(n)]\n    for i in range(n):\n        for j in range(p):\n            c[i][j] = sum(a[i][k] * b[k][j] for k in range(m))\n    for row in c:\n        print(\" \".join(str(x) for x in row))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La multiplication matricielle standard calcule chaque coefficient $C[i][j]$ comme le produit scalaire de la ligne $i$ de la matrice $A$ avec la colonne $j$ de la matrice $B$. On affiche ensuite les $N$ lignes de la matrice résultante.\n- **Complexité temporelle** : $O(N \\times M \\times P)$\n- **Complexité spatiale** : $O(N \\times P)$"
+  },
+  {
+    "id": 9067,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Transposition de Matrice Carrée",
+    "topic": "Tableaux",
+    "difficulty": "medium",
+    "description": "### Transposition d'une Matrice N x N\n\nÉcrivez un algorithme qui permute les lignes et colonnes d'une matrice carrée `N x N` ($M_{trans}[i][j] = M[j][i]$).\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Les $N \\times N$ lignes suivantes : Éléments de la matrice ligne par ligne\n\n#### Format de sortie attendu\n- Les `N` lignes de la matrice transposée, les colonnes étant séparées par des espaces.\n\n#### Exemple concret\n**Entrée :**\n```\n2\n1\n2\n3\n4\n```\n**Sortie attendue :**\n```\n1 3\n2 4\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2\n1\n2\n3\n4\n",
+        "output": "1 3\n2 4"
+      },
+      {
+        "input": "3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n",
+        "output": "1 4 7\n2 5 8\n3 6 9"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n5\n",
+        "output": "5"
+      },
+      {
+        "input": "2\n0\n1\n0\n0\n",
+        "output": "0 0\n1 0"
+      },
+      {
+        "input": "3\n1\n0\n0\n0\n1\n0\n0\n0\n1\n",
+        "output": "1 0 0\n0 1 0\n0 0 1"
+      },
+      {
+        "input": "2\n10\n20\n30\n40\n",
+        "output": "10 30\n20 40"
+      },
+      {
+        "input": "3\n1\n4\n7\n2\n5\n8\n3\n6\n9\n",
+        "output": "1 2 3\n4 5 6\n7 8 9"
+      },
+      {
+        "input": "2\n-1\n-2\n-3\n-4\n",
+        "output": "-1 -3\n-2 -4"
+      },
+      {
+        "input": "2\n7\n8\n9\n10\n",
+        "output": "7 9\n8 10"
+      },
+      {
+        "input": "4\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n",
+        "output": "1 5 9 13\n2 6 10 14\n3 7 11 15\n4 8 12 16"
+      },
+      {
+        "input": "2\n2\n0\n0\n3\n",
+        "output": "2 0\n0 3"
+      },
+      {
+        "input": "3\n9\n8\n7\n6\n5\n4\n3\n2\n1\n",
+        "output": "9 6 3\n8 5 2\n7 4 1"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "La transposée d'une matrice carrée échange lignes et colonnes : l'élément à la ligne j et colonne i devient `vals[i * n + j]`.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    for j in range(n):\n        row = [str(vals[i * n + j]) for i in range(n)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    vals = [int(x) for x in tokens[1:1 + n * n]]\n    for j in range(n):\n        row = [str(vals[i * n + j]) for i in range(n)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La transposition transforme les lignes d'une matrice en colonnes ($M^T[j][i] = M[i][j]$). Pour chaque colonne $j$ de 0 à $N-1$, on affiche les éléments correspondants prélevés dans chaque ligne $i$.\n- **Complexité temporelle** : $O(N^2)$\n- **Complexité spatiale** : $O(N^2)$"
+  },
+  {
+    "id": 9068,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Élément Majoritaire de Boyer-Moore",
+    "topic": "Tableaux",
+    "difficulty": "medium",
+    "description": "### Détection de l'Élément Majoritaire en O(N)\n\nÉtant donné un tableau de taille `N`, trouvez l'élément qui apparaît strictement plus de $\\lfloor N/2 \\rfloor$ fois.\nL'existence de l'élément majoritaire est garantie.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Lignes 2 à N+1 : Les `N` entiers\n\n#### Format de sortie attendu\n- La valeur de l'élément majoritaire.\n\n#### Exemple concret\n**Entrée :**\n```\n7\n2\n2\n1\n1\n1\n2\n2\n```\n**Sortie attendue :**\n```\n2\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "7\n2\n2\n1\n1\n1\n2\n2\n",
+        "output": "2"
+      },
+      {
+        "input": "3\n3\n2\n3\n",
+        "output": "3"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n1\n",
+        "output": "1"
+      },
+      {
+        "input": "7\n7\n7\n7\n7\n1\n2\n7\n",
+        "output": "7"
+      },
+      {
+        "input": "7\n5\n5\n5\n2\n5\n3\n5\n",
+        "output": "5"
+      },
+      {
+        "input": "5\n10\n20\n10\n10\n10\n",
+        "output": "10"
+      },
+      {
+        "input": "6\n4\n4\n1\n4\n2\n4\n",
+        "output": "4"
+      },
+      {
+        "input": "7\n9\n9\n9\n8\n9\n7\n9\n",
+        "output": "9"
+      },
+      {
+        "input": "7\n-1\n-1\n2\n-1\n3\n-1\n-1\n",
+        "output": "-1"
+      },
+      {
+        "input": "5\n6\n6\n6\n6\n6\n",
+        "output": "6"
+      },
+      {
+        "input": "7\n100\n200\n100\n100\n300\n100\n100\n",
+        "output": "100"
+      },
+      {
+        "input": "9\n8\n1\n8\n2\n8\n3\n8\n4\n8\n",
+        "output": "8"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Appliquez l'algorithme de vote majoritaire de Boyer-Moore avec un candidat et un compteur incrémenté/décrémenté.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    candidate = None\n    count = 0\n    for x in arr:\n        if count == 0:\n            candidate = x\n            count = 1\n        elif x == candidate:\n            count += 1\n        else:\n            count -= 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    candidate = None\n    count = 0\n    for x in arr:\n        if count == 0:\n            candidate = x\n            count = 1\n        elif x == candidate:\n            count += 1\n        else:\n            count -= 1\n    print(candidate)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme de vote de Boyer-Moore identifie l'élément majoritaire (apparaissant plus de $N/2$ fois) en temps linéaire $O(N)$ et espace $O(1)$. À chaque confrontation de deux éléments distincts, leurs voix s'annulent mutuellement ; seul l'élément majoritaire survit.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
+  },
+  {
+    "id": 9069,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Recherche de Paire Cible",
+    "topic": "Tableaux",
+    "difficulty": "medium",
+    "description": "### Deux Éléments de Somme Cible (Two Sum)\n\nÉtant donné un tableau trié dans l'ordre croissant et une valeur `Cible`, trouvez deux éléments distincts dont la somme vaut exactement `Cible`.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Lignes 2 à N+1 : Les `N` entiers triés\n- Ligne N+2 : L'entier `Cible`\n\n#### Format de sortie attendu\n- Les deux valeurs séparées par un espace, ou `-1` si aucune paire n'existe.\n\n#### Exemple concret\n**Entrée :**\n```\n4\n2\n7\n11\n15\n9\n```\n**Sortie attendue :**\n```\n2 7\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4\n2\n7\n11\n15\n9\n",
+        "output": "2 7"
+      },
+      {
+        "input": "5\n1\n2\n3\n4\n6\n10\n",
+        "output": "4 6"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n1\n2\n3\n10\n",
+        "output": "-1"
+      },
+      {
+        "input": "5\n-5\n-2\n1\n3\n7\n2\n",
+        "output": "-5 7"
+      },
+      {
+        "input": "5\n3\n5\n8\n12\n15\n20\n",
+        "output": "5 15"
+      },
+      {
+        "input": "5\n1\n4\n6\n8\n10\n14\n",
+        "output": "4 10"
+      },
+      {
+        "input": "5\n-10\n-5\n0\n5\n10\n0\n",
+        "output": "-10 10"
+      },
+      {
+        "input": "3\n2\n3\n4\n6\n",
+        "output": "2 4"
+      },
+      {
+        "input": "4\n10\n20\n30\n40\n50\n",
+        "output": "10 40"
+      },
+      {
+        "input": "6\n-8\n-4\n-2\n0\n2\n6\n-2\n",
+        "output": "-8 6"
+      },
+      {
+        "input": "4\n7\n14\n21\n28\n35\n",
+        "output": "7 28"
+      },
+      {
+        "input": "5\n1\n3\n5\n7\n9\n16\n",
+        "output": "7 9"
+      }
+    ],
+    "points": 3.0,
+    "hint1": "Le tableau étant trié, utilisez deux pointeurs (left au début, right à la fin). Si la somme vaut la cible, affichez-les ; si elle est trop petite, avancez left ; sinon reculez right.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    left = 0\n    right = n - 1\n    found = False\n    while left < right:\n        s = arr[left] + arr[right]\n        if s == target:\n            print(f\"{arr[left]} {arr[right]}\")\n            found = True\n            break\n        elif s < target:\n            left += 1\n        else:\n            right -= 1\n    if not found:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    target = int(tokens[n+1])\n    left = 0\n    right = n - 1\n    found = False\n    while left < right:\n        s = arr[left] + arr[right]\n        if s == target:\n            print(f\"{arr[left]} {arr[right]}\")\n            found = True\n            break\n        elif s < target:\n            left += 1\n        else:\n            right -= 1\n    if not found:\n        print(-1)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La technique des deux pointeurs (Two Sum sur tableau trié) exploite l'ordre croissant pour converger vers la solution en $O(N)$ sans table de hachage. Si les pointeurs se croisent sans succès, on affiche `-1`.\n- **Complexité temporelle** : $O(N)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
+  },
+  {
+    "id": 9070,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Parcours en Spirale d'une Matrice",
+    "topic": "Tableaux",
+    "difficulty": "hard",
+    "description": "### Parcours d'une Matrice en Spirale dans le Sens Horaire\n\nÉcrivez un algorithme qui lit une matrice de dimensions `N x M` et affiche ses éléments selon un parcours en spirale partant du coin supérieur gauche vers le centre.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Ligne 2 : `M`\n- Les $N \\times M$ lignes suivantes : Éléments de la matrice ligne par ligne\n\n#### Format de sortie attendu\n- Les éléments affichés sur une seule ligne séparés par des espaces.\n\n#### Exemple concret\n**Entrée :**\n```\n3\n3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n```\n**Sortie attendue :**\n```\n1 2 3 6 9 8 7 4 5\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "3\n3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n",
+        "output": "1 2 3 6 9 8 7 4 5"
+      },
+      {
+        "input": "3\n4\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n",
+        "output": "1 2 3 4 8 12 11 10 9 5 6 7"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n1\n42\n",
+        "output": "42"
+      },
+      {
+        "input": "2\n2\n1\n2\n3\n4\n",
+        "output": "1 2 4 3"
+      },
+      {
+        "input": "1\n4\n1\n2\n3\n4\n",
+        "output": "1 2 3 4"
+      },
+      {
+        "input": "4\n1\n1\n2\n3\n4\n",
+        "output": "1 2 3 4"
+      },
+      {
+        "input": "2\n3\n1\n2\n3\n4\n5\n6\n",
+        "output": "1 2 3 6 5 4"
+      },
+      {
+        "input": "3\n2\n1\n2\n3\n4\n5\n6\n",
+        "output": "1 2 4 6 5 3"
+      },
+      {
+        "input": "4\n4\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n",
+        "output": "1 2 3 4 8 12 16 15 14 13 9 5 6 7 11 10"
+      },
+      {
+        "input": "2\n2\n10\n20\n40\n30\n",
+        "output": "10 20 30 40"
+      },
+      {
+        "input": "3\n3\n5\n6\n7\n8\n9\n10\n11\n12\n13\n",
+        "output": "5 6 7 10 13 12 11 8 9"
+      },
+      {
+        "input": "3\n3\n1\n2\n3\n8\n9\n4\n7\n6\n5\n",
+        "output": "1 2 3 4 5 6 7 8 9"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Maintenez quatre bornes (top, bottom, left, right). Parcourez le contour extérieur dans le sens horaire, puis resserrez les bornes jusqu'à épuisement.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    top = 0\n    bottom = n - 1\n    left = 0\n    right = m - 1\n    res = []\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            res.append(mat[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            res.append(mat[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                res.append(mat[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                res.append(mat[r][left])\n            left += 1\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    top = 0\n    bottom = n - 1\n    left = 0\n    right = m - 1\n    res = []\n    while top <= bottom and left <= right:\n        for c in range(left, right + 1):\n            res.append(mat[top][c])\n        top += 1\n        for r in range(top, bottom + 1):\n            res.append(mat[r][right])\n        right -= 1\n        if top <= bottom:\n            for c in range(right, left - 1, -1):\n                res.append(mat[bottom][c])\n            bottom -= 1\n        if left <= right:\n            for r in range(bottom, top - 1, -1):\n                res.append(mat[r][left])\n            left += 1\n    print(\" \".join(str(x) for x in res))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le parcours en spirale décompose la matrice en anneaux concentriques parcourus successivement : de gauche à droite sur `top`, de haut en bas sur `right`, de droite à gauche sur `bottom`, puis de bas en haut sur `left`. On met à jour les frontières à chaque étape.\n- **Complexité temporelle** : $O(N \\times M)$\n- **Complexité spatiale** : $O(N \\times M)$"
+  },
+  {
+    "id": 9071,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Rotation de Matrice de 90 Degrés",
+    "topic": "Tableaux",
+    "difficulty": "hard",
+    "description": "### Rotation d'une Matrice de 90° dans le Sens Horaire\n\nÉcrivez un algorithme qui effectue une rotation de 90° dans le sens horaire d'une matrice carrée `N x N`.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Les $N \\times N$ lignes suivantes : Éléments de la matrice ligne par ligne\n\n#### Format de sortie attendu\n- Les `N` lignes de la matrice tournée, les colonnes étant séparées par des espaces.\n\n#### Exemple concret\n**Entrée :**\n```\n2\n1\n2\n3\n4\n```\n**Sortie attendue :**\n```\n3 1\n4 2\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "2\n1\n2\n3\n4\n",
+        "output": "3 1\n4 2"
+      },
+      {
+        "input": "3\n1\n2\n3\n4\n5\n6\n7\n8\n9\n",
+        "output": "7 4 1\n8 5 2\n9 6 3"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n42\n",
+        "output": "42"
+      },
+      {
+        "input": "2\n0\n1\n1\n0\n",
+        "output": "1 0\n0 1"
+      },
+      {
+        "input": "3\n1\n0\n0\n0\n1\n0\n0\n0\n1\n",
+        "output": "0 0 1\n0 1 0\n1 0 0"
+      },
+      {
+        "input": "2\n10\n20\n30\n40\n",
+        "output": "30 10\n40 20"
+      },
+      {
+        "input": "4\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n",
+        "output": "13 9 5 1\n14 10 6 2\n15 11 7 3\n16 12 8 4"
+      },
+      {
+        "input": "2\n-1\n2\n3\n-4\n",
+        "output": "3 -1\n-4 2"
+      },
+      {
+        "input": "3\n7\n8\n9\n1\n2\n3\n4\n5\n6\n",
+        "output": "4 1 7\n5 2 8\n6 3 9"
+      },
+      {
+        "input": "2\n2\n4\n6\n8\n",
+        "output": "6 2\n8 4"
+      },
+      {
+        "input": "4\n5\n1\n9\n11\n2\n4\n8\n10\n13\n3\n6\n7\n15\n14\n12\n16\n",
+        "output": "15 13 2 5\n14 3 4 1\n12 6 8 9\n16 7 10 11"
+      },
+      {
+        "input": "2\n9\n8\n7\n6\n",
+        "output": "7 9\n6 8"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Une rotation de 90° dans le sens horaire transforme la colonne `c` de la matrice originale en ligne de la nouvelle matrice lue du bas vers le haut.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    idx = 1\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(n)]\n        mat.append(row)\n        idx += n\n    for col in range(n):\n        row = [str(mat[r][col]) for r in range(n - 1, -1, -1)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    idx = 1\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(n)]\n        mat.append(row)\n        idx += n\n    for col in range(n):\n        row = [str(mat[r][col]) for r in range(n - 1, -1, -1)]\n        print(\" \".join(row))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Une rotation de 90° horaire équivaut mathématiquement à une transposition suivie d'un renversement horizontal des colonnes. On peut l'afficher directement en parcourant pour chaque colonne $c$ les lignes de $N-1$ descendant jusqu'à 0.\n- **Complexité temporelle** : $O(N^2)$\n- **Complexité spatiale** : $O(N^2)$"
+  },
+  {
+    "id": 9072,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Sous-Matrice de Somme Maximale",
+    "topic": "Tableaux",
+    "difficulty": "hard",
+    "description": "### Somme Maximale d'une Sous-Matrice Rectangulaire\n\nÉtant donné une matrice de dimensions `N x M` pouvant contenir des entiers positifs et négatifs, trouvez la sous-matrice contiguë dont la somme des éléments est maximale.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Ligne 2 : `M`\n- Les $N \\times M$ lignes suivantes : Éléments de la matrice\n\n#### Format de sortie attendu\n- Un entier représentant la somme maximale.\n\n#### Exemple concret\n**Entrée :**\n```\n3\n3\n1\n2\n-1\n-4\n-20\n-3\n-5\n20\n10\n```\n**Sortie attendue :**\n```\n30\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "3\n3\n1\n2\n-1\n-4\n-20\n-3\n-5\n20\n10\n",
+        "output": "30"
+      },
+      {
+        "input": "2\n2\n1\n2\n3\n4\n",
+        "output": "10"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n1\n-5\n",
+        "output": "-5"
+      },
+      {
+        "input": "4\n4\n0\n-2\n-7\n0\n9\n2\n-6\n2\n-4\n1\n-4\n1\n-1\n8\n0\n-2\n",
+        "output": "15"
+      },
+      {
+        "input": "2\n2\n-1\n-2\n-3\n-4\n",
+        "output": "-1"
+      },
+      {
+        "input": "2\n2\n5\n-3\n-1\n4\n",
+        "output": "5"
+      },
+      {
+        "input": "3\n5\n2\n1\n-3\n-4\n5\n0\n6\n3\n4\n1\n2\n-2\n-1\n4\n-5\n",
+        "output": "16"
+      },
+      {
+        "input": "1\n1\n10\n",
+        "output": "10"
+      },
+      {
+        "input": "2\n2\n-2\n-3\n-4\n-1\n",
+        "output": "-1"
+      },
+      {
+        "input": "3\n3\n1\n-1\n1\n-1\n1\n-1\n1\n-1\n1\n",
+        "output": "1"
+      },
+      {
+        "input": "2\n3\n10\n-5\n2\n-3\n20\n-2\n",
+        "output": "22"
+      },
+      {
+        "input": "2\n3\n3\n-2\n5\n1\n4\n-1\n",
+        "output": "10"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Fixez la paire de lignes (top, bottom) et compressez les colonnes en un tableau 1D de sommes sur lequel vous appliquez Kadane 1D.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    max_sum = -float('inf')\n    for top in range(n):\n        col_sums = [0] * m\n        for bottom in range(top, n):\n            for c in range(m):\n                col_sums[c] += mat[bottom][c]\n            curr_max = col_sums[0]\n            max_so_far = col_sums[0]\n            for x in col_sums[1:]:\n                curr_max = max(x, curr_max + x)\n                max_so_far = max(max_so_far, curr_max)\n            max_sum = max(max_sum, max_so_far)\n    print(max_sum)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    max_sum = -float('inf')\n    for top in range(n):\n        col_sums = [0] * m\n        for bottom in range(top, n):\n            for c in range(m):\n                col_sums[c] += mat[bottom][c]\n            curr_max = col_sums[0]\n            max_so_far = col_sums[0]\n            for x in col_sums[1:]:\n                curr_max = max(x, curr_max + x)\n                max_so_far = max(max_so_far, curr_max)\n            max_sum = max(max_sum, max_so_far)\n    print(max_sum)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "La recherche de la sous-matrice de somme maximale 2D se ramène à l'algorithme de Kadane 1D en fixant toutes les paires possibles de lignes supérieures et inférieures $(top, bottom)$. On accumule les sommes des colonnes et on applique Kadane en $O(M)$. Complexité globale $O(N^2 M)$.\n- **Complexité temporelle** : $O(N^2 \\times M)$\n- **Complexité spatiale** : $O(M)$ auxiliaire"
+  },
+  {
+    "id": 9073,
+    "is_exam": true,
+    "type": "coding",
+    "title": "Triplets de Somme Nulle",
+    "topic": "Tableaux",
+    "difficulty": "hard",
+    "description": "### Le Problème 3Sum (Triplets de Somme 0)\n\nÉtant donné un tableau d'entiers de taille `N`, déterminez le nombre total de triplets distincts `(A[i], A[j], A[k])` avec $i < j < k$ tels que :\n$$A[i] + A[j] + A[k] = 0$$\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Lignes 2 à N+1 : Les `N` entiers\n\n#### Format de sortie attendu\n- Le nombre de triplets uniques de somme nulle.\n\n#### Exemple concret\n**Entrée :**\n```\n6\n-1\n0\n1\n2\n-1\n-4\n```\n**Sortie attendue :**\n```\n2\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "6\n-1\n0\n1\n2\n-1\n-4\n",
+        "output": "2"
+      },
+      {
+        "input": "3\n0\n1\n1\n",
+        "output": "0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "3\n0\n0\n0\n",
+        "output": "1"
+      },
+      {
+        "input": "5\n-2\n0\n1\n1\n2\n",
+        "output": "2"
+      },
+      {
+        "input": "3\n-3\n1\n2\n",
+        "output": "1"
+      },
+      {
+        "input": "6\n-5\n2\n3\n-2\n0\n2\n",
+        "output": "2"
+      },
+      {
+        "input": "4\n1\n2\n-2\n-1\n",
+        "output": "0"
+      },
+      {
+        "input": "15\n-4\n-2\n-2\n-2\n0\n1\n2\n2\n2\n3\n3\n4\n4\n6\n6\n",
+        "output": "6"
+      },
+      {
+        "input": "3\n-1\n0\n1\n",
+        "output": "1"
+      },
+      {
+        "input": "7\n3\n-3\n0\n2\n-2\n1\n-1\n",
+        "output": "5"
+      },
+      {
+        "input": "5\n10\n-10\n5\n-5\n0\n",
+        "output": "2"
+      },
+      {
+        "input": "7\n-6\n-4\n-2\n0\n2\n4\n6\n",
+        "output": "5"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Triez le tableau, fixez le premier élément i, puis utilisez deux pointeurs (left et right) pour chercher arr[left] + arr[right] == -arr[i]. Utilisez un set pour éviter les doublons.",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    triplets = set()\n    for i in range(n - 2):\n        left = i + 1\n        right = n - 1\n        while left < right:\n            s = arr[i] + arr[left] + arr[right]\n            if s == 0:\n                triplets.add((arr[i], arr[left], arr[right]))\n                left += 1\n                right -= 1\n            elif s < 0:\n                left += 1\n            else:\n                right -= 1\n    print(len(triplets))\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    arr = [int(x) for x in tokens[1:n+1]]\n    arr.sort()\n    triplets = set()\n    for i in range(n - 2):\n        left = i + 1\n        right = n - 1\n        while left < right:\n            s = arr[i] + arr[left] + arr[right]\n            if s == 0:\n                triplets.add((arr[i], arr[left], arr[right]))\n                left += 1\n                right -= 1\n            elif s < 0:\n                left += 1\n            else:\n                right -= 1\n    print(len(triplets))\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "Le problème 3Sum (LeetCode 15) demande le nombre de triplets uniques sommant à 0. Après un tri en $O(N \\log N)$, on fixe chaque premier terme et on applique les deux pointeurs en $O(N)$. Un ensemble (`set`) évite le comptage redondant des triplets identiques.\n- **Complexité temporelle** : $O(N^2)$\n- **Complexité spatiale** : $O(N)$"
+  },
+  {
+    "id": 9074,
+    "is_exam": false,
+    "type": "coding",
+    "title": "Recherche dans une Matrice Triée 2D",
+    "topic": "Tableaux",
+    "difficulty": "hard",
+    "description": "### Recherche Linéaire 2D (Algorithme de la Selle)\n\nÉtant donné une matrice `N x M` où chaque ligne est triée par ordre croissant de gauche à droite, et chaque colonne est triée de haut en bas, déterminez si une valeur `Cible` est présente en $O(N + M)$ sans parcourir toute la matrice.\n\n#### Format d'entrée\n- Ligne 1 : `N`\n- Ligne 2 : `M`\n- Les $N \\times M$ lignes suivantes : Éléments de la matrice ligne par ligne\n- Ligne suivante : L'entier `Cible`\n\n#### Format de sortie attendu\n- Affichez `1` si la valeur est trouvée, ou `0` sinon.\n\n#### Exemple concret\n**Entrée :**\n```\n4\n4\n1\n4\n7\n11\n2\n5\n8\n12\n3\n6\n9\n16\n10\n13\n14\n17\n5\n```\n**Sortie attendue :**\n```\n1\n```",
+    "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    raw = sys.stdin.read().strip()\n    if not raw:\n        return\n    # TODO: Écrivez votre logique algorithmique ici\n\nif __name__ == '__main__':\n    solve()\n",
+    "public_tests": [
+      {
+        "input": "4\n4\n1\n4\n7\n11\n2\n5\n8\n12\n3\n6\n9\n16\n10\n13\n14\n17\n5\n",
+        "output": "1"
+      },
+      {
+        "input": "4\n4\n1\n4\n7\n11\n2\n5\n8\n12\n3\n6\n9\n16\n10\n13\n14\n17\n20\n",
+        "output": "0"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "input": "1\n1\n5\n5\n",
+        "output": "1"
+      },
+      {
+        "input": "1\n1\n5\n3\n",
+        "output": "0"
+      },
+      {
+        "input": "2\n2\n1\n2\n3\n4\n3\n",
+        "output": "1"
+      },
+      {
+        "input": "2\n2\n1\n2\n3\n4\n5\n",
+        "output": "0"
+      },
+      {
+        "input": "3\n3\n1\n3\n5\n7\n9\n11\n13\n15\n17\n9\n",
+        "output": "1"
+      },
+      {
+        "input": "3\n3\n1\n3\n5\n7\n9\n11\n13\n15\n17\n8\n",
+        "output": "0"
+      },
+      {
+        "input": "2\n2\n-10\n-5\n-2\n4\n-5\n",
+        "output": "1"
+      },
+      {
+        "input": "2\n2\n-10\n-5\n-2\n4\n0\n",
+        "output": "0"
+      },
+      {
+        "input": "2\n3\n10\n20\n30\n40\n50\n60\n50\n",
+        "output": "1"
+      },
+      {
+        "input": "2\n4\n2\n4\n6\n8\n10\n12\n14\n16\n14\n",
+        "output": "1"
+      }
+    ],
+    "points": 4.0,
+    "hint1": "Démarrez dans le coin supérieur droit (row = 0, col = M - 1). Si la valeur courante est plus grande que la cible, reculez à gauche (col -= 1) ; si plus petite, descendez (row += 1).",
+    "hint2": "Solution complète de référence :\n```python\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    target = int(tokens[idx])\n    r = 0\n    c = m - 1\n    found = False\n    while r < n and c >= 0:\n        val = mat[r][c]\n        if val == target:\n            found = True\n            break\n        elif val > target:\n            c -= 1\n        else:\n            r += 1\n    print(1 if found else 0)\n\nif __name__ == '__main__':\n    solve()\n\n```",
+    "solution": "import sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n    n = int(tokens[0])\n    m = int(tokens[1])\n    idx = 2\n    mat = []\n    for _ in range(n):\n        row = [int(tokens[idx + j]) for j in range(m)]\n        mat.append(row)\n        idx += m\n    target = int(tokens[idx])\n    r = 0\n    c = m - 1\n    found = False\n    while r < n and c >= 0:\n        val = mat[r][c]\n        if val == target:\n            found = True\n            break\n        elif val > target:\n            c -= 1\n        else:\n            r += 1\n    print(1 if found else 0)\n\nif __name__ == '__main__':\n    solve()\n",
+    "explanation": "L'algorithme de recherche en selle (Saddleback Search) exploite le fait que la matrice est triée par lignes et par colonnes. En partant du coin $(0, M-1)$, chaque comparaison élimine soit une colonne entière, soit une ligne entière, garantissant une recherche en $O(N + M)$ sans explorer toute la matrice.\n- **Complexité temporelle** : $O(N + M)$\n- **Complexité spatiale** : $O(1)$ auxiliaire"
+  }
+]

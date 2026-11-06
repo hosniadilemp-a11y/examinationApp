@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  examquiz-windows:
+    build:
+      context: ../..
+      dockerfile: deployment/windows/Dockerfile.windows
+    image: examquiz-app-windows:latest
+    container_name: examquiz-windows
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTO_SEED_DEFAULT_USERS=true

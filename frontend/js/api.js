@@ -446,6 +446,30 @@ class ApiClient {
     return await response.json();
   }
 
+  async importTeachersCsv(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const url = `${API_BASE}/admin/csv/import/teachers`;
+    const headers = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+    if (!response.ok) {
+      let errorMsg = `Erreur HTTP ${response.status}`;
+      try {
+        const errData = await response.json();
+        errorMsg = errData.detail || errorMsg;
+      } catch (_) {}
+      throw new Error(errorMsg);
+    }
+    return await response.json();
+  }
+
   async getAdminBulletins(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.speciality) searchParams.append('speciality', params.speciality);
@@ -539,6 +563,42 @@ class ApiClient {
     return await this.downloadBlob('/student/bulletin/export-docx', 'mon_bulletin_officiel.docx');
   }
 
+  // --- PV & Bulletins de Classe par Spécialité et Module ---
+  async getClassSheet(speciality, moduleCode) {
+    const qs = new URLSearchParams({ speciality, module_code: moduleCode });
+    return await this.request(`/admin/bulletins/class-sheet?${qs.toString()}`);
+  }
+
+  async downloadClassSheetPdf(speciality, moduleCode, filename = null) {
+    const qs = new URLSearchParams({ speciality, module_code: moduleCode });
+    const fn = filename || `pv_classe_${speciality}_${moduleCode}.pdf`;
+    return await this.downloadBlob(`/admin/bulletins/class-sheet/export-pdf?${qs.toString()}`, fn);
+  }
+
+  async downloadClassSheetCsv(speciality, moduleCode, filename = null) {
+    const qs = new URLSearchParams({ speciality, module_code: moduleCode });
+    const fn = filename || `pv_classe_${speciality}_${moduleCode}.csv`;
+    return await this.downloadBlob(`/admin/bulletins/class-sheet/export-csv?${qs.toString()}`, fn);
+  }
+
+  async clearAllExamsAndScores(clearPractice = false) {
+    return await this.request(`/admin/clear-exams-and-scores?clear_practice=${clearPractice}`, {
+      method: 'POST'
+    });
+  }
+
+  // --- Générateur d'Épreuves Python (Banque d'Exercices) ---
+  async getPythonBankStats() {
+    return await this.request('/exams/python/bank-stats');
+  }
+
+  async generatePythonExam(payload) {
+    return await this.request('/exams/python/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
   // --- Analyse Psychométrique & Discrimination des Questions ---
   async getItemAnalysis(examId) {
     return await this.request(`/exams/${examId}/item-analysis`);
@@ -547,6 +607,21 @@ class ApiClient {
   async downloadItemAnalysisCsv(examId, filename = null) {
     const fn = filename || `analyse_questions_${examId}.csv`;
     return await this.downloadBlob(`/exams/${examId}/item-analysis/csv`, fn);
+  }
+
+  // --- Téléchargement des Notes Finales par Examen (Tous les Étudiants) ---
+  async getExamResults(examId) {
+    return await this.request(`/exams/${encodeURIComponent(examId)}/results`);
+  }
+
+  async downloadExamResultsCsv(examId, moduleCode = '', filename = null) {
+    const fn = filename || `notes_finales_${moduleCode ? moduleCode + '_' : ''}${examId}.csv`;
+    return await this.downloadBlob(`/exams/${encodeURIComponent(examId)}/results/export-csv`, fn);
+  }
+
+  async downloadExamResultsPdf(examId, moduleCode = '', filename = null) {
+    const fn = filename || `pv_notes_finales_${moduleCode ? moduleCode + '_' : ''}${examId}.pdf`;
+    return await this.downloadBlob(`/exams/${encodeURIComponent(examId)}/results/export-pdf`, fn);
   }
 
   async getSessionItemAnalysis(sessionId) {
@@ -567,7 +642,7 @@ class ApiClient {
   async importExamPackage(file) {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${this.baseUrl}/sync/exams/import-package`, {
+    const res = await fetch(`${API_BASE}/sync/exams/import-package`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.token}`
@@ -589,7 +664,7 @@ class ApiClient {
   async importResultsZip(file) {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${this.baseUrl}/sync/master/import-results`, {
+    const res = await fetch(`${API_BASE}/sync/master/import-results`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.token}`

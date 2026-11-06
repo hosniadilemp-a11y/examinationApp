@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  examquiz-linux:
+    build:
+      context: ../..
+      dockerfile: deployment/linux/Dockerfile.linux
+    image: examquiz-app-linux:latest
+    container_name: examquiz-linux
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTO_SEED_DEFAULT_USERS=true
+    volumes:
+      - ./data_linux:/app/data_persist

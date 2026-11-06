@@ -141,9 +141,14 @@
     var end = cur.ch;
     var start = end;
 
-    // Détection de mot ou membre d'objet (ex: sys.stdin ou math.sqrt)
+    // Détection du mot ou membre d'objet (ex: sys.stdin ou math.sqrt)
     while (start && /[\w.]/.test(line.charAt(start - 1))) --start;
     var rawWord = line.slice(start, end);
+
+    // Si aucun mot ou que le mot est vide/symbolique, ne rien afficher pour éviter d'inonder l'écran
+    if (!rawWord || !/[a-zA-Z_]/.test(rawWord)) {
+      return { list: [], from: Pos(cur.line, start), to: Pos(cur.line, end) };
+    }
 
     var list = [];
     var dotIdx = rawWord.lastIndexOf(".");
@@ -171,10 +176,59 @@
     } else {
       var word = rawWord.toLowerCase();
 
+      // 0. Extraction dynamique des VARIABLES LOCALES et symboles définis par l'utilisateur
+      var docText = cm.getValue();
+      var localVars = new Set();
+
+      // Détection des affectations (a = ..., a, b = ..., for x in ...)
+      var assignRegex = /(?:^|[;\n\s])([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s*(?:=[^=]|in\b)/g;
+      var match;
+      while ((match = assignRegex.exec(docText)) !== null) {
+        var parts = match[1].split(",");
+        for (var p = 0; p < parts.length; p++) {
+          var cand = parts[p].trim();
+          if (cand && /^[a-zA-Z_]\w*$/.test(cand)) {
+            if (PYTHON_KEYWORDS.indexOf(cand) === -1 && PYTHON_BUILTINS.indexOf(cand) === -1) {
+              localVars.add(cand);
+            }
+          }
+        }
+      }
+
+      // Fonctions et classes créées
+      var defRegex = /(?:def|class)\s+([a-zA-Z_]\w*)/g;
+      while ((match = defRegex.exec(docText)) !== null) {
+        localVars.add(match[1]);
+      }
+
+      // Tous les identifiants présents dans le document utilisateur
+      var idRegex = /\b([a-zA-Z_]\w{1,})\b/g;
+      while ((match = idRegex.exec(docText)) !== null) {
+        var id = match[1];
+        if (PYTHON_KEYWORDS.indexOf(id) === -1 && PYTHON_BUILTINS.indexOf(id) === -1 && PYTHON_MODULES.indexOf(id) === -1) {
+          localVars.add(id);
+        }
+      }
+
+      // Ajout des variables en tête des suggestions
+      localVars.forEach(function(v) {
+        if (v.toLowerCase().indexOf(word) === 0 && v !== rawWord) {
+          list.push({
+            text: v,
+            displayText: v,
+            from: Pos(cur.line, start),
+            to: Pos(cur.line, end),
+            render: function(elt, data, item) {
+              elt.innerHTML = '<span class="hint-badge hint-badge-var">VAR</span> <strong>' + item.text + '</strong>';
+            }
+          });
+        }
+      });
+
       // 1. Snippets
       for (var s = 0; s < PYTHON_SNIPPETS.length; s++) {
         var snip = PYTHON_SNIPPETS[s];
-        if (!word || snip.trigger.toLowerCase().indexOf(word) === 0) {
+        if (snip.trigger.toLowerCase().indexOf(word) === 0) {
           list.push({
             text: snip.text,
             displayText: snip.display,
@@ -190,7 +244,7 @@
       // 2. Mots-clés
       for (var k = 0; k < PYTHON_KEYWORDS.length; k++) {
         var kw = PYTHON_KEYWORDS[k];
-        if (!word || kw.toLowerCase().indexOf(word) === 0) {
+        if (kw.toLowerCase().indexOf(word) === 0) {
           list.push({
             text: kw,
             displayText: kw,
@@ -206,7 +260,7 @@
       // 3. Fonctions et builtins
       for (var b = 0; b < PYTHON_BUILTINS.length; b++) {
         var bi = PYTHON_BUILTINS[b];
-        if (!word || bi.toLowerCase().indexOf(word) === 0) {
+        if (bi.toLowerCase().indexOf(word) === 0) {
           list.push({
             text: bi,
             displayText: bi + "()",
@@ -222,7 +276,7 @@
       // 4. Modules populaires
       for (var m = 0; m < PYTHON_MODULES.length; m++) {
         var modName = PYTHON_MODULES[m];
-        if (!word || modName.toLowerCase().indexOf(word) === 0) {
+        if (modName.toLowerCase().indexOf(word) === 0) {
           list.push({
             text: modName,
             displayText: modName,
@@ -247,4 +301,3 @@
   CodeMirror.hint = CodeMirror.hint || {};
   CodeMirror.hint.python = pythonHint;
 });
-

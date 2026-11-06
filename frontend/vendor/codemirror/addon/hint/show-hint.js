@@ -1,4 +1,4 @@
-// CodeMirror show-hint addon for autocomplete
+// CodeMirror show-hint addon for autocomplete with close button and dismissal
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object")
     mod(require("../../lib/codemirror"));
@@ -39,11 +39,11 @@
       setTimeout(function() {
         if (self.active()) {
           var activeEl = document.activeElement;
-          if (!activeEl || !self.widget || !self.widget.hints || !self.widget.hints.contains(activeEl)) {
+          if (!activeEl || !self.widget || !self.widget.container || !self.widget.container.contains(activeEl)) {
             self.close();
           }
         }
-      }, 100);
+      }, 120);
     });
     this.update();
   }
@@ -73,7 +73,7 @@
       } else {
         var self = this;
         clearTimeout(this.debounce);
-        this.debounce = setTimeout(function() { self.update(); }, 70);
+        this.debounce = setTimeout(function() { self.update(); }, 60);
       }
     },
 
@@ -109,6 +109,14 @@
     this.picked = false;
     var widget = this, cm = completion.cm;
 
+    var container = this.container = document.createElement("div");
+    container.className = "CodeMirror-hints-container";
+
+    var header = document.createElement("div");
+    header.className = "CodeMirror-hints-header";
+    header.innerHTML = '<span class="CodeMirror-hints-title">💡 Suggestions Python</span><button type="button" class="CodeMirror-hints-close-btn" title="Fermer (Échap)">✕</button>';
+    container.appendChild(header);
+
     var hints = this.hints = document.createElement("ul");
     hints.className = "CodeMirror-hints";
     this.selectedHint = 0;
@@ -126,14 +134,34 @@
       }
       elt.hintId = i;
     }
+    container.appendChild(hints);
 
     var pos = cm.cursorCoords(completion.options.alignWithWord !== false ? data.from : null);
-    var left = pos.left, top = pos.bottom, below = true;
-    hints.style.left = left + "px";
-    hints.style.top = top + "px";
+    var left = pos.left, top = pos.bottom;
+    
+    // Ajustement de positionnement écran
+    if (left + 300 > window.innerWidth) {
+      left = Math.max(10, window.innerWidth - 320);
+    }
+    if (top + 220 > window.innerHeight) {
+      top = Math.max(10, pos.top - 230);
+    }
 
-    document.body.appendChild(hints);
+    container.style.left = left + "px";
+    container.style.top = top + "px";
+
+    document.body.appendChild(container);
     cm.addKeyMap(this.keyMap = buildKeyMap(widget));
+
+    // Gestion du bouton de fermeture explicite (✕)
+    var closeBtn = header.querySelector(".CodeMirror-hints-close-btn");
+    if (closeBtn) {
+      closeBtn.onmousedown = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        widget.completion.close();
+      };
+    }
 
     var hintEls = hints.childNodes;
     for (var j = 0; j < hintEls.length; ++j) {
@@ -146,13 +174,14 @@
       })(j);
     }
 
-    // Fermeture automatique en cas de clic en dehors du panneau d'autocomplétion
+    // Fermeture automatique en cas de clic ou toucher en dehors du conteneur d'autocomplétion
     this.onOutsideMouseDown = function(e) {
-      if (widget.hints && !widget.hints.contains(e.target)) {
+      if (widget.container && !widget.container.contains(e.target)) {
         widget.completion.close();
       }
     };
     document.addEventListener("mousedown", this.onOutsideMouseDown, true);
+    document.addEventListener("touchstart", this.onOutsideMouseDown, true);
 
     this.onWindowScrollOrResize = function() {
       if (widget.completion) widget.completion.close();
@@ -164,17 +193,21 @@
     close: function() {
       if (this.onOutsideMouseDown) {
         document.removeEventListener("mousedown", this.onOutsideMouseDown, true);
+        document.removeEventListener("touchstart", this.onOutsideMouseDown, true);
         this.onOutsideMouseDown = null;
       }
       if (this.onWindowScrollOrResize) {
         window.removeEventListener("resize", this.onWindowScrollOrResize);
         this.onWindowScrollOrResize = null;
       }
-      if (this.hints && this.hints.parentNode) {
+      if (this.container && this.container.parentNode) {
+        this.container.parentNode.removeChild(this.container);
+      } else if (this.hints && this.hints.parentNode) {
         this.hints.parentNode.removeChild(this.hints);
       }
       this.completion.cm.removeKeyMap(this.keyMap);
       this.hints = null;
+      this.container = null;
     },
 
     changeActive: function(i) {
@@ -218,6 +251,10 @@
       End: function() { widget.changeActive(widget.data.list.length - 1); },
       Enter: function() { widget.pick(); },
       Tab: function() { widget.pick(); },
+      Space: function() {
+        widget.completion.close();
+        return CodeMirror.Pass;
+      },
       Esc: function() { 
         widget.completion.close(); 
         return false;
@@ -235,4 +272,3 @@
     if (helper) return CodeMirror.showHint(this, helper, options);
   });
 });
-

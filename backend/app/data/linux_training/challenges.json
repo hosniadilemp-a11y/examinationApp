@@ -13,10 +13,22 @@
       "/home/student": {
         "type": "dir",
         "files": {
-          ".bashrc": { "type": "file", "content": "# bashrc config\n" },
-          ".profile": { "type": "file", "content": "export PATH\n" },
-          "documents": { "type": "dir", "files": {} },
-          "notes.txt": { "type": "file", "content": "Bienvenue sur Linux\n" }
+          ".bashrc": {
+            "type": "file",
+            "content": "# bashrc config\n"
+          },
+          ".profile": {
+            "type": "file",
+            "content": "export PATH\n"
+          },
+          "documents": {
+            "type": "dir",
+            "files": {}
+          },
+          "notes.txt": {
+            "type": "file",
+            "content": "Bienvenue sur Linux\n"
+          }
         }
       }
     },
@@ -82,8 +94,9 @@
     ],
     "hints": [
       "Utilisez la commande 'pwd' pour afficher le répertoire courant.",
-      "L'option '-la' de 'ls' combine l'affichage long et les fichiers masqués."
-    ]
+      "Solution complète de référence :\n```bash\npwd && ls -la\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Exploration et Arborescence Système\n\n**Commandes utilisées :** `pwd && ls -la`\n\n1. **`pwd` (Print Working Directory) :** Interroge le noyau et affiche sur la sortie standard le chemin absolu complet du répertoire de travail actuel depuis la racine `/`.\n2. **Opérateur logique `&&` :** Exécute la seconde commande si et seulement si la première réussit avec un code de retour égal à 0.\n3. **`ls -la` :** Combine l'option `-l` (format long affichant permissions, liens, propriétaire, groupe, taille en octets et horodatage) et l'option `-a` (all, incluant les fichiers et répertoires masqués dont le nom commence par un point `.`)."
   },
   {
     "id": "LINUX-102",
@@ -163,8 +176,9 @@
     ],
     "hints": [
       "L'option '-p' de 'mkdir' crée les répertoires parents manquants si nécessaire.",
-      "La commande 'touch fichier' permet de créer un fichier vide sans ouvrir d'éditeur."
-    ]
+      "Solution complète de référence :\n```bash\nmkdir -p project/src project/docs && touch project/src/main.sh project/README.md\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Création d'une Structure de Projet\n\n**Commandes utilisées :** `mkdir -p project/src project/docs && touch project/src/main.sh project/README.md`\n\n1. **`mkdir -p` (Make Directories Parents) :** Crée récursivement tous les répertoires parents manquants sans déclencher d'erreur si le dossier existe déjà.\n2. **`touch` :** Met à jour les horodatages d'accès et de modification d'un fichier, ou crée un nouveau fichier vide de 0 octet s'il n'existe pas encore sur le système de fichiers."
   },
   {
     "id": "LINUX-103",
@@ -183,12 +197,24 @@
           "reports": {
             "type": "dir",
             "files": {
-              "q1.txt": { "type": "file", "content": "Q1 Report\n" }
+              "q1.txt": {
+                "type": "file",
+                "content": "Q1 Report\n"
+              }
             }
           },
-          "archive": { "type": "dir", "files": {} },
-          "draft.txt": { "type": "file", "content": "Brouillon initial\n" },
-          "temp.log": { "type": "file", "content": "Trace temporaire à détruire\n" }
+          "archive": {
+            "type": "dir",
+            "files": {}
+          },
+          "draft.txt": {
+            "type": "file",
+            "content": "Brouillon initial\n"
+          },
+          "temp.log": {
+            "type": "file",
+            "content": "Trace temporaire à détruire\n"
+          }
         }
       }
     },
@@ -254,8 +280,9 @@
     ],
     "hints": [
       "Pour copier un répertoire récursivement, utilisez 'cp -r'.",
-      "La commande 'mv source destination' déplace et renomme simultanément."
-    ]
+      "Solution complète de référence :\n```bash\ncp -r reports reports_backup && mv draft.txt archive/old_draft.txt && rm temp.log\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Copie, Renommage et Suppression\n\n**Commandes utilisées :** `cp -r reports reports_backup && mv draft.txt archive/old_draft.txt && rm temp.log`\n\n1. **`cp -r` (Recursive Copy) :** Duplique l'intégralité de l'arborescence du dossier source vers le dossier destination.\n2. **`mv` (Move / Rename) :** Déplace ou renomme un fichier de manière atomique en modifiant l'entrée de répertoire (dentry) sans recopier les données physiques sur le même système de fichiers.\n3. **`rm` (Remove) :** Délie (unlink) l'entrée de fichier de l'inode correspondant, libérant l'espace disque si aucun autre descripteur de fichier ne le maintient ouvert."
   },
   {
     "id": "LINUX-201",
@@ -271,8 +298,16 @@
       "/home/student": {
         "type": "dir",
         "files": {
-          "deploy.sh": { "type": "file", "content": "#!/bin/bash\necho 'Deploying...'\n", "mode": "644" },
-          "secrets.env": { "type": "file", "content": "DB_PASSWORD=secret_super_token\n", "mode": "644" }
+          "deploy.sh": {
+            "type": "file",
+            "content": "#!/bin/bash\necho 'Deploying...'\n",
+            "mode": "644"
+          },
+          "secrets.env": {
+            "type": "file",
+            "content": "DB_PASSWORD=secret_super_token\n",
+            "mode": "644"
+          }
         }
       }
     },
@@ -338,8 +373,9 @@
     ],
     "hints": [
       "En notation octale : 7 (rwx), 5 (r-x), 0 (---).",
-      "'chmod 755 script' donne lecture/exécution à tous et écriture au seul propriétaire."
-    ]
+      "Solution complète de référence :\n```bash\nchmod 755 deploy.sh && chmod 600 secrets.env\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Sécurisation des Permissions d'Exécution\n\n**Commandes utilisées :** `chmod 755 deploy.sh && chmod 600 secrets.env`\n\n1. **Notation octale des permissions :** Chaque triplet représente Lecture (4), Écriture (2), Exécution (1).\n2. **`chmod 755` (rwxr-xr-x) :** Attribue tous les droits au propriétaire (`7 = 4+2+1`), et uniquement la lecture et l'exécution au groupe et aux autres (`5 = 4+0+1`), idéal pour les scripts et exécutables partagés.\n3. **`chmod 600` (rw-------) :** Restreint l'accès complet en lecture/écriture au seul propriétaire (`6 = 4+2+0`) et interdit tout accès aux tiers, indispensable pour les fichiers de secrets et clés privées."
   },
   {
     "id": "LINUX-202",
@@ -364,8 +400,14 @@
       "/var/log": {
         "type": "dir",
         "files": {
-          "syslog.log": { "type": "file", "content": "syslog ok\n" },
-          "auth.log": { "type": "file", "content": "auth ok\n" }
+          "syslog.log": {
+            "type": "file",
+            "content": "syslog ok\n"
+          },
+          "auth.log": {
+            "type": "file",
+            "content": "auth ok\n"
+          }
         }
       }
     },
@@ -431,8 +473,9 @@
     ],
     "hints": [
       "L'option '-n' de 'grep' préfixe chaque ligne trouvée par son numéro de ligne.",
-      "La commande 'find /chemin -name '*.ext'' recherche les fichiers selon leur motif de nom."
-    ]
+      "Solution complète de référence :\n```bash\ngrep -n 'CRITICAL' service.log && find /var/log -name '*.log'\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Filtrage et Recherche avec Grep et Find\n\n**Commandes utilisées :** `grep -n 'CRITICAL' service.log && find /var/log -name '*.log'`\n\n1. **`grep -n` :** Recherche le motif textuel `'CRITICAL'` dans le fichier cible et préfixe chaque occurrence par son numéro de ligne exact.\n2. **`find /var/log -name '*.log'` :** Parcourt récursivement l'arborescence à partir de `/var/log` et sélectionne les nœuds dont le nom respecte le filtre globbing spécifié."
   },
   {
     "id": "LINUX-301",
@@ -517,8 +560,9 @@
     ],
     "hints": [
       "Le symbole '|' (pipe) connecte la sortie standard d'une commande à l'entrée standard de la suivante.",
-      "La redirection '>' écrit le flux dans le fichier cible en écrasant son contenu préalable."
-    ]
+      "Solution complète de référence :\n```bash\ngrep ' 404 ' access.log | wc -l > 404_count.txt\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Pipeline d'Analyse de Logs et Redirection\n\n**Commandes utilisées :** `grep ' 404 ' access.log | wc -l > 404_count.txt`\n\n1. **`grep ' 404 ' access.log` :** Extrait toutes les requêtes HTTP ayant généré le code de statut 404 (Not Found).\n2. **Tube Unix (`|`) :** Raccorde le descripteur de sortie standard (stdout) du `grep` au descripteur d'entrée standard (stdin) de la commande suivante sans passer par un fichier temporaire sur disque.\n3. **`wc -l` (Word Count Lines) :** Compte le nombre de lignes reçues sur son entrée standard.\n4. **Redirection `>` :** Écrit le flux résultant dans `404_count.txt` en créant ou écrasant le fichier cible."
   },
   {
     "id": "LINUX-302",
@@ -598,8 +642,9 @@
     ],
     "hints": [
       "'cmd1 && cmd2' n'exécute cmd2 que si cmd1 réussit (code retour 0).",
-      "'cmd1 || cmd2' exécute cmd2 si cmd1 échoue (code retour différent de 0)."
-    ]
+      "Solution complète de référence :\n```bash\ntest -f config.json && echo 'CONFIG_OK' > status.txt || (echo '{}' > config.json && echo 'CONFIG_CREATED' > status.txt)\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Chaînage Conditionnel et Enchaînements\n\n**Commandes utilisées :** `test -f config.json && echo 'CONFIG_OK' > status.txt || (echo '{}' > config.json && echo 'CONFIG_CREATED' > status.txt)`\n\n1. **`test -f fichier` :** Vérifie si le chemin existe et pointe vers un fichier régulier (code de retour 0 si vrai, 1 sinon).\n2. **Opérateurs de contrôle `&&` et `||` :** `cmdA && cmdB || cmdC` implémente un embranchement conditionnel : si le test réussit, `cmdB` est exécutée ; en cas d'échec, le sous-shell `cmdC` initialise la configuration par défaut et consigne le statut."
   },
   {
     "id": "LINUX-401",
@@ -684,8 +729,9 @@
     ],
     "hints": [
       "'ps aux' liste l'ensemble des processus avec utilisateur et PID.",
-      "'kill -9 PID' envoie le signal SIGKILL qui force l'arrêt immédiat."
-    ]
+      "Solution complète de référence :\n```bash\nps aux | grep miner_daemon && kill -9 4096\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Gestion des Processus et Signaux Système\n\n**Commandes utilisées :** `ps aux | grep miner_daemon && kill -9 4096`\n\n1. **`ps aux` :** Liste exhaustive de tous les processus en cours d'exécution dans le namespace système (a: tous les utilisateurs, u: format orienté utilisateur avec consommation CPU/RAM, x: processus sans terminal de contrôle TTY).\n2. **`kill -9 PID` (SIGKILL) :** Envoie au processus le signal numéro 9 (SIGKILL), un signal non interceptable et non ignorable traité directement par l'ordonnanceur du noyau Linux pour forcer l'arrêt immédiat."
   },
   {
     "id": "LINUX-402",
@@ -765,7 +811,8 @@
     ],
     "hints": [
       "'export NOM=valeur' définit une variable disponible pour les sous-processus.",
-      "'uname -a' renvoie les informations complètes du noyau (version, architecture, nom d'hôte)."
-    ]
+      "Solution complète de référence :\n```bash\nexport SYSTEM_TIER=production && uname -a && env > system_env.txt\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Inspection Système et Export d'Environnement\n\n**Commandes utilisées :** `export SYSTEM_TIER=production && uname -a && env > system_env.txt`\n\n1. **`export VARIABLE=valeur` :** Marque la variable d'environnement pour qu'elle soit transmise à tous les processus fils créés par le shell (`fork()` + `exec()`).\n2. **`uname -a` :** Interroge la table système pour afficher le nom du système d'exploitation, le nom d'hôte réseau, la version de compilation du noyau Linux et l'architecture matérielle.\n3. **`env > system_env.txt` :** Exporte la table des variables d'environnement dans un fichier d'inventaire persistant."
   }
 ]

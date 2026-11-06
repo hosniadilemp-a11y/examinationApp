@@ -9,7 +9,7 @@ from backend.app.database import get_db
 from backend.app.models import User, Group, Module, Exam, ExamSession, StudentAttempt, PracticeAttempt
 from backend.app.schemas import CSVImportResponse
 from backend.app.security import hash_password
-from backend.app.dependencies import require_admin
+from backend.app.dependencies import require_admin, require_teacher_or_admin
 from backend.app.services.document_export import (
     generate_student_bulletin_pdf,
     generate_student_bulletin_docx,
@@ -445,7 +445,7 @@ def list_student_bulletins(
     speciality: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Génère la liste consolidée des bulletins de tous les étudiants."""
     query = db.query(User).filter(User.role == "student")
@@ -465,7 +465,7 @@ def list_student_bulletins(
 def export_bulletins_csv(
     speciality: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Exporte tous les bulletins au format CSV consolidé sans redondance."""
     query = db.query(User).filter(User.role == "student")
@@ -516,7 +516,7 @@ def export_bulletins_bulk_zip(
     format: str = Query("pdf", pattern="^(pdf|docx|all)$"),
     speciality: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Exporte tous les bulletins dans une archive ZIP (PDF, Word DOCX ou les deux)."""
     query = db.query(User).filter(User.role == "student")
@@ -533,11 +533,176 @@ def export_bulletins_bulk_zip(
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 
+# ==============================================================================
+# PV & Bulletins de Classe par Spécialité et Module (REV-SPEC-MOD)
+# ==============================================================================
+
+@router.get("/bulletins/class-sheet")
+def get_class_sheet(
+    speciality: str = Query(..., description="Identifiant de la spécialité / groupe (ex: DEV-IA)"),
+    module_code: str = Query(..., description="Code du module académique (ex: PYTHON_INIT)"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Retourne la liste consolidée des étudiants pour une spécialité et un module donné :
+    - Note Volet Théorique (/20)
+    - Note Volet Pratique (/20)
+    - Moyenne du Module ((Théorie + Pratique) / 2 ou note unique)
+    - Statut (ADMIS / AJOURNÉ / NON_ÉVALUÉ)
+    """
+    spec_clean = speciality.strip()
+    mod_clean = module_code.strip().upper()
+
+    module = db.query(Module).filter(Module.code == mod_clean).first()
+    mod_title = module.title if module else mod_clean
+
+    group = db.query(Group).filter(Group.id == spec_clean).first()
+    spec_title = group.name if group else spec_clean
+
+    students = db.query(User).filter(
+        User.role == "student",
+        User.group_id == spec_clean
+    ).order_by(User.full_name.asc(), User.id.asc()).all()
+
+    student_rows = []
+    class_averages = []
+
+    for st in students:
+        # Recherche des tentatives officielles pour ce module
+        attempts = db.query(StudentAttempt).join(ExamSession).join(Exam).filter(
+            StudentAttempt.student_id == st.id,
+            StudentAttempt.status.in_(["submitted", "completed", "timed_out"]),
+            Exam.module_code == mod_clean
+        ).all()
+
+        theo_score = None
+        prac_score = None
+
+        for a in attempts:
+            ex = a.session.exam if a.session else None
+            if not ex:
+                continue
+            ex_type = getattr(ex, "exam_type", "") or ""
+            ex_title = ex.title.lower()
+            if ex_type == "theoretical" or "theor" in ex_title or "théor" in ex_title or "qcm" in ex_title:
+                if theo_score is None or (a.final_mark and a.final_mark > theo_score):
+                    theo_score = round(a.final_mark, 2) if a.final_mark is not None else None
+            elif ex_type == "practical" or "prat" in ex_title or "machine" in ex_title:
+                if prac_score is None or (a.final_mark and a.final_mark > prac_score):
+                    prac_score = round(a.final_mark, 2) if a.final_mark is not None else None
+
+        # Fallback pilier pratique/diagnostique si non évalué en examen officiel
+        if theo_score is None and prac_score is None:
+            p_att = db.query(PracticeAttempt).filter(
+                PracticeAttempt.user_id == st.id,
+                PracticeAttempt.module_code == mod_clean
+            ).order_by(PracticeAttempt.grade_20.desc()).first()
+            if p_att and p_att.grade_20 is not None:
+                theo_score = round(p_att.grade_20, 2)
+
+        # Calcul de la moyenne du module
+        components = [s for s in [theo_score, prac_score] if s is not None]
+        if components:
+            mod_avg = round(sum(components) / len(components), 2)
+            class_averages.append(mod_avg)
+            status_val = "ADMIS" if mod_avg >= 10.0 else "AJOURNÉ"
+        else:
+            mod_avg = None
+            status_val = "NON_ÉVALUÉ"
+
+        student_rows.append({
+            "student_id": st.id,
+            "username": st.username,
+            "full_name": st.full_name,
+            "speciality": spec_clean,
+            "speciality_name": spec_title,
+            "module_code": mod_clean,
+            "module_title": mod_title,
+            "theoretical_score": theo_score,
+            "practical_score": prac_score,
+            "module_average": mod_avg,
+            "status": status_val
+        })
+
+    class_stats = {
+        "enrolled_count": len(students),
+        "evaluated_count": len(class_averages),
+        "class_average": round(sum(class_averages) / len(class_averages), 2) if class_averages else None,
+        "success_rate_percent": round((sum(1 for a in class_averages if a >= 10.0) / len(class_averages)) * 100, 1) if class_averages else 0.0,
+        "min_score": min(class_averages) if class_averages else None,
+        "max_score": max(class_averages) if class_averages else None
+    }
+
+    return {
+        "speciality": spec_clean,
+        "speciality_name": spec_title,
+        "module_code": mod_clean,
+        "module_title": mod_title,
+        "students": student_rows,
+        "class_stats": class_stats
+    }
+
+@router.get("/bulletins/class-sheet/export-csv")
+def export_class_sheet_csv(
+    speciality: str = Query(...),
+    module_code: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Exporte le PV / bulletin de classe par spécialité et module en CSV UTF-8 BOM."""
+    data = get_class_sheet(speciality=speciality, module_code=module_code, db=db, current_user=current_user)
+    
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=";")
+    writer.writerow(["Matricule", "Nom Complet", "Identifiant", "Spécialité", "Module", "Note Théorique (/20)", "Note Pratique (/20)", "Moyenne Module (/20)", "Verdict"])
+
+    for s in data["students"]:
+        writer.writerow([
+            s["student_id"],
+            s["full_name"],
+            s["username"],
+            s["speciality"],
+            s["module_title"],
+            s["theoretical_score"] if s["theoretical_score"] is not None else "—",
+            s["practical_score"] if s["practical_score"] is not None else "—",
+            s["module_average"] if s["module_average"] is not None else "—",
+            s["status"]
+        ])
+
+    csv_data = "﻿" + output.getvalue()
+    filename = f"pv_classe_{speciality}_{module_code}_{datetime.now().strftime('%Y%m%d')}.csv"
+    return StreamingResponse(
+        iter([csv_data.encode("utf-8-sig")]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@router.get("/bulletins/class-sheet/export-pdf")
+def export_class_sheet_pdf_endpoint(
+    speciality: str = Query(...),
+    module_code: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Exporte le PV officiel de classe par spécialité et module en PDF."""
+    from backend.app.services.document_export import generate_class_sheet_pdf
+    data = get_class_sheet(speciality=speciality, module_code=module_code, db=db, current_user=current_user)
+    pdf_bytes = generate_class_sheet_pdf(data)
+    filename = f"pv_classe_{speciality}_{module_code}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+
 @router.get("/bulletins/{student_id}")
 def get_single_student_bulletin(
     student_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Récupère le bulletin complet d'un étudiant par son identifiant."""
     student = db.query(User).filter(User.id == student_id, User.role == "student").first()
@@ -549,7 +714,7 @@ def get_single_student_bulletin(
 def export_single_bulletin_pdf(
     student_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Exporte le bulletin individuel d'un étudiant au format PDF officiel."""
     student = db.query(User).filter(User.id == student_id, User.role == "student").first()
@@ -568,7 +733,7 @@ def export_single_bulletin_pdf(
 def export_single_bulletin_docx(
     student_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Exporte le bulletin individuel d'un étudiant au format Word (.docx)."""
     student = db.query(User).filter(User.id == student_id, User.role == "student").first()
@@ -588,7 +753,7 @@ def export_speciality_results_pdf(
     speciality: Optional[str] = Query(None),
     sort_by_module: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Exporte le palmarès officiel de tous les étudiants (par spécialité et ordonné par module) en PDF Paysage."""
     query = db.query(User).filter(User.role == "student")
@@ -611,7 +776,7 @@ def export_speciality_results_docx(
     speciality: Optional[str] = Query(None),
     sort_by_module: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_teacher_or_admin)
 ):
     """Exporte le palmarès officiel de tous les étudiants (par spécialité et ordonné par module) en Word (.docx) Paysage."""
     query = db.query(User).filter(User.role == "student")
@@ -663,3 +828,52 @@ def export_admin_exam_item_analysis_csv_endpoint(
 
 
 
+
+
+# ==============================================================================
+# Réinitialisation & Purge Sécurisée des Épreuves et Notes (Admin)
+# ==============================================================================
+
+@router.post("/clear-exams-and-scores")
+def clear_all_exams_and_scores(
+    clear_practice: bool = Query(False, description="Purger également les tests d'entraînement"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Purge complètement tous les examens, sessions, tentatives et notes de la base de données.
+    Conserve les utilisateurs, les modules et les spécialités intacts.
+    """
+    from backend.app.models import StudentAnswer, StudentAttempt, ExamSession, Question, Exam, AuditLog
+
+    ans_count = db.query(StudentAnswer).delete()
+    att_count = db.query(StudentAttempt).delete()
+    db.query(AuditLog).delete()
+    sess_count = db.query(ExamSession).delete()
+    q_count = db.query(Question).delete()
+
+    all_exams = db.query(Exam).all()
+    for ex in all_exams:
+        ex.groups.clear()
+    db.flush()
+
+    exam_count = db.query(Exam).delete()
+
+    prac_count = 0
+    if clear_practice:
+        prac_count = db.query(PracticeAttempt).delete()
+
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Purge effectuée avec succès. Tous les examens, sessions et notes ont été supprimés.",
+        "cleared_summary": {
+            "exams_deleted": exam_count,
+            "sessions_deleted": sess_count,
+            "student_attempts_deleted": att_count,
+            "student_answers_deleted": ans_count,
+            "questions_deleted": q_count,
+            "practice_attempts_deleted": prac_count
+        }
+    }

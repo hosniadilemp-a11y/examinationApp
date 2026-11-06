@@ -1,5 +1,7 @@
 import io
 import csv
+import re
+import unicodedata
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from fastapi.responses import StreamingResponse
@@ -9,19 +11,18 @@ from backend.app.models import User, Group, Module
 from backend.app.schemas import CSVImportResponse
 from backend.app.security import hash_password
 from backend.app.dependencies import require_admin, require_teacher_or_admin
+from backend.app.routers.users import generate_unique_credentials
 
 router = APIRouter(prefix="/api/admin/csv", tags=["Imports et Exports CSV"])
 
 def _decode_csv_content(file: UploadFile) -> csv.DictReader:
     try:
         content = file.file.read()
-        # Détection d'encodage UTF-8 ou Latin-1
         try:
-            text = content.decode("utf-8-sig")  # Gère le BOM Excel
+            text = content.decode("utf-8-sig")
         except UnicodeDecodeError:
             text = content.decode("latin-1")
             
-        # Détection automatique du délimiteur (point-virgule ';' ou virgule ',')
         first_line = ""
         for line in text.splitlines():
             line_s = line.strip()
@@ -37,7 +38,6 @@ def _decode_csv_content(file: UploadFile) -> csv.DictReader:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Fichier CSV vide ou format d'en-tête invalide."
             )
-        # Normalisation des en-têtes (minuscules, sans espaces)
         reader.fieldnames = [fn.strip().lower() for fn in reader.fieldnames if fn]
         return reader
     except HTTPException:
@@ -54,7 +54,12 @@ def import_students_csv(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Importe en masse les étudiants depuis un fichier CSV."""
+    """
+    Importe les étudiants depuis un fichier CSV.
+    Supporte le format officiel : ID;nom;prenom;annee;specialite
+    (ainsi que full_name, username, password optionnels).
+    Le système génère automatiquement l'identifiant (login) et le mot de passe s'ils ne sont pas fournis.
+    """
     reader = _decode_csv_content(file)
     
     imported_count = 0
@@ -65,21 +70,26 @@ def import_students_csv(
     for row in reader:
         row_num += 1
         try:
-            student_id = row.get("student_id") or row.get("id") or row.get("matricule")
+            student_id = row.get("id") or row.get("student_id") or row.get("matricule")
             if not student_id or not student_id.strip():
-                errors.append(f"Ligne {row_num}: Colonne 'student_id' obligatoire manquante.")
+                errors.append(f"Ligne {row_num}: Colonne 'ID' (ou 'student_id') obligatoire manquante.")
                 continue
                 
             student_id = student_id.strip()
-            username = (row.get("username") or student_id).strip()
-            full_name = (row.get("full_name") or row.get("nom") or f"Étudiant {student_id}").strip()
+            nom = (row.get("nom") or row.get("last_name") or "").strip()
+            prenom = (row.get("prenom") or row.get("prénom") or row.get("first_name") or "").strip()
+            if nom and prenom:
+                full_name = f"{prenom} {nom}"
+            else:
+                full_name = (row.get("full_name") or row.get("nom_complet") or nom or prenom or f"Étudiant {student_id}").strip()
+
+            raw_username = (row.get("username") or row.get("login") or row.get("identifiant") or "").strip() or None
+            raw_pwd = (row.get("password") or row.get("mot_de_passe") or "").strip() or None
             email = (row.get("email") or "").strip() or None
-            group_id = (row.get("specialite") or row.get("specialité") or row.get("speciality") or row.get("group_id") or row.get("groupe") or "").strip()
+            group_id = (row.get("specialite") or row.get("spécialité") or row.get("specialité") or row.get("speciality") or row.get("group_id") or row.get("groupe") or "").strip()
             group_name = (row.get("group_name") or row.get("nom_specialite") or group_id).strip()
-            plain_pwd = (row.get("password") or row.get("mot_de_passe") or student_id).strip()
-            enrollment_year = (row.get("annee") or row.get("année") or row.get("annee_inscription") or row.get("promotion") or row.get("enrollment_year") or "").strip() or None
+            enrollment_year = (row.get("annee") or row.get("année") or row.get("annee_inscription") or row.get("promotion") or row.get("enrollment_year") or "2025-2026").strip() or "2025-2026"
             
-            # Gestion automatique de la création du Groupe/Spécialité si renseigné
             if group_id:
                 group = db.query(Group).filter(Group.id == group_id).first()
                 if not group:
@@ -87,13 +97,11 @@ def import_students_csv(
                     db.add(group)
                     db.flush()
             
-            # Recherche de l'étudiant existant
-            existing_user = db.query(User).filter(
-                (User.id == student_id) | (User.username == username)
-            ).first()
+            existing_user = db.query(User).filter(User.id == student_id).first()
+            if not existing_user and raw_username:
+                existing_user = db.query(User).filter(User.username == raw_username).first()
             
             if existing_user:
-                # Mise à jour des coordonnées
                 existing_user.full_name = full_name
                 if email:
                     existing_user.email = email
@@ -101,26 +109,40 @@ def import_students_csv(
                     existing_user.group_id = group_id
                 if enrollment_year:
                     existing_user.enrollment_year = enrollment_year
-                if "password" in row or "mot_de_passe" in row:
-                    existing_user.password_hash = hash_password(plain_pwd)
-                    existing_user.plain_password = plain_pwd
+                if raw_pwd:
+                    existing_user.password_hash = hash_password(raw_pwd)
+                    existing_user.plain_password = raw_pwd
+                elif not existing_user.plain_password:
+                    _, _, gen_pwd = generate_unique_credentials(db, full_name, "student", user_id=student_id)
+                    existing_user.password_hash = hash_password(gen_pwd)
+                    existing_user.plain_password = gen_pwd
                 updated_count += 1
             else:
-                # Création de l'étudiant
+                _, gen_username, gen_pwd = generate_unique_credentials(
+                    db=db,
+                    full_name=full_name,
+                    role="student",
+                    user_id=student_id,
+                    username=raw_username,
+                    password=raw_pwd
+                )
+                if not email:
+                    email = f"{gen_username}@exam.local"
                 new_student = User(
                     id=student_id,
-                    username=username,
-                    password_hash=hash_password(plain_pwd),
-                    plain_password=plain_pwd,
+                    username=gen_username,
+                    password_hash=hash_password(gen_pwd),
+                    plain_password=gen_pwd,
                     full_name=full_name,
                     email=email,
                     role="student",
                     group_id=group_id if group_id else None,
                     enrollment_year=enrollment_year,
-                    must_change_password=False if ("password" in row or "mot_de_passe" in row) else True,
+                    must_change_password=False,
                     is_active=True
                 )
                 db.add(new_student)
+                db.flush()
                 imported_count += 1
                 
         except Exception as e:
@@ -132,7 +154,7 @@ def import_students_csv(
         imported_count=imported_count,
         updated_count=updated_count,
         errors=errors,
-        message=f"{imported_count} étudiant(s) importé(s), {updated_count} mis à jour."
+        message=f"{imported_count} étudiant(s) importé(s) avec génération automatique des identifiants, {updated_count} mis à jour."
     )
 
 @router.post("/import/teachers", response_model=CSVImportResponse)
@@ -141,7 +163,12 @@ def import_teachers_csv(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Importe en masse les enseignants depuis un fichier CSV."""
+    """
+    Importe les enseignants depuis un fichier CSV.
+    Aucun identifiant (ID/login/mot de passe) n'est requis dans le CSV :
+    Colonnes supportées : nom;prenom;email;modules (ou full_name;email;modules).
+    Le système attribue automatiquement l'ID, le login et le mot de passe.
+    """
     reader = _decode_csv_content(file)
     
     imported_count = 0
@@ -152,37 +179,67 @@ def import_teachers_csv(
     for row in reader:
         row_num += 1
         try:
-            teacher_id = row.get("teacher_id") or row.get("id")
-            if not teacher_id or not teacher_id.strip():
-                errors.append(f"Ligne {row_num}: 'teacher_id' manquant.")
-                continue
-                
-            teacher_id = teacher_id.strip()
-            username = (row.get("username") or teacher_id).strip()
-            full_name = (row.get("full_name") or f"Enseignant {teacher_id}").strip()
+            nom = (row.get("nom") or row.get("last_name") or "").strip()
+            prenom = (row.get("prenom") or row.get("prénom") or row.get("first_name") or "").strip()
+            if nom and prenom:
+                full_name = f"{prenom} {nom}"
+            else:
+                full_name = (row.get("full_name") or row.get("nom_complet") or nom or prenom or "").strip()
+
+            raw_id = (row.get("teacher_id") or row.get("id") or "").strip() or None
+            raw_username = (row.get("username") or row.get("login") or row.get("identifiant") or "").strip() or None
+            raw_pwd = (row.get("password") or row.get("mot_de_passe") or "").strip() or None
             email = (row.get("email") or "").strip() or None
-            assigned_modules_raw = row.get("assigned_modules") or row.get("modules") or ""
-            
-            existing = db.query(User).filter(
-                (User.id == teacher_id) | (User.username == username)
-            ).first()
+            assigned_modules_raw = row.get("assigned_modules") or row.get("modules") or row.get("module") or ""
+
+            if not full_name and not raw_id:
+                errors.append(f"Ligne {row_num}: Nom de l'enseignant manquant.")
+                continue
+            if not full_name:
+                full_name = f"Enseignant {raw_id}"
+
+            existing = None
+            if raw_id:
+                existing = db.query(User).filter(User.id == raw_id).first()
+            if not existing and raw_username:
+                existing = db.query(User).filter(User.username == raw_username).first()
+            if not existing and email:
+                existing = db.query(User).filter(User.email == email, User.role == "teacher").first()
             
             if existing:
                 existing.full_name = full_name
                 if email:
                     existing.email = email
                 existing.role = "teacher"
+                if raw_pwd:
+                    existing.password_hash = hash_password(raw_pwd)
+                    existing.plain_password = raw_pwd
+                elif not existing.plain_password:
+                    _, _, gen_pwd = generate_unique_credentials(db, full_name, "teacher", user_id=existing.id)
+                    existing.password_hash = hash_password(gen_pwd)
+                    existing.plain_password = gen_pwd
                 target_teacher = existing
                 updated_count += 1
             else:
+                gen_id, gen_username, gen_pwd = generate_unique_credentials(
+                    db=db,
+                    full_name=full_name,
+                    role="teacher",
+                    user_id=raw_id,
+                    username=raw_username,
+                    password=raw_pwd
+                )
+                if not email:
+                    email = f"{gen_username}@ecole.fr"
                 target_teacher = User(
-                    id=teacher_id,
-                    username=username,
-                    password_hash=hash_password(teacher_id),
+                    id=gen_id,
+                    username=gen_username,
+                    password_hash=hash_password(gen_pwd),
+                    plain_password=gen_pwd,
                     full_name=full_name,
                     email=email,
                     role="teacher",
-                    must_change_password=True,
+                    must_change_password=False,
                     is_active=True
                 )
                 db.add(target_teacher)
@@ -190,9 +247,9 @@ def import_teachers_csv(
             
             db.flush()
             
-            # Affectation des modules listés (ex: "PYTHON_INIT,CRYPTO")
             if assigned_modules_raw:
-                module_codes = [m.strip().upper() for m in assigned_modules_raw.split(",") if m.strip()]
+                sep = "|" if "|" in assigned_modules_raw else ("," if "," in assigned_modules_raw else ";")
+                module_codes = [m.strip().upper() for m in assigned_modules_raw.split(sep) if m.strip()]
                 for m_code in module_codes:
                     mod = db.query(Module).filter(Module.code == m_code).first()
                     if mod and mod not in target_teacher.assigned_modules:
@@ -207,7 +264,7 @@ def import_teachers_csv(
         imported_count=imported_count,
         updated_count=updated_count,
         errors=errors,
-        message=f"{imported_count} enseignant(s) importé(s), {updated_count} mis à jour."
+        message=f"{imported_count} enseignant(s) importé(s) avec génération automatique des identifiants, {updated_count} mis à jour."
     )
 
 @router.post("/import/groups", response_model=CSVImportResponse)

@@ -19,6 +19,9 @@ export class ExamRunner {
     this.flaggedQuestions = new Set();
     this.currentIndex = 0;
     this.remainingSeconds = examData.remaining_seconds || (30 * 60);
+    this.serverOffsetMs = (examData && typeof examData.server_epoch_ms === 'number')
+      ? (examData.server_epoch_ms - Date.now())
+      : 0;
     this.timerInterval = null;
     this.isPracticeMode = options.isPracticeMode || false;
     this.onPracticeSubmit = options.onPracticeSubmit || null;
@@ -108,15 +111,24 @@ export class ExamRunner {
     } else {
       el.textContent = `${pad(minutes)}:${pad(seconds)}`;
     }
+
+    const serverClockEl = document.getElementById('exam-server-clock-badge');
+    if (serverClockEl) {
+      const srvDate = new Date(Date.now() + (this.serverOffsetMs || 0));
+      serverClockEl.textContent = `🕒 Heure Serveur : ${pad(srvDate.getUTCHours())}:${pad(srvDate.getUTCMinutes())}:${pad(srvDate.getUTCSeconds())} UTC`;
+    }
   }
 
-  // Synchronisation authoritaire du chronomètre avec le serveur (REV-28)
-  syncServerRemainingSeconds(serverSeconds) {
+  // Synchronisation autoritaire du chronomètre et de l'horloge avec le serveur (REV-28)
+  syncServerRemainingSeconds(serverSeconds, serverEpochMs = null) {
+    if (typeof serverEpochMs === 'number' && serverEpochMs > 0) {
+      this.serverOffsetMs = serverEpochMs - Date.now();
+    }
     if (typeof serverSeconds === 'number' && serverSeconds >= 0) {
       if (Math.abs(this.remainingSeconds - serverSeconds) > 2) {
         this.remainingSeconds = serverSeconds;
-        this._updateTimerDisplay();
       }
+      this._updateTimerDisplay();
     }
   }
 
@@ -179,7 +191,8 @@ export class ExamRunner {
       fill_blank: "Texte à Trou",
       matching: "Appariement",
       coding: "💻 Exercice de Code Python",
-      code: "💻 Exercice de Code Python"
+      code: "💻 Exercice de Code Python",
+      code_python: "💻 Exercice de Code Python"
     };
 
     // Extraction et nettoyage des métadonnées de difficulté et de thème (REV-21)
@@ -225,11 +238,11 @@ export class ExamRunner {
     // Ajustement de la disposition selon le type d'exercice (Plein écran étendu en mode Coding ou Linux Shell)
     const layoutEl = document.querySelector('.exam-layout');
     if (layoutEl) {
-      layoutEl.classList.toggle('coding-mode', q.type === 'coding' || q.type === 'code' || q.type === 'linux_cmd');
+      layoutEl.classList.toggle('coding-mode', q.type === 'coding' || q.type === 'code' || q.type === 'code_python' || q.type === 'linux_cmd');
     }
 
     // --- Rendu Spécifique Défi Pratique Python (AlgoCompiler / HackerRank Split Layout) ---
-    if (q.type === 'coding' || q.type === 'code') {
+    if (q.type === 'coding' || q.type === 'code' || q.type === 'code_python') {
       this._renderCodingChallenge(container, q, topicClean, topicBadgeHtml, diffBadgeHtml, typeLabels, promptHtml);
       return;
     }
@@ -314,8 +327,15 @@ export class ExamRunner {
       if (typeof matchingData === 'string') {
         try { matchingData = JSON.parse(matchingData); } catch (_) { matchingData = {}; }
       }
-      const leftItems = (matchingData && matchingData.left) ? matchingData.left : [];
-      const rightItems = (matchingData && matchingData.right) ? matchingData.right : [];
+      let leftItems = [];
+      let rightItems = [];
+      if (Array.isArray(matchingData)) {
+        leftItems = matchingData.map(item => item && item.left ? String(item.left) : '').filter(Boolean);
+        rightItems = matchingData.map(item => item && item.right ? String(item.right) : '').filter(Boolean);
+      } else if (matchingData && typeof matchingData === 'object') {
+        leftItems = Array.isArray(matchingData.left) ? matchingData.left : [];
+        rightItems = Array.isArray(matchingData.right) ? matchingData.right : [];
+      }
       const userMatches = (typeof currentAnswer === 'object' && currentAnswer !== null) ? currentAnswer : {};
 
       optionsHtml = '<p style="color:var(--text-secondary); margin-bottom:12px; font-size:0.85rem;">ℹ️ Associez chaque élément de gauche à sa correspondance unique de droite. Tout choix est désactivé pour les autres items.</p><div style="margin-top: 16px;">';
@@ -337,7 +357,7 @@ export class ExamRunner {
     }
 
     // --- 6. Exercice de Code Python (REV-19) ---
-    else if (q.type === 'coding' || q.type === 'code') {
+    else if (q.type === 'coding' || q.type === 'code' || q.type === 'code_python') {
       const codeVal = currentAnswer !== undefined ? currentAnswer : (q.starter_code || '');
       const hasHints = Boolean(q.hint1 || q.hint2);
       const sampleInput = (q.tests && q.tests[0] && q.tests[0].input !== undefined) ? q.tests[0].input : (q.sample_input || '');
@@ -429,7 +449,7 @@ export class ExamRunner {
           this.render();
           if (!this.isPracticeMode && this.attemptId) {
             const res = await api.saveAnswer(this.attemptId, qId, val);
-            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds);
+            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds, res.server_epoch_ms);
           }
         };
       });
@@ -452,7 +472,7 @@ export class ExamRunner {
           this.render();
           if (!this.isPracticeMode && this.attemptId) {
             const res = await api.saveAnswer(this.attemptId, qId, currentList);
-            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds);
+            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds, res.server_epoch_ms);
           }
         };
       });
@@ -469,7 +489,7 @@ export class ExamRunner {
         input.onblur = async (e) => {
           if (!this.isPracticeMode && this.attemptId) {
             const res = await api.saveAnswer(this.attemptId, qId, e.target.value);
-            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds);
+            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds, res.server_epoch_ms);
           }
         };
       }
@@ -519,14 +539,14 @@ export class ExamRunner {
           this._renderPalette();
           if (!this.isPracticeMode && this.attemptId) {
             const res = await api.saveAnswer(this.attemptId, qId, currentMap);
-            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds);
+            if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds, res.server_epoch_ms);
           }
         };
       });
     }
 
     // Coding / Python Code (AlgoCompiler Split Layout)
-    else if (question.type === 'coding' || question.type === 'code') {
+    else if (question.type === 'coding' || question.type === 'code' || question.type === 'code_python') {
       const publicTests = question.public_tests || (question.options && question.options.public_tests) || (Array.isArray(question.options) ? question.options : []) || question.tests || [];
       const validPublicTests = (Array.isArray(publicTests) ? publicTests : []).filter(t => t && t.is_public !== false);
       this._attachCodingChallengeListeners(question, validPublicTests);
@@ -950,7 +970,7 @@ export class ExamRunner {
             if (cm.state.completionActive) {
               cm.state.completionActive.close();
             }
-            const hints = document.querySelector('.CodeMirror-hints');
+            const hints = document.querySelector('.CodeMirror-hints-container, .CodeMirror-hints');
             if (hints) hints.remove();
           },
           "Tab": (cm) => {
@@ -973,7 +993,16 @@ export class ExamRunner {
       cmInstance.on('inputRead', (cm, change) => {
         if (change.origin !== '+input') return;
         const text = change.text[0];
-        if (!text || text === ' ' || text === '\n' || text === '\t') return;
+        
+        // Fermeture immédiate si l'utilisateur appuie sur espace ou ponctuation isolée
+        if (!text || text === ' ' || text === '\n' || text === '\t' || text === ':' || text === '(' || text === ')' || text === ',') {
+          if (cm.state.completionActive) {
+            try { cm.state.completionActive.close(); } catch (_) {}
+          }
+          const hints = document.querySelector('.CodeMirror-hints-container, .CodeMirror-hints');
+          if (hints) hints.remove();
+          return;
+        }
         
         let shouldTrigger = false;
         if (text === '.') {
@@ -1038,8 +1067,16 @@ export class ExamRunner {
       };
     }
     if (resetBtn && cmInstance) {
-      resetBtn.onclick = () => {
-        if (confirm("Réinitialiser le code au modèle de départ ? Votre code actuel sera écrasé.")) {
+      resetBtn.onclick = async () => {
+        const confirmed = typeof window.customConfirm === 'function'
+          ? await window.customConfirm({
+              title: "Réinitialiser le code",
+              message: "Réinitialiser le code au modèle de départ ? Votre code actuel sera écrasé.",
+              confirmText: "Réinitialiser",
+              icon: "🔄"
+            })
+          : true;
+        if (confirmed) {
           const starter = question.starter_code || (question.options && question.options.starter_code) || '# Écrivez votre code Python ici\n';
           cmInstance.setValue(starter);
           this.answers[qId] = starter;
@@ -1181,8 +1218,12 @@ export class ExamRunner {
 
             if (summaryEl) {
               if (res.all_passed) {
+                if (!window.codingValidationPassed) window.codingValidationPassed = {};
+                window.codingValidationPassed[qId] = true;
                 summaryEl.innerHTML = `<span style="color:#10b981;">🎉 Tous les tests publics validés (${res.passed_count}/${res.total_count}) ! Temps moy: ${res.avg_execution_time_ms} ms</span>`;
               } else {
+                if (!window.codingValidationPassed) window.codingValidationPassed = {};
+                window.codingValidationPassed[qId] = false;
                 summaryEl.innerHTML = `<span style="color:#f59e0b;">⚠️ ${res.passed_count}/${res.total_count} cas de test publics validés. Consultez les divergences ci-dessous.</span>`;
               }
             }
@@ -1211,7 +1252,7 @@ export class ExamRunner {
 
         if (!this.isPracticeMode && this.attemptId) {
           const res = await api.saveAnswer(this.attemptId, qId, codeToSave);
-          if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds);
+          if (res && res.remaining_seconds !== undefined) this.syncServerRemainingSeconds(res.remaining_seconds, res.server_epoch_ms);
         }
 
         if (statusInd) {
@@ -1225,47 +1266,72 @@ export class ExamRunner {
       };
     }
 
-    // 10. Hints Handler
+    // 10. Hints Handler (Rendu Markdown et Copie Directe)
     const hintBtn = document.getElementById('btn-request-hint');
     const hintBox = document.getElementById('hint-display-area');
     if (!window.pythonHintsUsed) window.pythonHintsUsed = {};
     if (window.pythonHintsUsed[qId] === undefined) window.pythonHintsUsed[qId] = 0;
 
     if (hintBtn && hintBox) {
-      const currentHints = window.pythonHintsUsed[qId];
-      if (currentHints === 1 && question.hint1) {
-        hintBox.style.display = 'block';
-        hintBox.innerHTML = `<strong>Indice 1 :</strong> ${this._escapeHtml(question.hint1)}`;
-        if (question.hint2) hintBtn.textContent = "Afficher l'indice 2 (Pénalité 100%)";
-        else hintBtn.disabled = true;
-      } else if (currentHints >= 2 && question.hint2) {
-        hintBox.style.display = 'block';
-        hintBox.innerHTML = `<strong>Indice 1 :</strong> ${this._escapeHtml(question.hint1 || '')}<br/><strong>Indice 2 :</strong> ${this._escapeHtml(question.hint2)}`;
-        hintBtn.disabled = true;
-        hintBtn.textContent = "Tous les indices affichés";
-      }
+      const updateHintsUi = () => {
+        const currentHints = window.pythonHintsUsed[qId] || 0;
+        if (currentHints === 1 && question.hint1) {
+          hintBox.style.display = 'block';
+          hintBox.innerHTML = `
+            <div style="padding:10px 14px; background:rgba(245,158,11,0.12); border-left:4px solid #f59e0b; border-radius:6px; margin-bottom:8px;">
+              <strong style="color:#fbbf24;">💡 Indice 1 :</strong>
+              <div style="margin-top:4px; color:#f8fafc; font-size:0.95rem;">${this._formatMarkdown(question.hint1)}</div>
+            </div>
+          `;
+          if (question.hint2) hintBtn.textContent = "Afficher l'indice 2 (Pénalité 100%)";
+          else hintBtn.disabled = true;
+        } else if (currentHints >= 2 && question.hint2) {
+          hintBox.style.display = 'block';
+          hintBox.innerHTML = `
+            <div style="padding:10px 14px; background:rgba(245,158,11,0.12); border-left:4px solid #f59e0b; border-radius:6px; margin-bottom:8px;">
+              <strong style="color:#fbbf24;">💡 Indice 1 :</strong>
+              <div style="margin-top:4px; color:#f8fafc; font-size:0.95rem;">${this._formatMarkdown(question.hint1 || '')}</div>
+            </div>
+            <div style="padding:10px 14px; background:rgba(16,185,129,0.12); border-left:4px solid #10b981; border-radius:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="color:#34d399;">✨ Solution Complète de Référence :</strong>
+                <button type="button" class="btn btn-secondary btn-copy-sol" style="padding:2px 8px; font-size:0.75rem; border-radius:4px; cursor:pointer;">📋 Copier</button>
+              </div>
+              <div style="margin-top:4px; font-size:0.95rem;">${this._formatMarkdown(question.hint2)}</div>
+            </div>
+          `;
+          hintBtn.disabled = true;
+          hintBtn.textContent = "Tous les indices affichés";
+
+          const copyBtn = hintBox.querySelector('.btn-copy-sol');
+          if (copyBtn) {
+            copyBtn.onclick = (e) => {
+              e.stopPropagation();
+              const m = question.hint2.match(/```(?:python)?\n([\s\S]*?)```/);
+              const codeToCopy = m ? m[1].trim() : (question.solution || question.hint2);
+              navigator.clipboard.writeText(codeToCopy).then(() => {
+                copyBtn.textContent = '✅ Copié !';
+                setTimeout(() => { copyBtn.textContent = '📋 Copier'; }, 2000);
+              });
+            };
+          }
+        }
+      };
+
+      updateHintsUi();
 
       hintBtn.onclick = () => {
         if (window.pythonHintsUsed[qId] === 0 && question.hint1) {
           window.pythonHintsUsed[qId] = 1;
-          hintBox.style.display = 'block';
-          hintBox.innerHTML = `<strong>Indice 1 :</strong> ${this._escapeHtml(question.hint1)}`;
-          if (question.hint2) {
-            hintBtn.textContent = "Afficher l'indice 2 (Pénalité 100%)";
-          } else {
-            hintBtn.disabled = true;
-          }
+          updateHintsUi();
         } else if (window.pythonHintsUsed[qId] === 1 && question.hint2) {
           window.pythonHintsUsed[qId] = 2;
-          hintBox.innerHTML += `<br/><strong>Indice 2 :</strong> ${this._escapeHtml(question.hint2)}`;
-          hintBtn.disabled = true;
-          hintBtn.textContent = "Tous les indices affichés";
+          updateHintsUi();
         }
       };
     }
   }
 
-  // --- Rendu du Layout Défi Linux Shell (Terminal & VFS interactif) ---
   _renderLinuxChallenge(container, q, topicClean, topicBadgeHtml, diffBadgeHtml, typeLabels, promptHtml) {
     const codeVal = this.answers[q.id] !== undefined ? this.answers[q.id] : (q.starter_code || '# Tapez vos commandes Linux\n');
     const publicTests = q.public_tests || [];
@@ -1362,7 +1428,20 @@ export class ExamRunner {
               ${promptHtml}
             </div>
 
-            ${initialFsHtml}
+${initialFsHtml}
+
+            <!-- Hints Container for Linux -->
+            ${((q.hints && q.hints.length > 0) || q.hint1 || q.hint2) ? `
+              <div class="hint-container" style="margin-top:20px; padding:12px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <span style="font-size:0.95rem; font-weight:600; color:#fbbf24;">💡 Indices disponibles (Pénalité : 1 indice = 50%, 2 indices = 100%)</span>
+                  <button id="btn-linux-request-hint" class="btn btn-secondary" style="font-size:0.88rem; padding:5px 12px; font-weight:600;">
+                    Afficher indice
+                  </button>
+                </div>
+                <div id="linux-hint-display-area" style="margin-top:8px; font-size:0.95rem; line-height:1.5; color:#fef3c7; display:none;"></div>
+              </div>
+            ` : ''}
 
             <!-- Résumé des tests publics attendus -->
             <div style="margin-top:20px; padding:12px 14px; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:8px;">
@@ -1727,6 +1806,74 @@ Tapez vos commandes directement dans l'invite ci-dessous ou cliquez sur ▶️ E
         }
       };
     }
+      // Hints Handler for Linux (Terminal & VFS)
+    const linuxHintBtn = document.getElementById('btn-linux-request-hint');
+    const linuxHintBox = document.getElementById('linux-hint-display-area');
+    if (!window.linuxHintsUsed) window.linuxHintsUsed = {};
+    if (window.linuxHintsUsed[qId] === undefined) window.linuxHintsUsed[qId] = 0;
+
+    const hintsList = q.hints || [];
+    const hint1Text = hintsList[0] || q.hint1 || '';
+    const hint2Text = hintsList[1] || q.hint2 || '';
+
+    if (linuxHintBtn && linuxHintBox) {
+      const updateLinuxHintsUi = () => {
+        const currentHints = window.linuxHintsUsed[qId] || 0;
+        if (currentHints === 1 && hint1Text) {
+          linuxHintBox.style.display = 'block';
+          linuxHintBox.innerHTML = `
+            <div style="padding:10px 14px; background:rgba(245,158,11,0.12); border-left:4px solid #f59e0b; border-radius:6px; margin-bottom:8px;">
+              <strong style="color:#fbbf24;">💡 Indice 1 :</strong>
+              <div style="margin-top:4px; color:#f8fafc; font-size:0.95rem;">${this._formatMarkdown(hint1Text)}</div>
+            </div>
+          `;
+          if (hint2Text) linuxHintBtn.textContent = "Afficher l'indice 2 (Pénalité 100%)";
+          else linuxHintBtn.disabled = true;
+        } else if (currentHints >= 2 && hint2Text) {
+          linuxHintBox.style.display = 'block';
+          linuxHintBox.innerHTML = `
+            <div style="padding:10px 14px; background:rgba(245,158,11,0.12); border-left:4px solid #f59e0b; border-radius:6px; margin-bottom:8px;">
+              <strong style="color:#fbbf24;">💡 Indice 1 :</strong>
+              <div style="margin-top:4px; color:#f8fafc; font-size:0.95rem;">${this._formatMarkdown(hint1Text || '')}</div>
+            </div>
+            <div style="padding:10px 14px; background:rgba(16,185,129,0.12); border-left:4px solid #10b981; border-radius:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="color:#34d399;">✨ Solution Complète de Référence :</strong>
+                <button type="button" class="btn btn-secondary btn-copy-linux-sol" style="padding:2px 8px; font-size:0.75rem; border-radius:4px; cursor:pointer;">📋 Copier</button>
+              </div>
+              <div style="margin-top:4px; font-size:0.95rem;">${this._formatMarkdown(hint2Text)}</div>
+            </div>
+          `;
+          linuxHintBtn.disabled = true;
+          linuxHintBtn.textContent = "Tous les indices affichés";
+
+          const copyBtn = linuxHintBox.querySelector('.btn-copy-linux-sol');
+          if (copyBtn) {
+            copyBtn.onclick = (e) => {
+              e.stopPropagation();
+              const m = hint2Text.match(/```(?:bash)?\n([\s\S]*?)```/);
+              const codeToCopy = m ? m[1].trim() : (q.solution || hint2Text);
+              navigator.clipboard.writeText(codeToCopy).then(() => {
+                copyBtn.textContent = '✅ Copié !';
+                setTimeout(() => { copyBtn.textContent = '📋 Copier'; }, 2000);
+              });
+            };
+          }
+        }
+      };
+
+      updateLinuxHintsUi();
+
+      linuxHintBtn.onclick = () => {
+        if (window.linuxHintsUsed[qId] === 0 && hint1Text) {
+          window.linuxHintsUsed[qId] = 1;
+          updateLinuxHintsUi();
+        } else if (window.linuxHintsUsed[qId] === 1 && hint2Text) {
+          window.linuxHintsUsed[qId] = 2;
+          updateLinuxHintsUi();
+        }
+      };
+    }
   }
 
   _updateNavigationButtons() {
@@ -1764,7 +1911,14 @@ Tapez vos commandes directement dans l'invite ci-dessous ou cliquez sur ▶️ E
   showSubmitConfirmationModal() {
     const modal = document.getElementById('modal-submit-confirmation');
     if (!modal) {
-      if (confirm("Êtes-vous sûr de vouloir soumettre définitivement votre épreuve ?")) {
+      if (typeof window.customConfirm === 'function') {
+        window.customConfirm({
+          title: "Soumettre l'épreuve",
+          message: "Êtes-vous sûr de vouloir soumettre définitivement votre épreuve ?",
+          confirmText: "Soumettre définitivement",
+          icon: "📤"
+        }).then(ok => { if (ok) this.submit(); });
+      } else {
         this.submit();
       }
       return;

@@ -69,7 +69,11 @@ def run_python_script(script_path: str, input_data: str, timeout_seconds: float 
     clean_env = os.environ.copy()
     clean_env["PYTHONIOENCODING"] = "utf-8"
     clean_env["MPLBACKEND"] = "Agg"
-    clean_env["MPLCONFIGDIR"] = tempfile.gettempdir()
+    default_mpl_dir = os.path.join(os.path.expanduser("~"), ".matplotlib")
+    if os.path.exists(default_mpl_dir):
+        clean_env["MPLCONFIGDIR"] = default_mpl_dir
+    else:
+        clean_env["MPLCONFIGDIR"] = tempfile.gettempdir()
     
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     

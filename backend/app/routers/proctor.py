@@ -281,6 +281,8 @@ def get_session_proctor_overview(
         "duration_minutes": exam.duration_minutes if exam else 60,
         "session_started_at": session.started_at.isoformat() if session.started_at else None,
         "session_remaining_seconds": session_remaining_seconds,
+        "server_time_hms": datetime.now().strftime("%H:%M:%S"),
+        "server_epoch_ms": int(now.timestamp() * 1000),
         "total_enrolled": len(student_cards),
         "student_cards": student_cards,
         "recent_audit_logs": logs_data

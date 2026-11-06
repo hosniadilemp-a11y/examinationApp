@@ -7,7 +7,10 @@
       "level": 1,
       "title": "Niveau 1 : Navigation & Manipulation de Fichiers",
       "description": "Apprentissage des commandes fondamentales de navigation, création et gestion de répertoires et fichiers.",
-      "topics": ["FHS Navigation", "Manipulation de Fichiers"],
+      "topics": [
+        "FHS Navigation",
+        "Manipulation de Fichiers"
+      ],
       "challenges_count": 3,
       "quizzes_count": 16
     },
@@ -16,7 +19,10 @@
       "level": 2,
       "title": "Niveau 2 : Permissions, Utilisateurs & Filtrage",
       "description": "Gestion des permissions POSIX, attributs de sécurité et manipulation de flux textuels.",
-      "topics": ["Permissions & Sécurité", "Filtrage Textuel"],
+      "topics": [
+        "Permissions & Sécurité",
+        "Filtrage Textuel"
+      ],
       "challenges_count": 2,
       "quizzes_count": 16
     },
@@ -25,7 +31,10 @@
       "level": 3,
       "title": "Niveau 3 : Scripts Bash, Tubes & Redirections",
       "description": "Composition de commandes via les pipes, redirections de flux standards et enchaînements logiques.",
-      "topics": ["Pipes & Redirections", "Scripts Bash"],
+      "topics": [
+        "Pipes & Redirections",
+        "Scripts Bash"
+      ],
       "challenges_count": 2,
       "quizzes_count": 16
     },
@@ -34,7 +43,10 @@
       "level": 4,
       "title": "Niveau 4 : Administration Système, Processus & Diagnostic",
       "description": "Supervision des processus, signaux système, variables d'environnement et diagnostic de panne.",
-      "topics": ["Processus & Signaux", "Diagnostic Système"],
+      "topics": [
+        "Processus & Signaux",
+        "Diagnostic Système"
+      ],
       "challenges_count": 2,
       "quizzes_count": 16
     }
@@ -307,7 +319,13 @@
               "expected_stdout": "notes.txt",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "pwd && ls -la",
+          "hints": [
+            "Utilisez 'pwd' pour afficher le répertoire courant et 'ls -la' pour lister tous les fichiers au format long.",
+            "Solution complète de référence :\n```bash\npwd && ls -la\n```"
+          ],
+          "explanation": "La commande `pwd` affiche le chemin absolu du répertoire courant. Enchaînée avec `&&`, la commande `ls -la` liste tous les fichiers, y compris les fichiers masqués commençant par un point, avec leurs détails complets (permissions, taille, horodatage)."
         },
         {
           "id": "LIN-PRAC-102",
@@ -373,7 +391,13 @@
               "expected_stdout": "Started",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "cd /var/log && pwd && ls",
+          "hints": [
+            "Changez de répertoire avec 'cd /var/log', puis affichez la position avec 'pwd' et listez les fichiers avec 'ls'.",
+            "Solution complète de référence :\n```bash\ncd /var/log && pwd && ls\n```"
+          ],
+          "explanation": "`cd /var/log` bascule le shell dans le dossier des journaux système. On vérifie la position avec `pwd` et on liste le contenu avec `ls`."
         }
       ]
     },
@@ -597,7 +621,13 @@
               "expected_stdout": "/home/student/projet/src",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "mkdir -p projet/src projet/tests && touch projet/src/app.py",
+          "hints": [
+            "L'option '-p' de mkdir permet de créer l'arborescence en une seule commande, puis utilisez touch pour créer app.py.",
+            "Solution complète de référence :\n```bash\nmkdir -p projet/src projet/tests && touch projet/src/app.py\n```"
+          ],
+          "explanation": "`mkdir -p` crée récursivement les sous-dossiers requis `projet/src` et `projet/tests`. `touch` crée ensuite le fichier `projet/src/app.py`."
         },
         {
           "id": "LIN-PRAC-202",
@@ -656,7 +686,13 @@
               "expected_stdout": "config.json",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "cp config.json config.json.bak && mkdir -p archives && mv old.log archives/",
+          "hints": [
+            "Utilisez 'cp' pour copier le fichier de configuration, puis 'mkdir -p archives' et 'mv' pour déplacer le journal.",
+            "Solution complète de référence :\n```bash\ncp config.json config.json.bak && mkdir -p archives && mv old.log archives/\n```"
+          ],
+          "explanation": "`cp` duplique le fichier `config.json` vers sa copie de sauvegarde `.bak`. `mkdir -p` s'assure que le dossier de destination existe avant que `mv` n'y déplace `old.log`."
         }
       ]
     },
@@ -872,7 +908,13 @@
               "expected_stdout": "EXEC",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "chmod 755 backup.sh && chmod 600 passwords.txt",
+          "hints": [
+            "En notation octale : 755 correspond à rwxr-xr-x et 600 correspond à rw-------.",
+            "Solution complète de référence :\n```bash\nchmod 755 backup.sh && chmod 600 passwords.txt\n```"
+          ],
+          "explanation": "`chmod 755` accorde au propriétaire tous les droits et aux autres la lecture et l'exécution sur le script. `chmod 600` verrouille le fichier sensible en lecture/écriture pour le seul propriétaire."
         }
       ]
     },
@@ -1087,7 +1129,13 @@
               "expected_stdout": "3",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "grep 'ERROR' server.log | wc -l > error_count.txt",
+          "hints": [
+            "Combinez grep pour filtrer les lignes, le pipe '|' pour transférer le flux, wc -l pour compter, et '>' pour rediriger vers le fichier.",
+            "Solution complète de référence :\n```bash\ngrep 'ERROR' server.log | wc -l > error_count.txt\n```"
+          ],
+          "explanation": "`grep 'ERROR' server.log` filtre les lignes contenant l'erreur, envoyées via le tube Unix (`|`) à `wc -l` qui dénombre les lignes. Le résultat est redirigé via `>` dans `error_count.txt`."
         }
       ]
     },
@@ -1266,7 +1314,13 @@
               "expected_stdout": "bash",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "ps aux | grep rogue_miner && kill -9 4096",
+          "hints": [
+            "Listez les processus avec 'ps aux | grep rogue_miner', puis utilisez 'kill -9 <PID>' pour forcer l'arrêt du processus.",
+            "Solution complète de référence :\n```bash\nps aux | grep rogue_miner && kill -9 4096\n```"
+          ],
+          "explanation": "`ps aux` liste les processus système pour repérer le PID du programme suspect. `kill -9` envoie le signal SIGKILL pour une terminaison immédiate et inconditionnelle par le noyau."
         }
       ]
     },
@@ -1447,7 +1501,13 @@
               "expected_stdout": "2026",
               "expected_exit_code": 0
             }
-          ]
+          ],
+          "solution": "echo -e '#!/bin/bash\\ndate > summary.txt\\nuname -a >> summary.txt' > report.sh && chmod +x report.sh",
+          "hints": [
+            "Créez le script avec echo ou un éditeur, puis rendez-le exécutable avec 'chmod +x report.sh'.",
+            "Solution complète de référence :\n```bash\necho -e '#!/bin/bash\\ndate > summary.txt\\nuname -a >> summary.txt' > report.sh && chmod +x report.sh\n```"
+          ],
+          "explanation": "On crée le script shell `report.sh` contenant les commandes `date` (redirection `>` écrasante) et `uname -a` (redirection `>>` en ajout). On applique ensuite `chmod +x` pour lui conférer les droits d'exécution."
         }
       ]
     }

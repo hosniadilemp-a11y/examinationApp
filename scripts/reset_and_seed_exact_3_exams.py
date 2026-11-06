@@ -1,410 +1,543 @@
-import sys
+"""
+Script officiel d'initialisation et de pré-déploiement de la base de données :
+1. Purge intégrale de tous les anciens examens, sessions, tentatives, questions et modules parasites.
+2. Insertion de l'Administrateur (`admin`) et des Enseignants dédiés aux 3 modules de test :
+   - `PYTHON_INIT` (Programmation Python) -> `prof_python` (+ `prof_martin`)
+   - `CRYPTO` (Cryptographie & Sécurité) -> `prof_crypto` (+ `prof_martin`)
+   - `LINUX_ADMIN` (Administration Système Linux) -> `prof_linux` (+ `prof_martin`)
+3. Insertion de 4 Spécialités / Classes (Groupes), chacune composée de 4 étudiants complets (16 étudiants au total) :
+   - `DEV-IA` (4 étudiants : `etu_dev1` à `etu_dev4`)
+   - `SYS-ADMIN` (4 étudiants : `etu_sys1` à `etu_sys4`)
+   - `CYBER-SEC` (4 étudiants : `etu_sec1` à `etu_sec4`)
+   - `GRP-1` (4 étudiants : `etudiant1`, `etu_log2`, `etu_log3`, `etu_log4`)
+4. Création des Examens Modèles pour les 3 modules (`PYTHON_INIT`, `CRYPTO`, `LINUX_ADMIN`) :
+   - `EXAM-THEO-PYTHON` : Banque de 40 questions théoriques, tirage aléatoire de 20 questions par étudiant, mélange intégral des questions et des choix.
+   - `EXAM-PRAC-PYTHON` : 5 défis algorithmiques pratiques Python.
+   - `EXAM-THEO-CRYPTO` : Épreuve théorique Cryptographie & Sécurité (questions et choix mélangés).
+   - `EXAM-THEO-LINUX` : Épreuve théorique Administration Système Linux (questions et choix mélangés).
+"""
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import sys
 import json
-from datetime import datetime, timezone
-from backend.app.database import get_db
-from backend.app.models import Exam, Question, Group, Module, User, ExamSession, StudentAttempt, StudentAnswer, AuditLog
 
-def reset_and_seed_3_exams(db=None):
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from backend.app.database import SessionLocal, Base, engine
+from backend.app.models import (
+    User, Module, Group, Exam, Question, ExamSession,
+    StudentAttempt, StudentAnswer, AuditLog,
+    PracticeAttempt, TrainingAttempt, ChapterProgress,
+    exam_groups, teacher_modules
+)
+from backend.app.security import hash_password
+
+
+def _load_extra_35_python_mcqs():
+    """Extrait 35 questions QCM officielles depuis curriculum.json pour compléter EXAM-THEO-PYTHON à 40 questions."""
+    curriculum_path = os.path.join(
+        os.path.dirname(__file__), "..", "backend", "app", "data", "python_training", "curriculum.json"
+    )
+    extracted = []
+    if os.path.exists(curriculum_path):
+        with open(curriculum_path, "r", encoding="utf-8") as f:
+            curr = json.load(f)
+        exam_marked = []
+        others = []
+        for ch in curr.get("chapters", []):
+            for q in ch.get("mcq_questions", []):
+                if q.get("Exams") or q.get("is_exam"):
+                    exam_marked.append(q)
+                else:
+                    others.append(q)
+        pool = exam_marked + others
+        for q in pool[:35]:
+            opts = q.get("options", [])
+            opts_clean = [o.get("text", str(o)) if isinstance(o, dict) else str(o) for o in opts]
+            corr = q.get("correct", 0)
+            if isinstance(corr, list):
+                corr_val = corr[0] if corr else 0
+            else:
+                corr_val = int(corr) if corr is not None else 0
+            extracted.append({
+                "prompt": q.get("text") or q.get("prompt") or "Question Python",
+                "options": opts_clean if opts_clean else ["Vrai", "Faux"],
+                "correct": corr_val
+            })
+    while len(extracted) < 35:
+        idx = len(extracted) + 1
+        extracted.append({
+            "prompt": f"En Python, quelle est la valeur de `len(range({idx}))` ?",
+            "options": [str(idx), str(idx - 1), str(idx + 1), "0"],
+            "correct": 0
+        })
+    return extracted[:35]
+
+
+def reset_and_seed_3_exams(db=None, clear_practice=False):
     close_db = False
     if db is None:
-        db = next(get_db())
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
         close_db = True
-    print("[RESET] Nettoyage complet des anciens examens d'exemple...")
+        clear_practice = True
 
-    # 1. Supprimer toutes les tentatives, réponses, sessions et questions associées aux anciens examens
-    db.query(StudentAnswer).delete()
-    db.query(StudentAttempt).delete()
-    db.query(AuditLog).delete()
-    db.query(ExamSession).delete()
-    db.query(Question).delete()
+    try:
+        # 1. PURGE TOTALE DES EXAMENS & TENTATIVES D'EXAMEN
+        db.query(StudentAnswer).delete()
+        db.query(AuditLog).delete()
+        db.query(StudentAttempt).delete()
+        db.query(ExamSession).delete()
+        db.query(Question).delete()
+        db.execute(exam_groups.delete())
+        db.query(Exam).delete()
+        if clear_practice:
+            db.query(PracticeAttempt).delete()
+            db.query(TrainingAttempt).delete()
+            db.query(ChapterProgress).delete()
+        db.commit()
 
-    # Détacher les associations de groupes existantes
-    all_exams = db.query(Exam).all()
-    for ex in all_exams:
-      ex.groups.clear()
-    db.flush()
+        # 2. INSERTION DES 3 MODULES DE TEST (+ ALGO pour compatibilité bulletins) & PURGE DES MODULES PARASITES
+        valid_module_codes = {"PYTHON_INIT", "CRYPTO", "LINUX_ADMIN", "ALGO"}
+        if clear_practice:
+            db.execute(teacher_modules.delete())
+            extra_mods = db.query(Module).filter(~Module.code.in_(valid_module_codes)).all()
+            for em in extra_mods:
+                db.delete(em)
+            db.commit()
+        else:
+            # Toujours supprimer les modules temporaires CLOUD_* ou modules hors périmètre sans examen
+            parasitic_mods = db.query(Module).filter(
+                (Module.code.like("CLOUD_%")) |
+                (Module.code.in_(["DEV_WEB", "DATABASE_SQL", "NETWORKS", "AI_ML", "DATA_STRUCT"]))
+            ).all()
+            for pm in parasitic_mods:
+                db.delete(pm)
+            db.commit()
 
-    # Supprimer tous les examens
-    db.query(Exam).delete()
-    db.commit()
-    print("[RESET] Tous les anciens examens ont été purgés de la base.")
+        modules_data = [
+            ("PYTHON_INIT", "Programmation Python & Algorithmique", "Fondamentaux du langage Python, structures de données et résolution algorithmique."),
+            ("CRYPTO", "Cryptographie & Sécurité", "Chiffrement symétrique, asymétrique, hachage cryptographique, PKI et protocoles."),
+            ("LINUX_ADMIN", "Administration Système Linux", "Arborescence POSIX/FHS, permissions, processus, gestion réseau et scripts Bash."),
+            ("ALGO", "Algorithmique Fondamentale", "Complexité algorithmique, structures de données et récursivité."),
+        ]
+        mod_map = {}
+        for code, title, desc in modules_data:
+            mod = db.query(Module).filter(Module.code == code).first()
+            if not mod:
+                mod = Module(code=code, title=title, description=desc)
+                db.add(mod)
+                db.flush()
+            else:
+                mod.title = title
+                mod.description = desc
+            mod_map[code] = mod
+        db.commit()
 
-    # 2. Vérifier et assurer l'existence des groupes
-    group_ids = ["DEV-IA", "SYS-ADMIN", "CYBER-SEC", "GRP-1", "GRP-2", "GRP-SEC-1"]
-    groups = []
-    for gid in group_ids:
-      grp = db.query(Group).filter(Group.id == gid).first()
-      if not grp:
-        grp = Group(id=gid, name=f"Groupe {gid}")
-        db.add(grp)
+        # 3. INSERTION DE L'ADMIN ET DES ENSEIGNANTS PAR MODULE
+        admin = db.query(User).filter(User.username == "admin").first()
+        if not admin:
+            admin = User(
+                id="ADM-001",
+                username="admin",
+                password_hash=hash_password("Admin123!"),
+                plain_password="Admin123!",
+                full_name="Administrateur Principal",
+                email="admin@ecole.fr",
+                role="admin",
+                is_active=True,
+                must_change_password=False
+            )
+            db.add(admin)
+        else:
+            admin.plain_password = admin.plain_password or "Admin123!"
+
+        teachers_spec = [
+            ("TCH-001", "prof_martin", "prof123", "Dr. Martin Laurent", "martin.laurent@ecole.fr", ["PYTHON_INIT", "CRYPTO", "LINUX_ADMIN", "ALGO"]),
+            ("TCH-PYTHON", "prof_python", "ProfPython1!", "Dr. Martin Laurent (Resp. Python)", "martin.python@ecole.fr", ["PYTHON_INIT"]),
+            ("TCH-CRYPTO", "prof_crypto", "ProfCrypto1!", "Dr. Sophie Bernard (Resp. Crypto)", "sophie.crypto@ecole.fr", ["CRYPTO"]),
+            ("TCH-LINUX", "prof_linux", "ProfLinux1!", "Dr. Karim Mansouri (Resp. Linux)", "karim.linux@ecole.fr", ["LINUX_ADMIN"]),
+        ]
+        teacher_objs = {}
+        for t_id, t_user, t_pwd, t_name, t_mail, t_mods in teachers_spec:
+            t_obj = db.query(User).filter(User.username == t_user).first()
+            if not t_obj:
+                t_obj = User(
+                    id=t_id,
+                    username=t_user,
+                    password_hash=hash_password(t_pwd),
+                    plain_password=t_pwd,
+                    full_name=t_name,
+                    email=t_mail,
+                    role="teacher",
+                    is_active=True,
+                    must_change_password=False
+                )
+                db.add(t_obj)
+                db.flush()
+            else:
+                t_obj.plain_password = t_pwd
+                t_obj.full_name = t_name
+                t_obj.email = t_mail
+            t_obj.assigned_modules = [mod_map[m_code] for m_code in t_mods if m_code in mod_map]
+            teacher_objs[t_user] = t_obj
+        db.commit()
+
+        # 4. CRÉATION DES 4 SPÉCIALITÉS / CLASSES (GROUPES)
+        groups_data = [
+            ("DEV-IA", "Spécialité 1 : Développement & IA", "Promotion Développement Logiciel, Python & Intelligence Artificielle (4 étudiants)"),
+            ("SYS-ADMIN", "Spécialité 2 : Systèmes & Réseaux Linux", "Promotion Administration Systèmes POSIX, Réseaux & Cloud (4 étudiants)"),
+            ("CYBER-SEC", "Spécialité 3 : Cybersécurité & Cryptographie", "Promotion Sécurité de l'Information, Cryptographie & Audit (4 étudiants)"),
+            ("GRP-1", "Spécialité 4 : Génie Logiciel & Systèmes (Groupe 1)", "Promotion Ingénierie Logicielle & Systèmes Embarqués (4 étudiants)"),
+        ]
+        valid_group_ids = {g[0] for g in groups_data}
+        group_objs = []
+        for gid, gname, gdesc in groups_data:
+            grp = db.query(Group).filter(Group.id == gid).first()
+            if not grp:
+                grp = Group(id=gid, name=gname, description=gdesc)
+                db.add(grp)
+                db.flush()
+            else:
+                grp.name = gname
+                grp.description = gdesc
+            group_objs.append(grp)
+        db.commit()
+
+        # 5. CRÉATION DES 16 ÉTUDIANTS (4 SPÉCIALITÉS × 4 ÉTUDIANTS AVEC TOUTES LEURS INFORMATIONS)
+        students_data = [
+            # Spécialité 1 : DEV-IA (4 étudiants)
+            ("ETU-ETU_DEV1", "etu_dev1", "StudentDev1!", "Alice Dev (IA-1)", "alice.dev@exam.local", "DEV-IA", "2025-2026"),
+            ("ETU-ETU_DEV2", "etu_dev2", "StudentDev2!", "Bob Dev (IA-2)", "bob.dev@exam.local", "DEV-IA", "2025-2026"),
+            ("ETU-ETU_DEV3", "etu_dev3", "StudentDev3!", "Clara Dev (IA-3)", "clara.dev@exam.local", "DEV-IA", "2025-2026"),
+            ("ETU-ETU_DEV4", "etu_dev4", "StudentDev4!", "David Dev (IA-4)", "david.dev@exam.local", "DEV-IA", "2025-2026"),
+            # Spécialité 2 : SYS-ADMIN (4 étudiants)
+            ("ETU-ETU_SYS1", "etu_sys1", "StudentSys1!", "Emma Sys (Linux-1)", "emma.sys@exam.local", "SYS-ADMIN", "2025-2026"),
+            ("ETU-ETU_SYS2", "etu_sys2", "StudentSys2!", "Fares Sys (Linux-2)", "fares.sys@exam.local", "SYS-ADMIN", "2025-2026"),
+            ("ETU-ETU_SYS3", "etu_sys3", "StudentSys3!", "Gilles Sys (Linux-3)", "gilles.sys@exam.local", "SYS-ADMIN", "2025-2026"),
+            ("ETU-ETU_SYS4", "etu_sys4", "StudentSys4!", "Hajar Sys (Linux-4)", "hajar.sys@exam.local", "SYS-ADMIN", "2025-2026"),
+            # Spécialité 3 : CYBER-SEC (4 étudiants)
+            ("ETU-ETU_SEC1", "etu_sec1", "StudentSec1!", "Ines Sec (Crypto-1)", "ines.sec@exam.local", "CYBER-SEC", "2025-2026"),
+            ("ETU-ETU_SEC2", "etu_sec2", "StudentSec2!", "Jules Sec (Crypto-2)", "jules.sec@exam.local", "CYBER-SEC", "2025-2026"),
+            ("ETU-ETU_SEC3", "etu_sec3", "StudentSec3!", "Karim Sec (Crypto-3)", "karim.sec@exam.local", "CYBER-SEC", "2025-2026"),
+            ("ETU-ETU_SEC4", "etu_sec4", "StudentSec4!", "Lena Sec (Crypto-4)", "lena.sec@exam.local", "CYBER-SEC", "2025-2026"),
+            # Spécialité 4 : GRP-1 (4 étudiants)
+            ("ETU-001", "etudiant1", "etu123", "Alice Dupont (GL-1)", "etudiant1@exam.local", "GRP-1", "2025-2026"),
+            ("ETU-ETU_LOG2", "etu_log2", "StudentLog2!", "Thomas Garnier (GL-2)", "thomas.log@exam.local", "GRP-1", "2025-2026"),
+            ("ETU-ETU_LOG3", "etu_log3", "StudentLog3!", "Camille Chevalier (GL-3)", "camille.log@exam.local", "GRP-1", "2025-2026"),
+            ("ETU-ETU_LOG4", "etu_log4", "StudentLog4!", "Maxime Lambert (GL-4)", "maxime.log@exam.local", "GRP-1", "2025-2026"),
+        ]
+        valid_student_usernames = {s[1] for s in students_data}
+        for sid, uname, pwd, fname, email, gid, year in students_data:
+            stu = db.query(User).filter(User.username == uname).first()
+            if not stu:
+                stu = User(
+                    id=sid,
+                    username=uname,
+                    password_hash=hash_password(pwd),
+                    plain_password=pwd,
+                    full_name=fname,
+                    email=email,
+                    role="student",
+                    group_id=gid,
+                    enrollment_year=year,
+                    is_active=True,
+                    must_change_password=False
+                )
+                db.add(stu)
+            else:
+                stu.plain_password = pwd
+                stu.full_name = fname
+                stu.email = email
+                stu.group_id = gid
+                stu.enrollment_year = year
+
+        if clear_practice:
+            extra_students = db.query(User).filter(
+                User.role == "student",
+                ~User.username.in_(valid_student_usernames)
+            ).all()
+            for es in extra_students:
+                db.delete(es)
+            extra_groups = db.query(Group).filter(~Group.id.in_(valid_group_ids)).all()
+            for eg in extra_groups:
+                db.delete(eg)
+        db.commit()
+
+        # =========================================================================
+        # 6. EXAMENS MODÈLES POUR LES 3 MODULES (PYTHON_INIT, CRYPTO, LINUX_ADMIN)
+        # =========================================================================
+
+        # --- MODULE 1 : PYTHON_INIT (Volet Théorique : 40 questions -> 20 aléatoires/étudiant) ---
+        exam_theo_py = Exam(
+            id="EXAM-THEO-PYTHON",
+            module_code="PYTHON_INIT",
+            title="Épreuve Officielle : Théorie Python",
+            exam_type="theoretical",
+            instructions="Épreuve officielle théorique de programmation Python (Banque de 40 questions : tirage aléatoire de 20 questions par étudiant, ordre des questions et des choix mélangés). [CONFIG_RANDOM_STUDENT_QUESTIONS=20]",
+            duration_minutes=45,
+            global_points=20.0,
+            shuffle_questions=True,
+            shuffle_options=True,
+            created_by=teacher_objs["prof_python"].id
+        )
+        exam_theo_py.groups = list(group_objs)
+        db.add(exam_theo_py)
         db.flush()
-      groups.append(grp)
-    db.commit()
 
-    # 3. Vérifier et assurer l'existence des modules
-    mod_python = db.query(Module).filter(Module.code == "PYTHON_INIT").first()
-    if not mod_python:
-      mod_python = Module(code="PYTHON_INIT", title="Programmation Python Fondamentale")
-      db.add(mod_python)
+        q_theo_python = [
+            Question(
+                id="Q-TPY-1", exam_id=exam_theo_py.id, ordering=1, type="single_choice",
+                prompt_markdown="Quelle est la sortie exacte de l'expression Python `[x**2 for x in range(4) if x % 2 == 0]` ?",
+                points=1.0,
+                options_json=json.dumps(["[0, 4]", "[0, 1, 4, 9]", "[4, 16]", "[2, 4]"]),
+                correct_answers_json=json.dumps(0)
+            ),
+            Question(
+                id="Q-TPY-2", exam_id=exam_theo_py.id, ordering=2, type="multi_choice",
+                prompt_markdown="Parmi les types suivants en Python, lesquels sont **immuables** (immutable) ? *(Plusieurs réponses)*",
+                points=1.0,
+                options_json=json.dumps(["tuple", "list", "str", "dict", "frozenset"]),
+                correct_answers_json=json.dumps([0, 2, 4])
+            ),
+            Question(
+                id="Q-TPY-3", exam_id=exam_theo_py.id, ordering=3, type="boolean",
+                prompt_markdown="En Python 3, l'opérateur `//` effectue toujours une division entière (floor division).",
+                points=1.0,
+                options_json=json.dumps([]),
+                correct_answers_json=json.dumps(True)
+            ),
+            Question(
+                id="Q-TPY-4", exam_id=exam_theo_py.id, ordering=4, type="fill_blank",
+                prompt_markdown="Quel mot-clé Python permet de définir une fonction génératrice qui produit des valeurs à la demande ? `_____`",
+                points=1.0,
+                options_json=json.dumps([]),
+                correct_answers_json=json.dumps(["yield"])
+            ),
+            Question(
+                id="Q-TPY-5", exam_id=exam_theo_py.id, ordering=5, type="matching",
+                prompt_markdown="Associez chaque méthode ou fonction Python à son rôle exact :",
+                points=1.0,
+                options_json=json.dumps([
+                    {"left": "len(obj)", "right": "Retourne le nombre d'éléments d'une collection"},
+                    {"left": "enumerate(it)", "right": "Fournit des tuples (indice, valeur) lors d'une itération"},
+                    {"left": "zip(a, b)", "right": "Agrège en parallèle les éléments de plusieurs itérables"}
+                ]),
+                correct_answers_json=json.dumps({
+                    "len(obj)": "Retourne le nombre d'éléments d'une collection",
+                    "enumerate(it)": "Fournit des tuples (indice, valeur) lors d'une itération",
+                    "zip(a, b)": "Agrège en parallèle les éléments de plusieurs itérables"
+                })
+            ),
+        ]
+        extra_35 = _load_extra_35_python_mcqs()
+        for idx, eq in enumerate(extra_35, start=6):
+            q_theo_python.append(Question(
+                id=f"Q-TPY-{idx}",
+                exam_id=exam_theo_py.id,
+                ordering=idx,
+                type="single_choice",
+                prompt_markdown=eq["prompt"],
+                points=1.0,
+                options_json=json.dumps(eq["options"], ensure_ascii=False),
+                correct_answers_json=json.dumps(eq["correct"])
+            ))
 
-    mod_crypto = db.query(Module).filter(Module.code == "CRYPTO").first()
-    if not mod_crypto:
-      mod_crypto = Module(code="CRYPTO", title="Cryptographie & Sécurité Réseau")
-      db.add(mod_crypto)
-    db.commit()
+        for q in q_theo_python:
+            db.add(q)
 
-    # Assigner prof_martin à ces modules
-    prof = db.query(User).filter(User.username == "prof_martin").first()
-    if prof:
-      if mod_python not in prof.assigned_modules:
-        prof.assigned_modules.append(mod_python)
-      if mod_crypto not in prof.assigned_modules:
-        prof.assigned_modules.append(mod_crypto)
-      db.commit()
+        # Volet Pratique Python
+        exam_prac_py = Exam(
+            id="EXAM-PRAC-PYTHON",
+            module_code="PYTHON_INIT",
+            title="Épreuve Officielle : Pratique Python",
+            exam_type="practical",
+            instructions="Épreuve officielle pratique sur machine : 5 défis algorithmiques Python évalués sur jeux de tests publics et cachés.",
+            duration_minutes=60,
+            global_points=20.0,
+            shuffle_questions=True,
+            shuffle_options=True,
+            created_by=teacher_objs["prof_python"].id
+        )
+        exam_prac_py.groups = list(group_objs)
+        db.add(exam_prac_py)
+        db.flush()
 
-    # -------------------------------------------------------------------------
-    # EXAMEN 1 : ÉPREUVE THÉORIQUE PYTHON (QCM & Connaissances)
-    # -------------------------------------------------------------------------
-    exam1 = Exam(
-        id="EXAM-THEO-PYTHON",
-        title="Épreuve Théorique : Python Fondamentaux & Algorithmique",
-        module_code="PYTHON_INIT",
-        exam_type="theoretical",
-        duration_minutes=45,
-        global_points=20.0,
-        instructions="Épreuve officielle théorique à livre fermé. Calculatrices interdites. QCM, Vrai/Faux, Textes à trous et Appariements."
-    )
-    for g in groups:
-      exam1.groups.append(g)
-    db.add(exam1)
-    db.flush()
+        challenges_path = os.path.join(
+            os.path.dirname(__file__), "..", "backend", "app", "data", "python_training", "coding_challenges.json"
+        )
+        selected_challenges = []
+        if os.path.exists(challenges_path):
+            with open(challenges_path, "r", encoding="utf-8") as f:
+                all_ch = json.load(f)
+                selected_challenges = all_ch[:5]
 
-    q1_1 = Question(
-        id="Q-PY-THEO-1",
-        exam_id=exam1.id,
-        ordering=1,
-        type="single_choice",
-        points=4.0,
-        prompt_markdown="En Python 3, parmi les types de données suivants, lequel est **immuable** (*immutable*) ?",
-        options_json=json.dumps([
-            {"id": "A", "text": "list (liste dynamique)"},
-            {"id": "B", "text": "tuple (n-uplet)"},
-            {"id": "C", "text": "set (ensemble)"},
-            {"id": "D", "text": "dict (dictionnaire)"}
-        ]),
-        correct_answers_json=json.dumps(["B"])
-    )
+        for idx, ch in enumerate(selected_challenges, start=1):
+            pub_tests = ch.get("public_tests", [])
+            hid_tests = ch.get("hidden_tests", [])
+            db.add(Question(
+                id=f"Q-PPY-{idx}",
+                exam_id=exam_prac_py.id,
+                ordering=idx,
+                type="code_python",
+                prompt_markdown=f"### {ch['title']}\n\n{ch['description']}",
+                points=4.0,
+                options_json=json.dumps({
+                    "starter_code": ch.get("starter_code", "# Écrivez votre solution ici\n"),
+                    "public_tests": pub_tests,
+                    "challenge_id": ch.get("id", f"PY-CH-{idx:02d}"),
+                    "difficulty": ch.get("difficulty", "Facile"),
+                    "chapter": ch.get("chapter", "Algorithmique Python"),
+                    "hint1": ch.get("hint1", "Analysez le format d'entrée standard avec input() et affichez le résultat avec print()."),
+                    "hint2": ch.get("hint2", ch.get("solution", ""))
+                }),
+                correct_answers_json=json.dumps({
+                    "public_tests": pub_tests,
+                    "hidden_tests": hid_tests,
+                    "solution": ch.get("solution", ""),
+                    "explanation": ch.get("explanation", "")
+                })
+            ))
 
-    q1_2 = Question(
-        id="Q-PY-THEO-2",
-        exam_id=exam1.id,
-        ordering=2,
-        type="multi_choice",
-        points=4.0,
-        prompt_markdown="Quelles sont les affirmations **vraies** concernant les compréhensions de listes en Python ?",
-        options_json=json.dumps([
-            {"id": "A", "text": "Elles permettent d'écrire un code plus concis et généralement plus rapide qu'une boucle for classique."},
-            {"id": "B", "text": "Une compréhension de liste peut comporter une clause conditionnelle de filtrage `if`."},
-            {"id": "C", "text": "Elles retournent toujours un objet de type générateur paresseux (generator)."},
-            {"id": "D", "text": "L'expression `[x**2 for x in range(5) if x % 2 == 0]` produit `[0, 4, 16]`."}
-        ]),
-        correct_answers_json=json.dumps(["A", "B", "D"])
-    )
+        # --- MODULE 2 : CRYPTO (Épreuve Modèle Cryptographie & Sécurité) ---
+        exam_theo_crypto = Exam(
+            id="EXAM-THEO-CRYPTO",
+            module_code="CRYPTO",
+            title="Épreuve Officielle : Théorie Cryptographie",
+            exam_type="theoretical",
+            instructions="Épreuve officielle théorique de Cryptographie & Sécurité de l'Information (questions et choix mélangés).",
+            duration_minutes=45,
+            global_points=20.0,
+            shuffle_questions=True,
+            shuffle_options=True,
+            created_by=teacher_objs["prof_crypto"].id
+        )
+        exam_theo_crypto.groups = list(group_objs)
+        db.add(exam_theo_crypto)
+        db.flush()
 
-    q1_3 = Question(
-        id="Q-PY-THEO-3",
-        exam_id=exam1.id,
-        ordering=3,
-        type="boolean",
-        points=4.0,
-        prompt_markdown="La recherche d'une clé dans un dictionnaire Python standard s'effectue en temps moyen de complexité $\\mathcal{O}(1)$ grâce à une table de hachage.",
-        options_json=json.dumps([]),
-        correct_answers_json=json.dumps(["true"])
-    )
+        q_theo_crypto = [
+            Question(
+                id="Q-TCRY-1", exam_id=exam_theo_crypto.id, ordering=1, type="single_choice",
+                prompt_markdown="Quelle est la taille du condensat (hash) produit par l'algorithme **SHA-256** ?",
+                points=4.0,
+                options_json=json.dumps(["128 bits", "160 bits", "256 bits (32 octets)", "512 bits"]),
+                correct_answers_json=json.dumps(2)
+            ),
+            Question(
+                id="Q-TCRY-2", exam_id=exam_theo_crypto.id, ordering=2, type="multi_choice",
+                prompt_markdown="Parmi les algorithmes suivants, lesquels sont des algorithmes de chiffrement **asymétrique** ? *(Plusieurs réponses)*",
+                points=4.0,
+                options_json=json.dumps(["RSA", "AES-GCM", "ECC (Courbes Elliptiques)", "ChaCha20", "ElGamal"]),
+                correct_answers_json=json.dumps([0, 2, 4])
+            ),
+            Question(
+                id="Q-TCRY-3", exam_id=exam_theo_crypto.id, ordering=3, type="boolean",
+                prompt_markdown="En cryptographie asymétrique, la signature numérique d'un message est générée à l'aide de la **clé privée** de l'expéditeur et vérifiée avec sa **clé publique**.",
+                points=4.0,
+                options_json=json.dumps([]),
+                correct_answers_json=json.dumps(True)
+            ),
+            Question(
+                id="Q-TCRY-4", exam_id=exam_theo_crypto.id, ordering=4, type="fill_blank",
+                prompt_markdown="Quel standard de chiffrement symétrique par blocs (successeur de DES, blocs de 128 bits) est aujourd'hui le standard mondial du NIST ? `_____`",
+                points=4.0,
+                options_json=json.dumps([]),
+                correct_answers_json=json.dumps(["AES", "Rijndael"])
+            ),
+            Question(
+                id="Q-TCRY-5", exam_id=exam_theo_crypto.id, ordering=5, type="matching",
+                prompt_markdown="Associez chaque concept cryptographique à la propriété de sécurité qu'il garantit principalement :",
+                points=4.0,
+                options_json=json.dumps([
+                    {"left": "Chiffrement AES-256", "right": "Confidentialité des données"},
+                    {"left": "Fonction de hachage SHA-256", "right": "Intégrité des données"},
+                    {"left": "Signature numérique RSA / ECDSA", "right": "Authenticité et non-répudiation"}
+                ]),
+                correct_answers_json=json.dumps({
+                    "Chiffrement AES-256": "Confidentialité des données",
+                    "Fonction de hachage SHA-256": "Intégrité des données",
+                    "Signature numérique RSA / ECDSA": "Authenticité et non-répudiation"
+                })
+            ),
+        ]
+        for q in q_theo_crypto:
+            db.add(q)
 
-    q1_4 = Question(
-        id="Q-PY-THEO-4",
-        exam_id=exam1.id,
-        ordering=4,
-        type="fill_blank",
-        points=4.0,
-        prompt_markdown="Quel mot-clé Python est utilisé à l'intérieur d'une fonction pour retourner un générateur et produire des valeurs de manière paresseuse au lieu d'interrompre la fonction avec `return` ?",
-        options_json=json.dumps([]),
-        correct_answers_json=json.dumps(["yield"])
-    )
+        # --- MODULE 3 : LINUX_ADMIN (Épreuve Modèle Administration Système Linux) ---
+        exam_theo_linux = Exam(
+            id="EXAM-THEO-LINUX",
+            module_code="LINUX_ADMIN",
+            title="Épreuve Officielle : Administration Système Linux",
+            exam_type="theoretical",
+            instructions="Épreuve officielle théorique d'Administration Système Linux (norme POSIX/FHS, permissions, processus et services).",
+            duration_minutes=45,
+            global_points=20.0,
+            shuffle_questions=True,
+            shuffle_options=True,
+            created_by=teacher_objs["prof_linux"].id
+        )
+        exam_theo_linux.groups = list(group_objs)
+        db.add(exam_theo_linux)
+        db.flush()
 
-    q1_5 = Question(
-        id="Q-PY-THEO-5",
-        exam_id=exam1.id,
-        ordering=5,
-        type="matching",
-        points=4.0,
-        prompt_markdown="Associez chaque module de la bibliothèque standard Python à son utilité principale :",
-        options_json=json.dumps({
-            "left": ["math", "json", "sys", "collections"],
-            "right": [
-                "Fonctions mathématiques et constantes (sqrt, pi, log)",
-                "Sérialisation et désérialisation de données structurées",
-                "Paramètres et interactions avec l'interpréteur Python",
-                "Structures de données avancées (Counter, deque, defaultdict)"
-            ]
-        }),
-        correct_answers_json=json.dumps({
-            "math": "Fonctions mathématiques et constantes (sqrt, pi, log)",
-            "json": "Sérialisation et désérialisation de données structurées",
-            "sys": "Paramètres et interactions avec l'interpréteur Python",
-            "collections": "Structures de données avancées (Counter, deque, defaultdict)"
-        })
-    )
+        q_theo_linux = [
+            Question(
+                id="Q-TLNX-1", exam_id=exam_theo_linux.id, ordering=1, type="single_choice",
+                prompt_markdown="Sous Linux, quelle valeur octale passée à la commande `chmod` accorde les droits `rwxr-x---` (Propriétaire : lecture/écriture/exécution, Groupe : lecture/exécution, Autres : aucun droit) ?",
+                points=4.0,
+                options_json=json.dumps(["750", "755", "640", "700"]),
+                correct_answers_json=json.dumps(0)
+            ),
+            Question(
+                id="Q-TLNX-2", exam_id=exam_theo_linux.id, ordering=2, type="multi_choice",
+                prompt_markdown="Quels répertoires de la norme **FHS (Filesystem Hierarchy Standard)** contiennent des fichiers de configuration système ou des journaux (logs) ? *(Plusieurs réponses)*",
+                points=4.0,
+                options_json=json.dumps(["/etc", "/var/log", "/bin", "/home"]),
+                correct_answers_json=json.dumps([0, 1])
+            ),
+            Question(
+                id="Q-TLNX-3", exam_id=exam_theo_linux.id, ordering=3, type="boolean",
+                prompt_markdown="Sous Linux/POSIX, l'utilisateur super-administrateur `root` possède toujours l'identifiant numérique **UID 0**.",
+                points=4.0,
+                options_json=json.dumps([]),
+                correct_answers_json=json.dumps(True)
+            ),
+            Question(
+                id="Q-TLNX-4", exam_id=exam_theo_linux.id, ordering=4, type="fill_blank",
+                prompt_markdown="Quelle commande POSIX permet de modifier le propriétaire (utilisateur et/ou groupe) d'un fichier ou répertoire sous Linux ? `_____`",
+                points=4.0,
+                options_json=json.dumps([]),
+                correct_answers_json=json.dumps(["chown"])
+            ),
+            Question(
+                id="Q-TLNX-5", exam_id=exam_theo_linux.id, ordering=5, type="matching",
+                prompt_markdown="Associez chaque commande d'administration Linux à sa fonction exacte :",
+                points=4.0,
+                options_json=json.dumps([
+                    {"left": "ps aux / top", "right": "Inspecter les processus actifs en mémoire"},
+                    {"left": "df -h", "right": "Afficher l'espace disque disponible sur les systèmes de fichiers montés"},
+                    {"left": "systemctl status", "right": "Vérifier l'état d'un démon ou service géré par systemd"}
+                ]),
+                correct_answers_json=json.dumps({
+                    "ps aux / top": "Inspecter les processus actifs en mémoire",
+                    "df -h": "Afficher l'espace disque disponible sur les systèmes de fichiers montés",
+                    "systemctl status": "Vérifier l'état d'un démon ou service géré par systemd"
+                })
+            ),
+        ]
+        for q in q_theo_linux:
+            db.add(q)
 
-    db.add_all([q1_1, q1_2, q1_3, q1_4, q1_5])
-    db.commit()
-    print("[SEED] Examen 1 créé : EXAM-THEO-PYTHON (5 questions théoriques, 20 pts)")
+        db.commit()
+        print("Base de donnees initialisee avec succes :")
+        print("  - 1 Administrateur (admin)")
+        print("  - 4 Enseignants assignes aux 3 modules (prof_python, prof_crypto, prof_linux, prof_martin)")
+        print("  - 4 Specialites x 4 Etudiants = 16 Etudiants complets (DEV-IA, SYS-ADMIN, CYBER-SEC, GRP-1)")
+        print("  - Examens modeles crees pour PYTHON_INIT (40Q -> 20Q/etu), CRYPTO et LINUX_ADMIN")
+    finally:
+        if close_db:
+            db.close()
 
-    # -------------------------------------------------------------------------
-    # EXAMEN 2 : ÉPREUVE PRATIQUE PYTHON (Défis Machine AlgoCompiler)
-    # -------------------------------------------------------------------------
-    exam2 = Exam(
-        id="EXAM-PRAC-PYTHON",
-        title="Épreuve Pratique : Algorithmes & Défis Python",
-        module_code="PYTHON_INIT",
-        exam_type="practical",
-        duration_minutes=60,
-        global_points=20.0,
-        instructions="Épreuve pratique sur machine. Écrivez des scripts Python conformes aux spécifications. Chaque défi est évalué sur des cas de tests publics et des cas secrets."
-    )
-    for g in groups:
-      exam2.groups.append(g)
-    db.add(exam2)
-    db.flush()
-
-    # Défi 1 : Somme des Nombres Pairs (6 pts)
-    # 2 tests publics, 10 tests cachés
-    pub_tests_1 = [
-        {"input": "1 2 3 4 5 6", "output": "12", "is_public": True},
-        {"input": "10 20 30", "output": "60", "is_public": True}
-    ]
-    hid_tests_1 = [
-        {"input": "1 3 5 7 9", "output": "0", "is_public": False},
-        {"input": "2 4 6 8 10", "output": "30", "is_public": False},
-        {"input": "0 0 0", "output": "0", "is_public": False},
-        {"input": "-2 -4 -6", "output": "-12", "is_public": False},
-        {"input": "-1 -2 -3 4", "output": "2", "is_public": False},
-        {"input": "100 201 300 401 500", "output": "900", "is_public": False},
-        {"input": "42", "output": "42", "is_public": False},
-        {"input": "99", "output": "0", "is_public": False},
-        {"input": "12 14 16 18 20 22", "output": "102", "is_public": False},
-        {"input": "5 10 15 20 25 30 35 40", "output": "100", "is_public": False}
-    ]
-
-    q2_1 = Question(
-        id="Q-PY-PRAC-1",
-        exam_id=exam2.id,
-        ordering=1,
-        type="coding",
-        points=6.0,
-        prompt_markdown=(
-            "### Défi 1 : Somme des Nombres Pairs\n\n"
-            "Écrivez un programme Python qui lit sur l'entrée standard une ligne d'entiers séparés par des espaces, "
-            "calcule la somme uniquement des entiers **pairs**, et affiche le résultat sur la sortie standard.\n\n"
-            "#### Entrée :\nUne suite d'entiers séparés par un espace.\n\n"
-            "#### Sortie :\nUn entier unique représentant la somme des nombres pairs."
-        ),
-        options_json=json.dumps({
-            "starter_code": "values = list(map(int, input().split()))\n\n# Calculez la somme des nombres pairs\n",
-            "public_tests": pub_tests_1,
-            "hidden_tests": hid_tests_1
-        }),
-        correct_answers_json=json.dumps(pub_tests_1 + hid_tests_1)
-    )
-
-    # Défi 2 : Inversion des Mots d'une Phrase (7 pts)
-    pub_tests_2 = [
-        {"input": "Bonjour tout le monde", "output": "monde le tout Bonjour", "is_public": True},
-        {"input": "Python est formidable", "output": "formidable est Python", "is_public": True}
-    ]
-    hid_tests_2 = [
-        {"input": "un", "output": "un", "is_public": False},
-        {"input": "A B C D E", "output": "E D C B A", "is_public": False},
-        {"input": "exam quiz plateforme", "output": "plateforme quiz exam", "is_public": False},
-        {"input": "hello world", "output": "world hello", "is_public": False},
-        {"input": "data science artificial intelligence", "output": "intelligence artificial science data", "is_public": False},
-        {"input": "1 2 3 4 5", "output": "5 4 3 2 1", "is_public": False},
-        {"input": "mot_unique", "output": "mot_unique", "is_public": False},
-        {"input": "espace entre chaque terme", "output": "terme chaque entre espace", "is_public": False},
-        {"input": "test securite sandbox", "output": "sandbox securite test", "is_public": False},
-        {"input": "final verification complete", "output": "complete verification final", "is_public": False}
-    ]
-
-    q2_2 = Question(
-        id="Q-PY-PRAC-2",
-        exam_id=exam2.id,
-        ordering=2,
-        type="coding",
-        points=7.0,
-        prompt_markdown=(
-            "### Défi 2 : Inversion des Mots d'une Phrase\n\n"
-            "Écrivez un script Python qui lit une chaîne de caractères sur l'entrée standard et affiche les mots dans l'ordre inverse, "
-            "séparés par un espace.\n\n"
-            "#### Entrée :\nUne phrase composée de mots séparés par des espaces.\n\n"
-            "#### Sortie :\nLa phrase dont l'ordre des mots est inversé."
-        ),
-        options_json=json.dumps({
-            "starter_code": "sentence = input().strip()\n\n# Votre solution ici\n",
-            "public_tests": pub_tests_2,
-            "hidden_tests": hid_tests_2
-        }),
-        correct_answers_json=json.dumps(pub_tests_2 + hid_tests_2)
-    )
-
-    # Défi 3 : Validation des Parenthèses et Piles (7 pts)
-    pub_tests_3 = [
-        {"input": "()[]{}", "output": "VALID", "is_public": True},
-        {"input": "([)]", "output": "INVALID", "is_public": True}
-    ]
-    hid_tests_3 = [
-        {"input": "", "output": "VALID", "is_public": False},
-        {"input": "((()))", "output": "VALID", "is_public": False},
-        {"input": "{[()]}", "output": "VALID", "is_public": False},
-        {"input": "((", "output": "INVALID", "is_public": False},
-        {"input": "}}", "output": "INVALID", "is_public": False},
-        {"input": "{[(])}", "output": "INVALID", "is_public": False},
-        {"input": "()", "output": "VALID", "is_public": False},
-        {"input": "([]){}", "output": "VALID", "is_public": False},
-        {"input": "({[()]})", "output": "VALID", "is_public": False},
-        {"input": "({[()]}", "output": "INVALID", "is_public": False}
-    ]
-
-    q2_3 = Question(
-        id="Q-PY-PRAC-3",
-        exam_id=exam2.id,
-        ordering=3,
-        type="coding",
-        points=7.0,
-        prompt_markdown=(
-            "### Défi 3 : Validation des Délimiteurs (Parenthèses, Crochets, Accolades)\n\n"
-            "Écrivez un algorithme utilisant une structure de **pile** (*stack*) pour vérifier si une séquence de délimiteurs `()[]{}` est bien formée.\n\n"
-            "#### Règle de validation :\n"
-            "- Chaque ouvrant doit être fermé par le même type de délimiteur.\n"
-            "- Les délimiteurs doivent être fermés dans l'ordre exact.\n\n"
-            "#### Sortie :\n`VALID` si la séquence est correcte, `INVALID` sinon."
-        ),
-        options_json=json.dumps({
-            "starter_code": "s = input().strip()\n\n# Votre solution ici avec une pile\n",
-            "public_tests": pub_tests_3,
-            "hidden_tests": hid_tests_3
-        }),
-        correct_answers_json=json.dumps(pub_tests_3 + hid_tests_3)
-    )
-
-    db.add_all([q2_1, q2_2, q2_3])
-    db.commit()
-    print("[SEED] Examen 2 créé : EXAM-PRAC-PYTHON (3 défis pratiques avec 2 public + 10 hidden tests chacun, 20 pts)")
-
-    # -------------------------------------------------------------------------
-    # EXAMEN 3 : ÉPREUVE DE CRYPTOGRAPHIE (Test Théorique)
-    # -------------------------------------------------------------------------
-    exam3 = Exam(
-        id="EXAM-THEO-CRYPTO",
-        title="Épreuve Officielle : Cryptographie & Sécurité",
-        module_code="CRYPTO",
-        exam_type="theoretical",
-        duration_minutes=45,
-        global_points=20.0,
-        instructions="Épreuve officielle de Cryptographie. Plein écran strict et surveillance active."
-    )
-    for g in groups:
-      exam3.groups.append(g)
-    db.add(exam3)
-    db.flush()
-
-    q3_1 = Question(
-        id="Q-CRY-THEO-1",
-        exam_id=exam3.id,
-        ordering=1,
-        type="single_choice",
-        points=4.0,
-        prompt_markdown="Parmi les algorithmes de chiffrement suivants, lequel est un algorithme **asymétrique** à clé publique ?",
-        options_json=json.dumps([
-            {"id": "A", "text": "AES (Advanced Encryption Standard)"},
-            {"id": "B", "text": "ChaCha20"},
-            {"id": "C", "text": "RSA (Rivest-Shamir-Adleman)"},
-            {"id": "D", "text": "3DES (Triple DES)"}
-        ]),
-        correct_answers_json=json.dumps(["C"])
-    )
-
-    q3_2 = Question(
-        id="Q-CRY-THEO-2",
-        exam_id=exam3.id,
-        ordering=2,
-        type="multi_choice",
-        points=4.0,
-        prompt_markdown="Quelles sont les propriétés indispensables d'une **fonction de hachage cryptographique sécurisée** (ex: SHA-256) ?",
-        options_json=json.dumps([
-            {"id": "A", "text": "Résistance à la pré-image (irréversibilité)."},
-            {"id": "B", "text": "Résistance aux collisions (deux entrées distinctes ne doivent pas donner la même empreinte)."},
-            {"id": "C", "text": "La fonction doit être réversible avec une clé privée."},
-            {"id": "D", "text": "Effet d'avalanche (une modification minime de l'entrée change radicalement l'empreinte)."}
-        ]),
-        correct_answers_json=json.dumps(["A", "B", "D"])
-    )
-
-    q3_3 = Question(
-        id="Q-CRY-THEO-3",
-        exam_id=exam3.id,
-        ordering=3,
-        type="boolean",
-        points=4.0,
-        prompt_markdown="La signature numérique d'un message s'effectue en chiffrant l'empreinte du message avec la **clé privée** de l'émetteur, garantissant ainsi l'authenticité et la non-répudiation.",
-        options_json=json.dumps([]),
-        correct_answers_json=json.dumps(["true"])
-    )
-
-    q3_4 = Question(
-        id="Q-CRY-THEO-4",
-        exam_id=exam3.id,
-        ordering=4,
-        type="fill_blank",
-        points=4.0,
-        prompt_markdown="Quel protocole d'échange de clés fondé sur le problème du logarithme discret permet à deux interlocuteurs de convenir d'une clé secrète commune sur un canal public sans jamais transmettre la clé ?",
-        options_json=json.dumps([]),
-        correct_answers_json=json.dumps(["Diffie-Hellman", "diffie hellman", "diffie-hellman"])
-    )
-
-    q3_5 = Question(
-        id="Q-CRY-THEO-5",
-        exam_id=exam3.id,
-        ordering=5,
-        type="matching",
-        points=4.0,
-        prompt_markdown="Associez chaque protocole ou standard de sécurité à son cas d'usage prédominant :",
-        options_json=json.dumps({
-            "left": ["TLS / HTTPS", "SSH", "PGP / GPG", "IPsec"],
-            "right": [
-                "Sécurisation des communications web de bout en bout",
-                "Accès terminal et administration distante chiffrée",
-                "Chiffrement et signature des courriels et fichiers",
-                "Sécurisation des tunnels VPN au niveau réseau (IP)"
-            ]
-        }),
-        correct_answers_json=json.dumps({
-            "TLS / HTTPS": "Sécurisation des communications web de bout en bout",
-            "SSH": "Accès terminal et administration distante chiffrée",
-            "PGP / GPG": "Chiffrement et signature des courriels et fichiers",
-            "IPsec": "Sécurisation des tunnels VPN au niveau réseau (IP)"
-        })
-    )
-
-    db.add_all([q3_1, q3_2, q3_3, q3_4, q3_5])
-    db.commit()
-    print("[SEED] Examen 3 créé : EXAM-THEO-CRYPTO (5 questions de sécurité, 20 pts)")
-    print("\n[SUCCESS] Exactement 3 examens propres configurés dans la base !")
-    if close_db:
-        db.close()
 
 if __name__ == "__main__":
     reset_and_seed_3_exams()

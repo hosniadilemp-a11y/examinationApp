@@ -873,3 +873,101 @@ def generate_bulk_bulletins_zip(
 
     return zip_buf.getvalue()
 
+
+
+def generate_class_sheet_pdf(data: Dict[str, Any]) -> bytes:
+    """Génère le PV officiel de classe pour une spécialité et un module donné au format PDF."""
+    spec_name = data.get("speciality_name", data.get("speciality", ""))
+    mod_title = data.get("module_title", data.get("module_code", ""))
+    students = data.get("students", [])
+    class_stats = data.get("class_stats", {})
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=landscape(A4),
+        leftMargin=24,
+        rightMargin=24,
+        topMargin=24,
+        bottomMargin=24
+    )
+    styles = _get_pdf_styles()
+    story = []
+
+    # En-tête
+    story.append(Paragraph("MINISTÈRE DE L'ENSEIGNEMENT SUPÉRIEUR • DIRECTION DES EXAMENS", styles["RepubliqueHeader"]))
+    story.append(Paragraph(f"PROCÈS-VERBAL ACADÉMIQUE DE CLASSE — {mod_title.upper()}", styles["BulletinTitle"]))
+    story.append(Paragraph(f"Filière / Spécialité : <b>{spec_name}</b> • Année Universitaire 2025-2026", styles["RepubliqueHeader"]))
+    story.append(Spacer(1, 10))
+
+    # Tableau KPI
+    enrolled = class_stats.get("enrolled_count", len(students))
+    evaluated = class_stats.get("evaluated_count", 0)
+    cls_avg = class_stats.get("class_average", 0.0) or 0.0
+    succ_rate = class_stats.get("success_rate_percent", 0.0) or 0.0
+
+    kpi_data = [
+        [
+            Paragraph(f"<b>Effectif Total :</b> {enrolled} étudiants", styles["TableCellBold"]),
+            Paragraph(f"<b>Évalués :</b> {evaluated}", styles["TableCellBold"]),
+            Paragraph(f"<b>Taux de Réussite :</b> {succ_rate}%", styles["TableCellBold"]),
+            Paragraph(f"<b>Moyenne du Module :</b> {cls_avg:.2f} / 20", styles["TableCellBold"]),
+        ]
+    ]
+    t_kpi = Table(kpi_data, colWidths=[180, 150, 180, 230])
+    t_kpi.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f1f5f9")),
+        ('BOX', (0,0), (-1,-1), 1, BORDER_GRAY),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+    ]))
+    story.append(t_kpi)
+    story.append(Spacer(1, 14))
+
+    # Tableau des étudiants
+    headers = ["N°", "Matricule", "Nom & Prénom(s)", "Note Théorique", "Note Pratique", "Moyenne Module", "Verdict"]
+    t_rows = [[Paragraph(f"<b>{h}</b>", styles["TableCellBold"]) for h in headers]]
+
+    for idx, s in enumerate(students, start=1):
+        theo_str = f"{s['theoretical_score']:.2f} / 20" if s.get("theoretical_score") is not None else "—"
+        prac_str = f"{s['practical_score']:.2f} / 20" if s.get("practical_score") is not None else "—"
+        avg_str = f"{s['module_average']:.2f} / 20" if s.get("module_average") is not None else "—"
+        
+        status_val = s.get("status", "NON_ÉVALUÉ")
+        if status_val == "ADMIS":
+            v_color = "#059669"
+            v_text = "ADMIS"
+        elif status_val == "AJOURNÉ":
+            v_color = "#dc2626"
+            v_text = "AJOURNÉ"
+        else:
+            v_color = "#64748b"
+            v_text = "EN COURS"
+
+        t_rows.append([
+            Paragraph(str(idx), styles["TableCell"]),
+            Paragraph(f"<code>{s.get('student_id', '')}</code>", styles["TableCell"]),
+            Paragraph(f"<b>{s.get('full_name', '')}</b>", styles["TableCellBold"]),
+            Paragraph(theo_str, styles["TableCell"]),
+            Paragraph(prac_str, styles["TableCell"]),
+            Paragraph(f"<b>{avg_str}</b>", styles["TableCellBold"]),
+            Paragraph(f"<font color='{v_color}'><b>{v_text}</b></font>", styles["TableCellBold"])
+        ])
+
+    table_students = Table(t_rows, colWidths=[30, 85, 230, 100, 100, 100, 95])
+    table_students.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), SLATE_HEADER),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('GRID', (0,0), (-1,-1), 0.5, BORDER_GRAY),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('ALIGN', (3,1), (5,-1), 'CENTER'),
+        ('ALIGN', (6,1), (6,-1), 'CENTER'),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, BG_LIGHT_GRAY]),
+    ]))
+    story.append(table_students)
+
+    doc.build(story)
+    return buf.getvalue()

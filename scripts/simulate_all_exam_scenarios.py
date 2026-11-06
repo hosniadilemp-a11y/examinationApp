@@ -36,14 +36,14 @@ def run_simulation():
     print("  ✅ 1.1 Login Super Admin validé avec succès (JWT token obtenu).")
 
     # 1.2 Création d'un nouveau module académique
-    mod_code = f"CLOUD_{int(time.time())}"
+    mod_code = f"PYTHON_DEVOPS_{int(time.time())}"
     res_mod = client.post("/api/modules", json={
         "code": mod_code,
-        "title": "Cloud Computing & DevOps",
-        "description": "Virtualisation, Docker, Kubernetes et pipelines CI/CD."
+        "title": "Cloud Computing & DevOps Python",
+        "description": "Virtualisation, Docker, Kubernetes et automatisation scripts Python."
     }, headers=admin_headers)
     assert res_mod.status_code == 201, f"Create module failed: {res_mod.text}"
-    print(f"  ✅ 1.2 Module académique créé : {mod_code} (Cloud Computing & DevOps).")
+    print(f"  ✅ 1.2 Module académique créé : {mod_code} (Cloud Computing & DevOps Python).")
 
     # 1.3 Affectation de l'enseignant prof-01 au nouveau module
     res_assign = client.post(f"/api/modules/{mod_code}/teachers", json={"teacher_id": "prof-01", "module_code": mod_code}, headers=admin_headers)

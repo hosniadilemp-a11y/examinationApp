@@ -166,13 +166,14 @@ def start_or_resume_exam(
         }
 
     if not attempt:
-        # Création d'une nouvelle tentative
+        # Horloge unique de la salle : alignée sur session.started_at
+        unified_start = session.started_at or now
         attempt = StudentAttempt(
             id=f"ATT-{uuid.uuid4().hex[:8].upper()}",
             session_id=session.id,
             student_id=current_user.id,
             status="in_progress",
-            started_at=now,
+            started_at=unified_start,
             suspension_count=0
         )
         db.add(attempt)
@@ -190,11 +191,9 @@ def start_or_resume_exam(
     elif attempt.status == "submitted" or attempt.status == "timed_out":
         raise HTTPException(status_code=400, detail="Vous avez déjà soumis cet examen. Nouvelle tentative interdite.")
 
-    # Calcul du temps restant (en secondes)
+    # Calcul du temps restant sur l'horloge unique du serveur (session.started_at ou attempt.started_at si prolongation individuelle)
     total_seconds = exam.duration_minutes * 60
-    # On calcule l'écart avec started_at
-    start_time = attempt.started_at or now
-    # Rendre start_time timezone-aware si nécessaire
+    start_time = attempt.started_at or session.started_at or now
     if start_time.tzinfo is None:
         start_time = start_time.replace(tzinfo=timezone.utc)
     elapsed_seconds = int((now - start_time).total_seconds())
@@ -207,20 +206,66 @@ def start_or_resume_exam(
     # pour garantir la stabilité de l'ordre en cas de rafraîchissement !
     rng = random.Random(f"{attempt.id}-{current_user.id}")
 
-    if exam.shuffle_questions:
+    # Échantillonnage aléatoire authoritaire par étudiant :
+    # - 20 questions parmi 40 (ou 30) pour le volet théorique Python
+    # - 5 défis parmi 10 pour le volet pratique Python
+    instr = exam.instructions or ""
+    if "CONFIG_RANDOM_STUDENT_QUESTIONS=" in instr:
+        try:
+            target_k = int(instr.split("CONFIG_RANDOM_STUDENT_QUESTIONS=")[1].split("]")[0])
+            if 0 < target_k < len(questions):
+                questions = rng.sample(questions, target_k)
+        except Exception:
+            pass
+    elif getattr(exam, "exam_type", "") == "theoretical" and "PYTHON" in (exam.module_code or "") and len(questions) > 20:
+        questions = rng.sample(questions, 20)
+    elif getattr(exam, "exam_type", "") == "practical" and "PYTHON" in (exam.module_code or "") and len(questions) > 5:
+        questions = rng.sample(questions, 5)
+
+    # Mélange systématique de l'ordre des questions pour chaque étudiant
+    if exam.shuffle_questions or True:
         rng.shuffle(questions)
 
     student_questions = []
     for idx, q in enumerate(questions, start=1):
         opts = json.loads(q.options_json) if isinstance(q.options_json, str) else q.options_json
+        corr_raw = json.loads(q.correct_answers_json) if isinstance(q.correct_answers_json, str) else q.correct_answers_json
 
-        # Brassage des options QCM
-        if exam.shuffle_options and q.type in ["single_choice", "multi_choice"] and isinstance(opts, list):
-            shuffled_opts = list(opts)
-            rng.shuffle(shuffled_opts)
-            opts = shuffled_opts
+        # Normalisation & Brassage des options QCM (single_choice / multi_choice) sans décalage d'indice
+        if q.type in ["single_choice", "multi_choice"] and isinstance(opts, list):
+            # Déterminer si correct_answers utilise des indices numériques (0, 1, 2...) ou les textes des options
+            uses_index = False
+            if isinstance(corr_raw, int):
+                uses_index = True
+            elif isinstance(corr_raw, str) and corr_raw.strip().isdigit():
+                uses_index = True
+            elif isinstance(corr_raw, list) and len(corr_raw) > 0 and all(isinstance(x, int) or (isinstance(x, str) and x.strip().isdigit()) for x in corr_raw):
+                uses_index = True
 
-        student_questions.append({
+            normalized_opts = []
+            for opt_idx, opt_val in enumerate(opts):
+                if isinstance(opt_val, dict) and "id" in opt_val:
+                    normalized_opts.append(dict(opt_val))
+                else:
+                    opt_id = str(opt_idx) if uses_index else str(opt_val)
+                    normalized_opts.append({"id": opt_id, "text": str(opt_val)})
+            rng.shuffle(normalized_opts)
+            opts = normalized_opts
+
+        # Normalisation & Brassage de la colonne de droite pour les questions d'Appariement (matching)
+        elif q.type == "matching":
+            if isinstance(opts, list):
+                left_list = [str(item.get("left", "")) for item in opts if isinstance(item, dict) and "left" in item]
+                right_list = [str(item.get("right", "")) for item in opts if isinstance(item, dict) and "right" in item]
+                rng.shuffle(right_list)
+                opts = {"left": left_list, "right": right_list}
+            elif isinstance(opts, dict):
+                left_list = list(opts.get("left", []))
+                right_list = list(opts.get("right", []))
+                rng.shuffle(right_list)
+                opts = {"left": left_list, "right": right_list}
+
+        q_item = {
             "id": q.id,
             "display_order": idx,
             "type": q.type,
@@ -230,7 +275,15 @@ def start_or_resume_exam(
             "time_limit_seconds": q.time_limit_seconds,
             "options": opts
             # SECRET ABSOLU : correct_answers_json n'est JAMAIS inclus !
-        })
+        }
+        if q.type in ["coding", "code", "code_python"] and isinstance(opts, dict):
+            q_item["starter_code"] = opts.get("starter_code", "# Écrivez votre solution ici\n")
+            q_item["tests"] = opts.get("public_tests", opts.get("tests", []))
+            q_item["hint1"] = opts.get("hint1", "")
+            q_item["hint2"] = opts.get("hint2", "")
+            q_item["difficulty"] = opts.get("difficulty", "")
+            q_item["topic"] = opts.get("chapter", "")
+        student_questions.append(q_item)
 
     # Récupération des réponses déjà saisies (reprise fluide)
     saved_answers = db.query(StudentAnswer).filter(StudentAnswer.attempt_id == attempt.id).all()
@@ -246,6 +299,9 @@ def start_or_resume_exam(
         "module_code": exam.module_code,
         "duration_minutes": exam.duration_minutes,
         "remaining_seconds": remaining_seconds,
+        "server_time_iso": now.isoformat(),
+        "server_time_hms": datetime.now().strftime("%H:%M:%S"),
+        "server_epoch_ms": int(now.timestamp() * 1000),
         "total_questions": len(student_questions),
         "questions": student_questions,
         "saved_answers": answers_map
@@ -317,7 +373,9 @@ def save_student_answer(
     return {
         "success": True, 
         "saved_at": now.isoformat(),
-        "remaining_seconds": remaining_seconds
+        "remaining_seconds": remaining_seconds,
+        "server_time_hms": datetime.now().strftime("%H:%M:%S"),
+        "server_epoch_ms": int(now.timestamp() * 1000)
     }
 
 @router.post("/attempts/{attempt_id}/security-event")
@@ -395,6 +453,8 @@ def check_attempt_status(
         "suspension_reason": attempt.suspension_reason,
         "suspension_count": attempt.suspension_count,
         "remaining_seconds": remaining_seconds,
+        "server_time_hms": datetime.now().strftime("%H:%M:%S"),
+        "server_epoch_ms": int(now.timestamp() * 1000),
         "final_mark": attempt.final_mark,
         "raw_score": attempt.raw_score
     }
@@ -594,7 +654,22 @@ def submit_official_exam(
         }
 
     exam = attempt.session.exam
-    questions = exam.questions
+    questions = list(exam.questions)
+
+    # Même échantillon déterministe attribué à cet étudiant
+    rng_sub = random.Random(f"{attempt.id}-{current_user.id}")
+    instr = exam.instructions or ""
+    if "CONFIG_RANDOM_STUDENT_QUESTIONS=" in instr:
+        try:
+            target_k = int(instr.split("CONFIG_RANDOM_STUDENT_QUESTIONS=")[1].split("]")[0])
+            if 0 < target_k < len(questions):
+                questions = rng_sub.sample(questions, target_k)
+        except Exception:
+            pass
+    elif getattr(exam, "exam_type", "") == "theoretical" and "PYTHON" in (exam.module_code or "") and len(questions) > 20:
+        questions = rng_sub.sample(questions, 20)
+    elif getattr(exam, "exam_type", "") == "practical" and "PYTHON" in (exam.module_code or "") and len(questions) > 5:
+        questions = rng_sub.sample(questions, 5)
     answers = {a.question_id: a for a in attempt.answers}
 
     total_awarded = 0.0

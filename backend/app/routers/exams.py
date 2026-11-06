@@ -2,6 +2,7 @@ import uuid
 import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -46,6 +47,13 @@ def list_exams(
             query = query.filter(Exam.groups.any(id=current_user.group_id))
         else:
             return []
+    # Si l'utilisateur est enseignant, il ne voit QUE les examens de ses modules assignés
+    elif current_user.role == "teacher":
+        assigned_codes = [m.code.upper() for m in current_user.assigned_modules]
+        if assigned_codes:
+            query = query.filter(Exam.module_code.in_(assigned_codes))
+        else:
+            return []
             
     exams = query.all()
     results = []
@@ -53,6 +61,28 @@ def list_exams(
         count = len(e.questions)
         group_ids = [g.id for g in e.groups]
         tot_pts = round(sum(q.points for q in e.questions), 2)
+
+        # Déterminer l'état de session de l'examen (not_started | waiting | in_progress | completed)
+        sess_status = "not_started"
+        active_sess_id = None
+        sub_count = 0
+        if e.sessions:
+            # Trier les sessions : priorité à in_progress > waiting > completed
+            for s in e.sessions:
+                sub_count += sum(1 for att in s.attempts if att.status in ["submitted", "timed_out", "completed"])
+            in_prog = next((s for s in e.sessions if s.status == "in_progress"), None)
+            waiting_s = next((s for s in e.sessions if s.status == "waiting"), None)
+            comp_s = next((s for s in e.sessions if s.status in ["completed", "closed", "finished"]), None)
+            if in_prog:
+                sess_status = "in_progress"
+                active_sess_id = in_prog.id
+            elif waiting_s:
+                sess_status = "waiting"
+                active_sess_id = waiting_s.id
+            elif comp_s:
+                sess_status = "completed"
+                active_sess_id = comp_s.id
+
         resp = ExamResponse(
             id=e.id,
             module_code=e.module_code,
@@ -71,7 +101,10 @@ def list_exams(
             created_by=e.created_by,
             created_at=e.created_at,
             question_count=count,
-            assigned_groups=group_ids
+            assigned_groups=group_ids,
+            session_status=sess_status,
+            active_session_id=active_sess_id,
+            submitted_count=sub_count
         )
         results.append(resp)
     return results
@@ -91,6 +124,14 @@ def create_exam(
     _check_module_permission(current_user, module_code_clean)
 
     exam_type_val = payload.exam_type or "theoretical"
+
+    # Règle de plateforme : Pour les modules hors Python, seul le mode 'theoretical' est autorisé
+    is_python_module = "PYTHON" in module_code_clean
+    if exam_type_val == "practical" and not is_python_module:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Pour le moment, seules les épreuves de type 'Théorique' sont autorisées pour ce module. Le mode pratique est réservé exclusivement au module Python."
+        )
     # Validation des questions embarquées si fournies dans payload
     if payload.questions:
         for q_item in payload.questions:
@@ -864,5 +905,360 @@ def export_exam_item_analysis_csv_endpoint(
         iter([csv_content.encode("utf-8-sig")]),
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+
+# ==============================================================================
+# Générateur Automatique d'Épreuves Python (Banque d'Exercices)
+# ==============================================================================
+
+class PythonExamGenerateRequest(BaseModel):
+    title: str
+    exam_type: str = "theoretical"  # 'theoretical' | 'practical'
+    duration_minutes: int = 45
+    chapter_ids: Optional[List[str]] = None
+    difficulty_counts: Optional[Dict[str, int]] = None
+    assigned_groups: Optional[List[str]] = None
+    group_ids: Optional[List[str]] = None
+    target_count: Optional[int] = None
+    room_id: Optional[str] = "SALLE-CENTRAL-01"
+
+@router.get("/python/bank-stats")
+def get_python_question_bank_statistics(
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Retourne les statistiques de la banque d'exercices Python (par chapitre et difficulté)."""
+    from backend.app.services.python_exam_generator import get_python_bank_stats
+    return get_python_bank_stats()
+
+@router.post("/python/generate", status_code=status.HTTP_201_CREATED)
+def generate_python_exam_endpoint(
+    payload: PythonExamGenerateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Génère automatiquement une épreuve officielle Python depuis la banque d'exercices.
+    - Épreuve Théorique : Sélection de 30 questions (priorité aux questions Exams=True),
+      chaque étudiant reçoit 20 questions aléatoires.
+    - Épreuve Pratique : Sélection de 10 défis (priorité à is_exam=True),
+      chaque étudiant reçoit 5 défis aléatoires.
+    """
+    from backend.app.services.python_exam_generator import generate_python_exam
+    new_exam = generate_python_exam(
+        db=db,
+        title=payload.title,
+        exam_type=payload.exam_type,
+        duration_minutes=payload.duration_minutes,
+        chapter_ids=payload.chapter_ids,
+        difficulty_counts=payload.difficulty_counts,
+        assigned_groups=payload.assigned_groups or payload.group_ids,
+        target_count=payload.target_count,
+        created_by=current_user.id
+    )
+
+    # Création automatique de la session de salle si demandée
+    room_id = payload.room_id or "SALLE-CENTRAL-01"
+    session_id = f"SESS-{new_exam.id}"
+    existing_sess = db.query(ExamSession).filter(ExamSession.id == session_id).first()
+    if not existing_sess:
+        new_sess = ExamSession(
+            id=session_id,
+            exam_id=new_exam.id,
+            room_id=room_id,
+            status="active",
+            launched_by=current_user.id
+        )
+        db.add(new_sess)
+        db.commit()
+
+    return {
+        "success": True,
+        "exam_id": new_exam.id,
+        "session_id": session_id,
+        "title": new_exam.title,
+        "exam_type": new_exam.exam_type,
+        "duration_minutes": new_exam.duration_minutes,
+        "question_count": len(new_exam.questions),
+        "questions": [{"id": q.id, "type": q.type} for q in new_exam.questions],
+        "message": f"Épreuve Python '{new_exam.title}' ({len(new_exam.questions)} questions/exercices) générée avec succès !"
+    }
+
+
+# ==============================================================================
+# Téléchargement des Notes Finales par Examen pour Tous les Étudiants
+# ==============================================================================
+
+def _build_exam_all_students_grades(exam: Exam, db: Session) -> Dict[str, Any]:
+    """
+    Construit le relevé complet des notes finales d'un examen pour TOUS les étudiants
+    inscrits dans les classes/groupes assignés à l'examen (ainsi que tout étudiant ayant composé).
+    """
+    from backend.app.models import StudentAttempt
+    import csv
+    import io
+
+    assigned_group_ids = [g.id for g in exam.groups] if exam.groups else []
+    q_students = db.query(User).filter(User.role == "student")
+    if assigned_group_ids:
+        enrolled_students = q_students.filter(User.group_id.in_(assigned_group_ids)).order_by(User.group_id, User.full_name).all()
+    else:
+        enrolled_students = q_students.order_by(User.group_id, User.full_name).all()
+
+    student_map = {s.id: s for s in enrolled_students}
+
+    sessions = db.query(ExamSession).filter(ExamSession.exam_id == exam.id).all()
+    session_ids = [s.id for s in sessions]
+    attempts = []
+    if session_ids:
+        attempts = db.query(StudentAttempt).filter(StudentAttempt.session_id.in_(session_ids)).all()
+
+    best_attempt_by_student: Dict[str, StudentAttempt] = {}
+    for att in attempts:
+        if att.student_id not in student_map and att.student:
+            student_map[att.student_id] = att.student
+        prev = best_attempt_by_student.get(att.student_id)
+        if prev is None:
+            best_attempt_by_student[att.student_id] = att
+        else:
+            prev_mark = prev.final_mark if prev.final_mark is not None else -1.0
+            curr_mark = att.final_mark if att.final_mark is not None else -1.0
+            if (att.status == "submitted" and prev.status != "submitted") or (curr_mark > prev_mark):
+                best_attempt_by_student[att.student_id] = att
+
+    rows = []
+    submitted_marks = []
+    for stu in sorted(student_map.values(), key=lambda u: (u.group_id or "ZZZ", u.full_name or u.username)):
+        att = best_attempt_by_student.get(stu.id)
+        if att:
+            status_map = {
+                "submitted": "Soumis",
+                "timed_out": "Temps écoulé",
+                "in_progress": "En cours",
+                "waiting": "En salle d'attente",
+                "suspended": "Suspendu"
+            }
+            status_label = status_map.get(att.status, att.status)
+            raw_score = round(att.raw_score, 2) if att.raw_score is not None else None
+            final_mark = round(att.final_mark, 2) if att.final_mark is not None else None
+            submitted_at_str = att.submitted_at.strftime("%Y-%m-%d %H:%M:%S") if att.submitted_at else ""
+            if final_mark is not None:
+                submitted_marks.append(final_mark)
+                verdict = "Validé" if final_mark >= 10.0 else "Ajourné"
+            else:
+                verdict = "En cours"
+        else:
+            status_label = "Non présenté"
+            raw_score = None
+            final_mark = None
+            submitted_at_str = ""
+            verdict = "Absent"
+
+        rows.append({
+            "student_id": stu.id,
+            "username": stu.username,
+            "full_name": stu.full_name,
+            "email": stu.email or "",
+            "group_id": stu.group_id or "Sans classe",
+            "enrollment_year": stu.enrollment_year or "2025-2026",
+            "status": status_label,
+            "raw_score": raw_score,
+            "final_mark": final_mark,
+            "verdict": verdict,
+            "submitted_at": submitted_at_str
+        })
+
+    avg_mark = round(sum(submitted_marks) / len(submitted_marks), 2) if submitted_marks else 0.0
+    pass_count = sum(1 for m in submitted_marks if m >= 10.0)
+    pass_rate = round((pass_count / len(submitted_marks)) * 100, 1) if submitted_marks else 0.0
+
+    return {
+        "exam_id": exam.id,
+        "title": exam.title,
+        "module_code": exam.module_code,
+        "exam_type": getattr(exam, "exam_type", "theoretical") or "theoretical",
+        "duration_minutes": exam.duration_minutes,
+        "total_students": len(rows),
+        "submitted_count": len(submitted_marks),
+        "average_mark_20": avg_mark,
+        "pass_rate": pass_rate,
+        "students": rows
+    }
+
+
+@router.get("/{exam_id}/results")
+def get_exam_results_all_students(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """Retourne les notes finales de tous les étudiants inscrits pour cet examen."""
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+    return _build_exam_all_students_grades(exam, db)
+
+
+@router.get("/{exam_id}/results/export-csv")
+def export_exam_results_csv_all_students(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Exporte au format CSV (UTF-8 BOM compatible Excel) les notes finales de TOUS les étudiants
+    pour un examen donné.
+    """
+    import csv
+    import io
+
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+
+    report = _build_exam_all_students_grades(exam, db)
+    output = io.StringIO()
+    output.write("\ufeff")  # BOM UTF-8 pour Excel
+    writer = csv.writer(output, delimiter=";")
+
+    volet_label = "Pratique" if report["exam_type"] == "practical" else "Théorique"
+    writer.writerow([
+        "Code Examen", "Titre Examen", "Module", "Volet",
+        "Matricule", "Identifiant", "Nom Complet", "Email", "Classe / Groupe", "Promotion",
+        "Statut Copie", "Score Brut", "Note Finale (/20)", "Décision", "Date de Soumission"
+    ])
+    for r in report["students"]:
+        writer.writerow([
+            report["exam_id"],
+            report["title"],
+            report["module_code"],
+            volet_label,
+            r["student_id"],
+            r["username"],
+            r["full_name"],
+            r["email"],
+            r["group_id"],
+            r["enrollment_year"],
+            r["status"],
+            f"{r['raw_score']:.2f}" if r["raw_score"] is not None else "N/A",
+            f"{r['final_mark']:.2f}" if r["final_mark"] is not None else "ABS",
+            r["verdict"],
+            r["submitted_at"] or "-"
+        ])
+
+    filename = f"notes_finales_{exam.module_code}_{exam.id}.csv"
+    return StreamingResponse(
+        iter([output.getvalue().encode("utf-8")]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+@router.get("/{exam_id}/results/export-pdf")
+def export_exam_results_pdf_all_students(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Génère et télécharge le Procès-Verbal officiel PDF des notes finales de tous les étudiants
+    pour un examen donné.
+    """
+    import io
+    from datetime import datetime
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+
+    report = _build_exam_all_students_grades(exam, db)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=1.5 * cm,
+        rightMargin=1.5 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=1.5 * cm
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "ExamPVTitle",
+        parent=styles["Heading1"],
+        fontSize=15,
+        textColor=colors.HexColor("#1e293b"),
+        spaceAfter=6
+    )
+    sub_style = ParagraphStyle(
+        "ExamPVSub",
+        parent=styles["Normal"],
+        fontSize=10,
+        textColor=colors.HexColor("#475569"),
+        spaceAfter=12
+    )
+
+    volet_label = "Pratique (Machine)" if report["exam_type"] == "practical" else "Théorique (QCM / Synthèse)"
+    elements = [
+        Paragraph(f"PROCÈS-VERBAL DES NOTES FINALES — {report['title']}", title_style),
+        Paragraph(
+            f"<b>Module :</b> {report['module_code']} &nbsp;|&nbsp; "
+            f"<b>Volet :</b> {volet_label} &nbsp;|&nbsp; "
+            f"<b>Inscrits :</b> {report['total_students']} &nbsp;|&nbsp; "
+            f"<b>Copies soumises :</b> {report['submitted_count']} &nbsp;|&nbsp; "
+            f"<b>Moyenne :</b> {report['average_mark_20']:.2f}/20 &nbsp;|&nbsp; "
+            f"<b>Édité le :</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+            sub_style
+        ),
+        Spacer(1, 0.3 * cm)
+    ]
+
+    table_data = [[
+        "Matricule", "Identifiant", "Nom & Prénom", "Classe",
+        "Statut", "Note Finale (/20)", "Décision", "Horodatage Soumission"
+    ]]
+    for r in report["students"]:
+        table_data.append([
+            r["student_id"],
+            r["username"],
+            r["full_name"],
+            r["group_id"],
+            r["status"],
+            f"{r['final_mark']:.2f} / 20" if r["final_mark"] is not None else "ABS",
+            r["verdict"],
+            r["submitted_at"] or "-"
+        ])
+
+    tbl = Table(table_data, colWidths=[3.2 * cm, 2.8 * cm, 6.0 * cm, 3.0 * cm, 3.2 * cm, 3.2 * cm, 2.6 * cm, 4.2 * cm])
+    tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 9),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 7),
+        ("TOPPADDING", (0, 0), (-1, 0), 7),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ("FONTSIZE", (0, 1), (-1, -1), 8.5),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        ("ALIGN", (5, 1), (6, -1), "CENTER"),
+    ]))
+    elements.append(tbl)
+    doc.build(elements)
+    buffer.seek(0)
+
+    filename = f"pv_notes_finales_{exam.module_code}_{exam.id}.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 

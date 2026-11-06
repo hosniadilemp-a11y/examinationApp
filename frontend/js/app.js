@@ -23,9 +23,11 @@ class AppController {
   async init() {
     window.app = this;
     window.showToast = (msg, type = 'info', dur = 4000) => this.showToast(msg, type, dur);
+    window.customConfirm = (opts) => this.showConfirmModal(opts);
+    window.customAlert = (opts) => this.showAlertModal(opts);
     this.linuxRunner = new LinuxRunner({ app: this, api });
 
-    // Remplacement des alerts natifs par des notifications toast modernes (sécurité résiduelle)
+    // Remplacement des alerts natifs par des notifications toast modernes ou modales personnalisées
     window.alert = (msg) => {
       let type = 'info';
       const text = String(msg || '');
@@ -81,6 +83,8 @@ class AppController {
   }
 
   _attachGlobalListeners() {
+    this.initPythonGeneratorModal();
+    this.initClearExamsHandler();
     // Déconnexion
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
@@ -183,6 +187,26 @@ class AppController {
             `).join('');
           }
         } catch (_) {}
+                  const selectModule = document.getElementById('create-exam-module');
+          const selectType = document.getElementById('create-exam-type');
+          const updateTypeOpts = () => {
+            const m = selectModule?.value || '';
+            const isPy = m.includes('PYTHON');
+            if (selectType) {
+              const optPrac = selectType.querySelector('option[value="practical"]');
+              if (optPrac) {
+                optPrac.disabled = !isPy;
+                if (!isPy && selectType.value === 'practical') {
+                  selectType.value = 'theoretical';
+                }
+              }
+            }
+          };
+          if (selectModule) {
+            selectModule.onchange = updateTypeOpts;
+            updateTypeOpts();
+          }
+
         modalCustomExam.classList.add('active');
       };
     }
@@ -284,9 +308,10 @@ class AppController {
     const btnProctorExportZip = document.getElementById('btn-proctor-export-results-zip');
     if (btnProctorExportZip) {
       btnProctorExportZip.onclick = async () => {
-        if (!this.activeSessionId) return this.showToast("Aucune session active sélectionnée.", "warning");
+        const sid = this.currentProctorSessionId || this.activeSessionId;
+        if (!sid) return this.showToast("Aucune session active sélectionnée.", "warning");
         try {
-          await api.exportSessionResultsZip(this.activeSessionId);
+          await api.exportSessionResultsZip(sid);
         } catch (err) {
           this.showToast(`Erreur d'exportation de l'archive de résultats : ${err.message}`, "danger");
         }
@@ -297,8 +322,9 @@ class AppController {
     const btnProctorItemAnalysis = document.getElementById('btn-proctor-item-analysis');
     if (btnProctorItemAnalysis) {
       btnProctorItemAnalysis.onclick = () => {
-        if (!this.activeSessionId) return this.showToast("Aucune session active sélectionnée.", "warning");
-        this.openSessionItemAnalysisModal(this.activeSessionId);
+        const sid = this.currentProctorSessionId || this.activeSessionId;
+        if (!sid) return this.showToast("Aucune session active sélectionnée.", "warning");
+        this.openSessionItemAnalysisModal(sid);
       };
     }
 
@@ -500,7 +526,7 @@ class AppController {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' || e.key === 'Esc') {
         // 1. Si le panneau d'autocomplétion CodeMirror est affiché, le fermer en priorité
-        const hints = document.querySelector('.CodeMirror-hints');
+        const hints = document.querySelector('.CodeMirror-hints-container, .CodeMirror-hints');
         if (hints) {
           hints.remove();
           if (window.activeExamRunner && window.activeExamRunner._cmInstance && window.activeExamRunner._cmInstance.state && window.activeExamRunner._cmInstance.state.completionActive) {
@@ -716,21 +742,10 @@ class AppController {
 
     if (user.role === 'student') {
       const links = [
-        { id: 'nav-dash', label: '📊 Mon Tableau de Bord', action: () => this.renderDashboard(user) },
-        { id: 'nav-training', label: '🐍 Centre d\'Entraînement Python', action: () => this.renderTrainingCenterView() },
-        { id: 'nav-linux', label: '🐧 Centre d\'Entraînement Linux', action: () => this.renderLinuxTrainingCenter() },
-        { id: 'nav-practice', label: '🎯 Tests de Niveau par Module', action: () => {
-          this.renderDashboard(user);
-          setTimeout(() => {
-            document.getElementById('practice-modules-grid')?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        }},
-        { id: 'nav-exams', label: '📋 Examens Officiels', action: () => {
-          this.renderDashboard(user);
-          setTimeout(() => {
-            document.getElementById('official-exams-grid')?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        }}
+        { id: 'nav-dash', label: '📊 Tableau de Bord', action: () => this.renderDashboard(user) },
+        { id: 'nav-exams', label: '📝 Épreuves Officielles', action: () => this.showStudentExamsTab() },
+        { id: 'nav-training-hub', label: '🎓 Centres d\'Entraînement', action: () => this.renderTrainingHubView() },
+        { id: 'nav-bulletin', label: '📑 Mon Bulletin Académique', action: () => this.openStudentBulletinModal(user.id) }
       ];
 
       links.forEach(l => {
@@ -748,7 +763,7 @@ class AppController {
     } else if (user.role === 'teacher') {
       nav.innerHTML = `
         <button class="role-nav-btn active" id="nav-teacher-surveillance">🖥️ Espace Enseignant & Examens</button>
-        <button class="role-nav-btn" onclick="window.open('/docs', '_blank')">📚 API Swagger (/docs)</button>
+        <button class="role-nav-btn" id="nav-teacher-bulletins">📑 PV par Spécialité & Module</button>
       `;
       const teacherBtn = document.getElementById('nav-teacher-surveillance');
       if (teacherBtn) {
@@ -758,10 +773,19 @@ class AppController {
           this.renderTeacherView();
         };
       }
+      const teacherBullBtn = document.getElementById('nav-teacher-bulletins');
+      if (teacherBullBtn) {
+        teacherBullBtn.onclick = () => {
+          nav.querySelectorAll('.role-nav-btn').forEach(b => b.classList.remove('active'));
+          teacherBullBtn.classList.add('active');
+          this.renderClassSheetView();
+        };
+      }
     } else if (user.role === 'admin') {
       nav.innerHTML = `
         <button class="role-nav-btn active" id="nav-admin-console">⚙️ Console Administrateur</button>
-        <button class="role-nav-btn" onclick="window.open('/docs', '_blank')">📚 API Swagger (/docs)</button>
+        <button class="role-nav-btn" id="nav-admin-exams">🖥️ Surveillance & Gestion des Examens</button>
+        <button class="role-nav-btn" id="nav-admin-bulletins">📑 PV par Spécialité & Module</button>
       `;
       const adminBtn = document.getElementById('nav-admin-console');
       if (adminBtn) {
@@ -769,6 +793,22 @@ class AppController {
           nav.querySelectorAll('.role-nav-btn').forEach(b => b.classList.remove('active'));
           adminBtn.classList.add('active');
           this.renderAdminView();
+        };
+      }
+      const adminExamsBtn = document.getElementById('nav-admin-exams');
+      if (adminExamsBtn) {
+        adminExamsBtn.onclick = () => {
+          nav.querySelectorAll('.role-nav-btn').forEach(b => b.classList.remove('active'));
+          adminExamsBtn.classList.add('active');
+          this.renderTeacherView();
+        };
+      }
+      const adminBullBtn = document.getElementById('nav-admin-bulletins');
+      if (adminBullBtn) {
+        adminBullBtn.onclick = () => {
+          nav.querySelectorAll('.role-nav-btn').forEach(b => b.classList.remove('active'));
+          adminBullBtn.classList.add('active');
+          this.renderClassSheetView();
         };
       }
     }
@@ -868,7 +908,7 @@ class AppController {
     }
   }
 
-  // --- Chargement des Examens Officiels ---
+  // --- Chargement des Examens Officiels (Vue en Liste Triée : non passés d'abord, terminés à la fin) ---
   async _loadOfficialExams() {
     const container = document.getElementById('official-exams-grid');
     if (!container) return;
@@ -877,17 +917,36 @@ class AppController {
       const exams = await api.getAvailableExams();
       if (!exams.length) {
         container.innerHTML = `
-          <div style="grid-column: 1/-1; text-align:center; padding:32px; color:var(--text-secondary); background:var(--bg-surface); border-radius:var(--radius-md); border:1px solid var(--card-border);">
+          <div style="text-align:center; padding:36px; color:var(--text-secondary); background:var(--bg-surface); border-radius:var(--radius-md); border:1px solid var(--card-border);">
             Aucun examen officiel programmé pour votre groupe actuellement.
           </div>
         `;
         return;
       }
 
+      // Tri ordonné : Les épreuves non encore passées ou en cours en haut, les épreuves déjà terminées/soumises en bas
+      exams.sort((a, b) => {
+        const isSubA = a.attempt_status === 'submitted' || a.attempt_status === 'completed' || a.attempt_status === 'timed_out';
+        const isSubB = b.attempt_status === 'submitted' || b.attempt_status === 'completed' || b.attempt_status === 'timed_out';
+        if (isSubA !== isSubB) {
+          return isSubA ? 1 : -1; // non-soumis en premier
+        }
+        const getPriority = (ex) => {
+          if (ex.attempt_status === 'in_progress') return 1;
+          if (ex.attempt_status === 'waiting') return 2;
+          if (!ex.attempt_status) return 3;
+          if (ex.attempt_status === 'suspended') return 4;
+          return 5;
+        };
+        return getPriority(a) - getPriority(b);
+      });
+
       container.innerHTML = '';
       exams.forEach(ex => {
-        const card = document.createElement('div');
-        card.className = 'exam-card';
+        const row = document.createElement('div');
+        row.className = 'exam-list-item card';
+        row.style.cssText = 'padding: 16px 22px; border: 1px solid var(--card-border); border-radius: var(--radius-md); background: var(--bg-surface); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);';
+
         const isSubmitted = ex.attempt_status === 'submitted' || ex.attempt_status === 'completed' || ex.attempt_status === 'timed_out';
         const isProgress = ex.attempt_status === 'in_progress';
         const isWaiting = ex.attempt_status === 'waiting';
@@ -899,74 +958,79 @@ class AppController {
 
         if (isSubmitted) {
           actionAreaHtml = `
-            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 12px; text-align: center; color: var(--success); font-weight: 700; margin-top: 10px;">
-              ✅ Épreuve Soumise & Scellée ${hasScore ? `(${Number(ex.final_mark).toFixed(2)} / ${ex.global_points})` : ''}
+            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 8px 16px; text-align: center; color: var(--success); font-weight: 700; font-size: 0.9rem; min-width: 200px;">
+              ✅ Épreuve Soumise ${hasScore ? `(${Number(ex.final_mark).toFixed(2)} / ${ex.global_points})` : ''}
             </div>
           `;
           statusBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid #10b981; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">✅ Soumis</span>`;
         } else if (isProgress) {
           actionAreaHtml = `
-            <button class="btn btn-success" style="width:100%; margin-top: 10px; background:#059669; border-color:#047857; font-weight:700; box-shadow: 0 4px 14px rgba(5,150,105,0.35);" id="btn-start-exam-${ex.exam_id}">
+            <button class="btn btn-success" style="min-width:210px; padding:9px 18px; font-size:0.92rem; background:#059669; border-color:#047857; font-weight:700; box-shadow: 0 4px 14px rgba(5,150,105,0.35);" id="btn-start-exam-${ex.exam_id}">
               🔄 Rejoindre l'épreuve en cours ➔
             </button>
           `;
           statusBadgeHtml = `<span class="badge" style="background:#059669; color:#fff; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">● En cours</span>`;
         } else if (isWaiting) {
           actionAreaHtml = `
-            <button class="btn" style="width:100%; margin-top: 10px; background:#d97706; color:#fff; border-color:#b45309; font-weight:700; box-shadow: 0 4px 14px rgba(217,119,6,0.35);" id="btn-start-exam-${ex.exam_id}">
+            <button class="btn" style="min-width:210px; padding:9px 18px; font-size:0.92rem; background:#d97706; color:#fff; border-color:#b45309; font-weight:700; box-shadow: 0 4px 14px rgba(217,119,6,0.35);" id="btn-start-exam-${ex.exam_id}">
               ⏳ Rejoindre la salle d'attente ➔
             </button>
           `;
           statusBadgeHtml = `<span class="badge" style="background:#d97706; color:#fff; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">⏳ Salle d'attente</span>`;
         } else if (isSuspended) {
           actionAreaHtml = `
-            <button class="btn btn-danger" style="width:100%; margin-top: 10px; background:#dc2626; border-color:#b91c1c; font-weight:700; box-shadow: 0 4px 14px rgba(220,38,38,0.35);" id="btn-start-exam-${ex.exam_id}">
-              🔒 Épreuve Suspendue — Voir Statut ➔
+            <button class="btn btn-danger" style="min-width:210px; padding:9px 18px; font-size:0.92rem; background:#dc2626; border-color:#b91c1c; font-weight:700; box-shadow: 0 4px 14px rgba(220,38,38,0.35);" id="btn-start-exam-${ex.exam_id}">
+              🔒 Voir Statut Suspendu ➔
             </button>
           `;
           statusBadgeHtml = `<span class="badge" style="background:#dc2626; color:#fff; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">🔒 Suspendu</span>`;
         } else {
           actionAreaHtml = `
-            <button class="btn btn-primary" style="width:100%; margin-top: 10px; font-weight:700;" id="btn-start-exam-${ex.exam_id}">
+            <button class="btn btn-primary" style="min-width:210px; padding:9px 18px; font-size:0.92rem; font-weight:700;" id="btn-start-exam-${ex.exam_id}">
               Commencer l'épreuve ➔
             </button>
           `;
         }
 
         const typeBadge = ex.exam_type === 'practical'
-          ? `<span class="badge badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">💻 Épreuve Pratique</span>`
-          : `<span class="badge badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">📖 Épreuve Théorique</span>`;
+          ? `<span class="badge badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">💻 Pratique</span>`
+          : `<span class="badge badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">📖 Théorique</span>`;
 
-        card.innerHTML = `
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="exam-card-badge">${this._escapeHtml(ex.module_code)}</span>
-              <div style="display:inline-flex; gap:6px; align-items:center;">
+        row.innerHTML = `
+          <div style="display:flex; align-items:flex-start; gap:16px; flex:1; min-width:280px;">
+            <div style="font-size:1.7rem; line-height:1; padding:8px; background:rgba(255,255,255,0.04); border-radius:8px; border:1px solid var(--card-border);">
+              ${ex.exam_type === 'practical' ? '💻' : '📖'}
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; flex-wrap:wrap;">
+                <span class="user-tag" style="font-size:11px; padding:2px 8px; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
                 ${typeBadge}
                 ${statusBadgeHtml}
               </div>
+              <h4 style="margin:0 0 4px 0; font-size:1.1rem; color:var(--text-primary); font-weight:600;">${this._escapeHtml(ex.title)}</h4>
+              <p style="margin:0; font-size:0.86rem; color:var(--text-secondary); line-height:1.4;">${this._escapeHtml(ex.instructions || 'Aucune consigne particulière.')}</p>
             </div>
-            <h4>${this._escapeHtml(ex.title)}</h4>
-            <p>${this._escapeHtml(ex.instructions || 'Aucune consigne particulière.')}</p>
           </div>
-          <div>
-            <div class="exam-meta">
-              <span>⏱️ ${ex.duration_minutes} min</span>
-              <span>📝 ${ex.question_count} questions</span>
-              <span>🎯 Barème / ${ex.global_points}</span>
+          <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; justify-content:flex-end;">
+            <div class="exam-meta" style="margin:0; display:flex; gap:14px; font-size:0.86rem; color:var(--text-secondary); white-space:nowrap;">
+              <span>⏱️ <strong>${ex.duration_minutes}</strong> min</span>
+              <span>📝 <strong>${ex.question_count}</strong> questions</span>
+              <span>🎯 Barème <strong>/${ex.global_points}</strong></span>
             </div>
-            ${actionAreaHtml}
+            <div style="text-align:right;">
+              ${actionAreaHtml}
+            </div>
           </div>
         `;
 
-        const startBtn = card.querySelector(`#btn-start-exam-${ex.exam_id}`);
+        const startBtn = row.querySelector(`#btn-start-exam-${ex.exam_id}`);
         if (startBtn) {
           startBtn.onclick = () => {
             this.launchOfficialExam(ex.exam_id);
           };
         }
 
-        container.appendChild(card);
+        container.appendChild(row);
       });
     } catch (err) {
       container.innerHTML = `<div style="color:var(--danger);">Erreur : ${err.message}</div>`;
@@ -1301,7 +1365,11 @@ class AppController {
             starter_code: q.starter_code || '# Tapez vos commandes Linux\n',
             initial_fs: q.initial_fs || {},
             public_tests: q.public_tests || [],
-            hidden_tests: q.hidden_tests || []
+            hidden_tests: q.hidden_tests || [],
+            hints: q.hints || [],
+            hint1: q.hint1 || (q.hints && q.hints[0]) || '',
+            hint2: q.hint2 || (q.hints && q.hints[1]) || '',
+            solution: q.solution || ''
           };
         }
 
@@ -1404,8 +1472,16 @@ class AppController {
       const quitBtn = document.getElementById('btn-exam-quit');
       if (quitBtn) {
         quitBtn.style.display = 'inline-flex';
-        quitBtn.onclick = () => {
-          if (confirm("Voulez-vous quitter cette session et retourner au Centre Linux ? Vos réponses en cours ne seront pas enregistrées.")) {
+        quitBtn.onclick = async () => {
+          const ok = await this.showConfirmModal({
+            title: "Quitter la session Linux",
+            message: "Voulez-vous quitter cette session et retourner au Centre Linux ? Vos réponses en cours ne seront pas enregistrées.",
+            confirmText: "Quitter la session",
+            cancelText: "Continuer",
+            icon: "🐧",
+            danger: true
+          });
+          if (ok) {
             if (this.activeExamRunner) this.activeExamRunner.stop();
             if (this.activeAntiCheat) this.activeAntiCheat.stop();
             this.renderLinuxTrainingCenter();
@@ -1946,7 +2022,7 @@ class AppController {
             difficulty: q.difficulty || session.target_difficulty || 'medium',
             student_answer: answers[q.id] !== undefined ? answers[q.id] : null,
             hints_used: (window.pythonHintsUsed && window.pythonHintsUsed[q.id]) || 0,
-            is_correct: null
+            is_correct: (window.codingValidationPassed && window.codingValidationPassed[q.id]) ? true : null
           };
         });
 
@@ -2027,9 +2103,17 @@ class AppController {
     const quitBtn = document.getElementById('btn-exam-quit');
     if (quitBtn) {
       quitBtn.style.display = 'inline-flex';
-      quitBtn.onclick = () => {
+      quitBtn.onclick = async () => {
         const destName = this.activeOriginView === 'view-linux' ? 'Centre Linux' : 'Centre Python';
-        if (confirm(`Voulez-vous quitter cette session et retourner au ${destName} ? Vos réponses en cours ne seront pas enregistrées.`)) {
+        const ok = await this.showConfirmModal({
+          title: `Quitter vers le ${destName}`,
+          message: `Voulez-vous quitter cette session et retourner au ${destName} ? Vos réponses en cours ne seront pas enregistrées.`,
+          confirmText: "Quitter la session",
+          cancelText: "Continuer",
+          icon: "⚠️",
+          danger: true
+        });
+        if (ok) {
           if (this.activeExamRunner) this.activeExamRunner.stop();
           if (this.activeAntiCheat) this.activeAntiCheat.stop();
           if (this.activeOriginView === 'view-linux') {
@@ -2234,11 +2318,22 @@ class AppController {
         if (durationEl) durationEl.textContent = `⏱️ Durée : ${examData.duration_minutes || 45} min`;
         const statusEl = document.getElementById('waiting-room-status');
         if (statusEl) statusEl.textContent = '🟢 Statut : Poste Connecté & Enregistré';
+        const clockEl = document.getElementById('waiting-room-server-clock');
+        if (clockEl && examData.server_time_hms) {
+          clockEl.textContent = `🕒 Heure Serveur : ${examData.server_time_hms} UTC`;
+        }
 
         const leaveBtn = document.getElementById('btn-waiting-room-leave');
         if (leaveBtn) {
-          leaveBtn.onclick = () => {
-            const confirmLeave = confirm("⚠️ Attention : L'épreuve officielle va débuter sous peu.\n\nÊtes-vous certain de vouloir quitter la salle d'attente ?");
+          leaveBtn.onclick = async () => {
+            const confirmLeave = await this.showConfirmModal({
+              title: "Quitter la Salle d'Attente",
+              message: "⚠️ Attention : L'épreuve officielle va débuter sous peu.\n\nÊtes-vous certain de vouloir quitter la salle d'attente ?",
+              confirmText: "Quitter la salle",
+              cancelText: "Rester connecté",
+              icon: "⏳",
+              danger: true
+            });
             if (!confirmLeave) {
               this.requestFullscreen();
               return;
@@ -2260,6 +2355,9 @@ class AppController {
         this.waitingRoomInterval = setInterval(async () => {
           try {
             const pollData = await api.startOrResumeExam(examId);
+            if (pollData && pollData.server_time_hms && clockEl) {
+              clockEl.textContent = `🕒 Heure Serveur : ${pollData.server_time_hms} UTC`;
+            }
             if (pollData && pollData.status !== 'waiting' && pollData.questions && pollData.questions.length > 0) {
               clearInterval(this.waitingRoomInterval);
               this.waitingRoomInterval = null;
@@ -2411,8 +2509,16 @@ class AppController {
       const quitBtn = document.getElementById('btn-exam-quit');
       if (quitBtn) {
         quitBtn.style.display = 'inline-flex';
-        quitBtn.onclick = () => {
-          if (confirm("Voulez-vous quitter ce test de niveau et retourner au tableau de bord ? Vos réponses en cours ne seront pas enregistrées.")) {
+        quitBtn.onclick = async () => {
+          const ok = await this.showConfirmModal({
+            title: "Quitter le Test de Niveau",
+            message: "Voulez-vous quitter ce test de niveau et retourner au tableau de bord ? Vos réponses en cours ne seront pas enregistrées.",
+            confirmText: "Quitter",
+            cancelText: "Continuer",
+            icon: "🎯",
+            danger: true
+          });
+          if (ok) {
             if (this.activeExamRunner) this.activeExamRunner.stop();
             if (this.activeAntiCheat) this.activeAntiCheat.stop();
             this.renderDashboard(this.currentUser);
@@ -2653,16 +2759,56 @@ class AppController {
     const container = document.getElementById('teacher-exams-list');
     if (!container) return;
 
+    // Bouton PV par Spécialité & Module dans l'espace enseignant
+    const btnClassSheet = document.getElementById('btn-teacher-open-class-sheet');
+    if (btnClassSheet) {
+      btnClassSheet.onclick = () => this.renderClassSheetView();
+    }
+
+    // Affichage des modules assignés à l'enseignant et filtrage du générateur Python
+    const assignedMods = (this.currentUser && Array.isArray(this.currentUser.assigned_modules))
+      ? this.currentUser.assigned_modules.map(m => (typeof m === 'object' && m !== null) ? m.code : String(m))
+      : [];
+    const modBadgesEl = document.getElementById('teacher-assigned-modules-badges');
+    if (modBadgesEl) {
+      if (this.currentUser && this.currentUser.role === 'admin') {
+        modBadgesEl.innerHTML = `<span class="badge" style="background:rgba(59,130,246,0.18); color:#93c5fd; border:1px solid #3b82f6; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;">👑 Tous les Modules (Admin)</span>`;
+      } else if (assignedMods.length > 0) {
+        modBadgesEl.innerHTML = assignedMods.map(code =>
+          `<span class="badge" style="background:rgba(59,130,246,0.18); color:#93c5fd; border:1px solid #3b82f6; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;">📚 Module : ${this._escapeHtml(code)}</span>`
+        ).join('');
+      } else {
+        modBadgesEl.innerHTML = `<span class="badge" style="background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; padding:4px 10px; border-radius:12px; font-size:0.8rem;">⚠️ Aucun module affecté</span>`;
+      }
+    }
+
+    const btnPyGen = document.getElementById('btn-open-python-generator-modal');
+    if (btnPyGen) {
+      const canUsePythonGen = (this.currentUser && this.currentUser.role === 'admin') || assignedMods.some(c => c.toUpperCase().includes('PYTHON'));
+      btnPyGen.style.display = canUsePythonGen ? 'inline-flex' : 'none';
+    }
+
     container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:32px; color:var(--text-secondary);">Chargement de vos examens...</div>';
 
     try {
       const exams = await api.listExams();
+
+      // Mise à jour des KPIs Enseignant
+      const kpiMods = document.getElementById('teacher-kpi-modules');
+      const kpiTotal = document.getElementById('teacher-kpi-total-exams');
+      const kpiActive = document.getElementById('teacher-kpi-active-exams');
+      const kpiCompleted = document.getElementById('teacher-kpi-completed-exams');
+      if (kpiMods) kpiMods.textContent = (this.currentUser && this.currentUser.role === 'admin') ? 'Tous' : String(assignedMods.length || 0);
+      if (kpiTotal) kpiTotal.textContent = String((exams || []).length);
+      if (kpiActive) kpiActive.textContent = String((exams || []).filter(e => e.session_status === 'in_progress' || e.session_status === 'waiting').length);
+      if (kpiCompleted) kpiCompleted.textContent = String((exams || []).filter(e => e.session_status === 'completed').length);
+
       if (!exams || exams.length === 0) {
         container.innerHTML = `
           <div style="grid-column: 1/-1; padding:32px; text-align:center; color:var(--text-secondary); background:var(--bg-surface); border-radius:var(--radius-md); border:1px solid var(--card-border);">
             <div style="font-size:2rem; margin-bottom:8px;">📝</div>
-            <div style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-bottom:6px;">Aucun examen disponible pour le moment</div>
-            <p style="margin-bottom:16px;">Chargez un modèle officiel clé en main (Python, Linux, Cryptographie) ou importez un fichier JSON.</p>
+            <div style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-bottom:6px;">Aucun examen disponible pour vos modules</div>
+            <p style="margin-bottom:16px;">Créez un nouvel examen ou chargez un modèle officiel correspondant à votre module.</p>
             <button class="btn btn-primary" onclick="window.app.openExamTemplateModal()">
               📥 Charger un Modèle Officiel
             </button>
@@ -2676,7 +2822,8 @@ class AppController {
           <table class="teacher-exams-table" style="width:100%; border-collapse:collapse;">
             <thead>
               <tr style="border-bottom:2px solid var(--card-border); text-align:left; font-size:0.82rem; color:var(--text-muted); text-transform:uppercase;">
-                <th style="padding:12px 10px;">Module & Statut</th>
+                <th style="padding:12px 10px;">Module</th>
+                <th style="padding:12px 10px;">Statut Session</th>
                 <th style="padding:12px 10px;">Titre de l'Épreuve</th>
                 <th style="padding:12px 10px;">Type</th>
                 <th style="padding:12px 10px;">Durée</th>
@@ -2702,16 +2849,29 @@ class AppController {
           ? `<span class="badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">💻 Pratique</span>`
           : `<span class="badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">📖 Théorique</span>`;
 
+        const sessStatus = ex.session_status || 'not_started';
+        const isCompleted = sessStatus === 'completed';
+        let statusBadgeHtml = `<span class="badge" style="background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid #64748b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⚪ Non démarré</span>`;
+        if (sessStatus === 'waiting') {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⏳ Salle ouverte</span>`;
+        } else if (sessStatus === 'in_progress') {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟢 En cours (LIVE)</span>`;
+        } else if (isCompleted) {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(168,85,247,0.18); color:#d8b4fe; border:1px solid #a855f7; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟣 Terminé (${ex.submitted_count || 0} copie(s))</span>`;
+        }
+
+        const cleanInstr = (ex.instructions || '').replace(/\[CONFIG_RANDOM_STUDENT_QUESTIONS=\d+\]/g, '').trim();
+
         tr.innerHTML = `
           <td style="padding:12px 10px; vertical-align:middle;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border-color:#3b82f6; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
-              <span class="badge" style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid #10b981; font-size:0.72rem; padding:2px 6px; border-radius:10px; font-weight:700;">🟢 Prêt</span>
-            </div>
+            <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border-color:#3b82f6; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle;">
+            ${statusBadgeHtml}
           </td>
           <td style="padding:12px 10px; vertical-align:middle;">
             <div style="font-weight:600; color:var(--text-primary); font-size:0.92rem; margin-bottom:2px;">${this._escapeHtml(ex.title)}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted);">${this._escapeHtml(ex.instructions ? (ex.instructions.slice(0, 60) + (ex.instructions.length > 60 ? '...' : '')) : 'Sans consigne')}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${this._escapeHtml(cleanInstr ? (cleanInstr.slice(0, 60) + (cleanInstr.length > 60 ? '...' : '')) : 'Sans consigne')}</div>
           </td>
           <td style="padding:12px 10px; vertical-align:middle;">
             ${typeBadge}
@@ -2736,9 +2896,17 @@ class AppController {
               <button class="btn btn-secondary btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-type="${ex.exam_type || 'theoretical'}" style="font-size:0.78rem; padding:6px 8px;" title="Gérer ou ajouter des questions">
                 📝 Questions
               </button>
-              <button class="btn btn-secondary btn-exam-item-analysis" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Psychométrie & discrimination">
-                📊 Stats
-              </button>
+              ${isCompleted ? `
+                <button class="btn btn-secondary btn-exam-item-analysis" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Psychométrie & discrimination">
+                  📊 Stats
+                </button>
+                <button class="btn btn-secondary btn-exam-download-csv" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(16,185,129,0.18); border-color:#10b981; color:#6ee7b7;" title="Télécharger les notes finales de tous les étudiants (CSV)">
+                  📥 Notes CSV
+                </button>
+                <button class="btn btn-secondary btn-exam-download-pdf" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(245,158,11,0.18); border-color:#f59e0b; color:#fcd34d;" title="Télécharger le PV des notes finales de tous les étudiants (PDF)">
+                  📄 PV Notes PDF
+                </button>
+              ` : ''}
               <button class="btn btn-secondary btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;" title="Exporter en .exam.zip">
                 📦 Export
               </button>
@@ -2776,6 +2944,32 @@ class AppController {
         };
       });
 
+      container.querySelectorAll('.btn-exam-download-csv').forEach(btn => {
+        btn.onclick = async () => {
+          const examId = btn.getAttribute('data-exam-id');
+          const moduleCode = btn.getAttribute('data-exam-module');
+          try {
+            await api.downloadExamResultsCsv(examId, moduleCode);
+            this.showToast('Notes finales (CSV) téléchargées avec succès.', 'success');
+          } catch (e) {
+            this.showToast(`Erreur lors du téléchargement CSV : ${e.message}`, 'danger');
+          }
+        };
+      });
+
+      container.querySelectorAll('.btn-exam-download-pdf').forEach(btn => {
+        btn.onclick = async () => {
+          const examId = btn.getAttribute('data-exam-id');
+          const moduleCode = btn.getAttribute('data-exam-module');
+          try {
+            await api.downloadExamResultsPdf(examId, moduleCode);
+            this.showToast('PV des notes finales (PDF) téléchargé avec succès.', 'success');
+          } catch (e) {
+            this.showToast(`Erreur lors du téléchargement PDF : ${e.message}`, 'danger');
+          }
+        };
+      });
+
       container.querySelectorAll('.btn-exam-export-package').forEach(btn => {
         btn.onclick = async () => {
           const examId = btn.getAttribute('data-exam-id');
@@ -2792,7 +2986,15 @@ class AppController {
         btn.onclick = async () => {
           const examId = btn.getAttribute('data-exam-id');
           const title = btn.getAttribute('data-exam-title');
-          if (confirm(`Confirmez-vous la suppression définitive de l'épreuve "${title}" ? Cette action est irréversible.`)) {
+          const ok = await this.showConfirmModal({
+            title: "Supprimer l'épreuve",
+            message: `Confirmez-vous la suppression définitive de l'épreuve "${title}" ? Cette action est irréversible.`,
+            confirmText: "Supprimer définitivement",
+            cancelText: "Annuler",
+            icon: "🗑️",
+            danger: true
+          });
+          if (ok) {
             try {
               await api.deleteExam(examId);
               this.showToast(`Épreuve "${title}" supprimée avec succès.`, 'success');
@@ -2885,6 +3087,8 @@ class AppController {
       const sessRes = await api.openProctorSession(examId, 'SALLE-TP-1');
       const sessionId = sessRes.session_id;
       this.currentProctorSessionId = sessionId;
+      this.activeSessionId = sessionId;
+      this.currentProctorExamId = examId;
 
       this.switchView('view-proctor-live');
       await this.initProctorMonitoringLive(sessionId);
@@ -2894,6 +3098,8 @@ class AppController {
   }
 
   async initProctorMonitoringLive(sessionId) {
+    this.currentProctorSessionId = sessionId;
+    this.activeSessionId = sessionId;
     if (this.proctorWebSocket) {
       try { this.proctorWebSocket.close(); } catch (_) {}
       this.proctorWebSocket = null;
@@ -2922,14 +3128,26 @@ class AppController {
           clearInterval(this.proctorTimerInterval);
           this.proctorTimerInterval = null;
         }
-        this.renderTeacherView();
+        if (this.currentUser && this.currentUser.role === 'admin') {
+          this.renderAdminView();
+        } else {
+          this.renderTeacherView();
+        }
       };
     }
 
     const launchAllBtn = document.getElementById('btn-proctor-launch-all');
     if (launchAllBtn) {
       launchAllBtn.onclick = async () => {
-        if (confirm("Lancer l'épreuve synchronisée pour tous les candidats connectés dans la salle ?")) {
+        const ok = await this.showConfirmModal({
+          title: "Lancer l'Épreuve pour la Salle",
+          message: "Voulez-vous démarrer l'épreuve synchronisée pour tous les candidats connectés dans la salle ? Le chronomètre serveur démarrera immédiatement.",
+          confirmText: "🚀 Lancer l'Épreuve",
+          cancelText: "Annuler",
+          icon: "🚀",
+          danger: false
+        });
+        if (ok) {
           try {
             await api.launchProctorSession(sessionId);
             this._logProctorFeed("🚀 Lancement synchronisé de l'épreuve déclenché par le surveillant.");
@@ -2944,7 +3162,15 @@ class AppController {
     const closeAllBtn = document.getElementById('btn-proctor-close-all');
     if (closeAllBtn) {
       closeAllBtn.onclick = async () => {
-        if (confirm("🛑 Clôturer définitivement l'épreuve pour toute la salle ?\nToutes les copies actives seront immédiatement soumises et scellées.")) {
+        const ok = await this.showConfirmModal({
+          title: "Clôturer Définitivement l'Épreuve",
+          message: "🛑 Clôturer définitivement l'épreuve pour toute la salle ?\nToutes les copies actives seront immédiatement soumises, corrigées et scellées.",
+          confirmText: "🛑 Clôturer l'Épreuve",
+          cancelText: "Annuler",
+          icon: "🛑",
+          danger: true
+        });
+        if (ok) {
           try {
             await api.closeExamSession(sessionId);
             this._logProctorFeed("🛑 Clôture collective de l'épreuve par le surveillant : toutes les copies scellées.");
@@ -2973,6 +3199,32 @@ class AppController {
     const refreshBtn = document.getElementById('btn-proctor-refresh');
     if (refreshBtn) {
       refreshBtn.onclick = () => this.refreshProctorOverview(sessionId);
+    }
+
+    const dlGradesCsvBtn = document.getElementById('btn-proctor-download-grades-csv');
+    if (dlGradesCsvBtn) {
+      dlGradesCsvBtn.onclick = async () => {
+        const exId = this.currentProctorExamId || (sessionId.startsWith('SESS-') ? sessionId.slice(5) : sessionId);
+        try {
+          await api.downloadExamResultsCsv(exId);
+          this.showToast('Notes finales de tous les étudiants (CSV) téléchargées.', 'success');
+        } catch (err) {
+          this.showToast(`Erreur téléchargement CSV : ${err.message}`, 'danger');
+        }
+      };
+    }
+
+    const dlGradesPdfBtn = document.getElementById('btn-proctor-download-grades-pdf');
+    if (dlGradesPdfBtn) {
+      dlGradesPdfBtn.onclick = async () => {
+        const exId = this.currentProctorExamId || (sessionId.startsWith('SESS-') ? sessionId.slice(5) : sessionId);
+        try {
+          await api.downloadExamResultsPdf(exId);
+          this.showToast('PV officiel des notes finales (PDF) téléchargé.', 'success');
+        } catch (err) {
+          this.showToast(`Erreur téléchargement PDF : ${err.message}`, 'danger');
+        }
+      };
     }
 
     // Connexion WebSocket
@@ -3010,6 +3262,7 @@ class AppController {
         this._proctorRemainingSeconds = Math.max(0, this._proctorRemainingSeconds - 1);
         this._updateProctorTimerDisplay();
       }
+      this._updateProctorServerClockDisplay();
     }, 1000);
   }
 
@@ -3055,6 +3308,17 @@ class AppController {
     }
   }
 
+  _updateProctorServerClockDisplay() {
+    const el = document.getElementById('proctor-server-clock');
+    if (!el) return;
+    const offset = this._proctorServerOffsetMs || 0;
+    const nowUtc = new Date(Date.now() + offset);
+    const hh = String(nowUtc.getUTCHours()).padStart(2, '0');
+    const mm = String(nowUtc.getUTCMinutes()).padStart(2, '0');
+    const ss = String(nowUtc.getUTCSeconds()).padStart(2, '0');
+    el.textContent = `🕒 Heure Serveur : ${hh}:${mm}:${ss} UTC`;
+  }
+
   _renderProctorOverviewData(data, sessionId) {
     const titleEl = document.getElementById('proctor-exam-title');
     if (titleEl) titleEl.textContent = data.exam_title;
@@ -3091,10 +3355,32 @@ class AppController {
       }
     }
 
-    const launchBtn = document.getElementById('btn-proctor-launch-all');
-    if (launchBtn) {
-      launchBtn.style.display = data.status === 'in_progress' ? 'none' : 'inline-block';
+    if (data.server_epoch_ms) {
+      this._proctorServerOffsetMs = Number(data.server_epoch_ms) - Date.now();
     }
+    this._updateProctorServerClockDisplay();
+
+    // Machine à états stricte des boutons de la barre d'outils de surveillance
+    const isWaiting = data.status === 'waiting';
+    const isInProgress = data.status === 'in_progress';
+    const isFinished = data.status === 'completed' || data.status === 'finished' || data.status === 'closed';
+
+    const setBtnVisible = (id, visible) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = visible ? 'inline-flex' : 'none';
+    };
+
+    // 1. Avant démarrage (waiting) : uniquement "Lancer l'Épreuve" + "Rafraîchir"
+    setBtnVisible('btn-proctor-launch-all', isWaiting);
+    // 2. Pendant l'épreuve (in_progress) : uniquement "Clôturer", "+5 Min (Tous)", "Rafraîchir"
+    setBtnVisible('btn-proctor-close-all', isInProgress);
+    setBtnVisible('btn-proctor-extend-all', isInProgress);
+    setBtnVisible('btn-proctor-refresh', !isFinished);
+    // 3. Après clôture (completed/finished/closed) : uniquement les exports finaux & Analyse Psychométrique
+    setBtnVisible('btn-proctor-download-grades-csv', isFinished);
+    setBtnVisible('btn-proctor-download-grades-pdf', isFinished);
+    setBtnVisible('btn-proctor-export-results-zip', isFinished);
+    setBtnVisible('btn-proctor-item-analysis', isFinished);
 
     const tableBody = document.getElementById('proctor-students-table-body');
     const cardsContainer = document.getElementById('proctor-students-grid');
@@ -3209,7 +3495,15 @@ class AppController {
         btn.onclick = async () => {
           const attId = btn.getAttribute('data-att');
           const stName = btn.getAttribute('data-name');
-          if (confirm(`Forcer immédiatement la soumission de l'épreuve pour ${stName} ?`)) {
+          const ok = await this.showConfirmModal({
+            title: "Forcer la soumission",
+            message: `Forcer immédiatement la soumission de l'épreuve pour ${stName} ?`,
+            confirmText: "🛑 Forcer la soumission",
+            cancelText: "Annuler",
+            icon: "🛑",
+            danger: true
+          });
+          if (ok) {
             try {
               const res = await api.forceSubmitAttempt(sessionId, attId);
               this._logProctorFeed(`🛑 Épreuve de ${stName} soumise de force. Note : ${res.final_mark}/20.`);
@@ -3368,16 +3662,120 @@ class AppController {
       };
     }
 
-    // Générateur de mot de passe en clair pour l'admin
-    const btnGenPwd = document.getElementById('btn-admin-student-gen-pwd');
-    if (btnGenPwd) {
-      btnGenPwd.onclick = () => {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
-        let pwd = "";
-        for (let i = 0; i < 10; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
-        const inputPwd = document.getElementById('admin-student-password');
-        if (inputPwd) inputPwd.value = pwd;
+    // Import CSV Enseignants
+    const inputTeacherCsv = document.getElementById('input-admin-teacher-csv');
+    const btnTriggerTeacherCsv = document.getElementById('btn-admin-trigger-teacher-csv');
+    const feedbackTeacherCsv = document.getElementById('admin-teacher-csv-feedback');
+    if (btnTriggerTeacherCsv && inputTeacherCsv) {
+      btnTriggerTeacherCsv.onclick = () => inputTeacherCsv.click();
+      inputTeacherCsv.onchange = async () => {
+        const file = inputTeacherCsv.files[0];
+        if (!file) return;
+        if (feedbackTeacherCsv) {
+          feedbackTeacherCsv.style.display = 'block';
+          feedbackTeacherCsv.style.background = 'rgba(16, 185, 129, 0.15)';
+          feedbackTeacherCsv.style.color = '#6ee7b7';
+          feedbackTeacherCsv.textContent = `⏳ Importation des enseignants depuis "${file.name}"...`;
+        }
+        try {
+          const res = await api.importTeachersCsv(file);
+          if (feedbackTeacherCsv) {
+            feedbackTeacherCsv.style.background = 'rgba(16, 185, 129, 0.15)';
+            feedbackTeacherCsv.style.color = '#34d399';
+            feedbackTeacherCsv.textContent = `✅ Succès : ${res.imported_count} enseignant(s) importé(s), ${res.updated_count} mis à jour (identifiants et mots de passe générés automatiquement).`;
+          }
+          await this.loadAdminTeachers();
+          await this.loadAdminModules();
+          this.loadAdminOverview();
+        } catch (err) {
+          if (feedbackTeacherCsv) {
+            feedbackTeacherCsv.style.background = 'rgba(239, 68, 68, 0.15)';
+            feedbackTeacherCsv.style.color = '#f87171';
+            feedbackTeacherCsv.textContent = `❌ Erreur : ${err.message}`;
+          }
+        } finally {
+          inputTeacherCsv.value = '';
+        }
       };
+    }
+
+    // Générateurs de mot de passe aléatoire pour Étudiant, Enseignant et Admin
+    const genRandomPass = (inputId) => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
+      let pwd = "";
+      for (let i = 0; i < 10; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+      const inputPwd = document.getElementById(inputId);
+      if (inputPwd) inputPwd.value = pwd;
+    };
+
+    const btnGenPwd = document.getElementById('btn-admin-student-gen-pwd');
+    if (btnGenPwd) btnGenPwd.onclick = () => genRandomPass('admin-student-password');
+
+    const btnTeacherGenPwd = document.getElementById('btn-admin-teacher-gen-pwd');
+    if (btnTeacherGenPwd) btnTeacherGenPwd.onclick = () => genRandomPass('admin-teacher-password');
+
+    const btnAdminOwnGenPwd = document.getElementById('btn-admin-own-gen-pwd');
+    if (btnAdminOwnGenPwd) btnAdminOwnGenPwd.onclick = () => genRandomPass('admin-own-password');
+
+    // Bouton PV par Spécialité & Module dans l'espace Admin
+    const btnAdminClassSheet = document.getElementById('btn-admin-open-class-sheet');
+    if (btnAdminClassSheet) {
+      btnAdminClassSheet.onclick = () => this.renderClassSheetView();
+    }
+
+    // Bouton Mon Compte Admin (Login & Mot de passe)
+    const btnAdminOwnAccount = document.getElementById('btn-admin-edit-own-account');
+    if (btnAdminOwnAccount) {
+      btnAdminOwnAccount.onclick = () => {
+        const modal = document.getElementById('modal-admin-own-credentials');
+        if (!modal || !this.currentUser) return;
+        const uInput = document.getElementById('admin-own-username');
+        const nInput = document.getElementById('admin-own-fullname');
+        const pInput = document.getElementById('admin-own-password');
+        if (uInput) uInput.value = this.currentUser.username || 'admin';
+        if (nInput) nInput.value = this.currentUser.full_name || 'Administrateur';
+        if (pInput) pInput.value = '';
+        modal.classList.add('active');
+      };
+    }
+
+    const formAdminOwn = document.getElementById('form-admin-own-credentials');
+    if (formAdminOwn) {
+      formAdminOwn.onsubmit = async (e) => {
+        e.preventDefault();
+        if (!this.currentUser) return;
+        const username = document.getElementById('admin-own-username')?.value.trim();
+        const full_name = document.getElementById('admin-own-fullname')?.value.trim();
+        const password = document.getElementById('admin-own-password')?.value || undefined;
+        try {
+          const updated = await api.updateUser(this.currentUser.id, {
+            username: username || undefined,
+            full_name: full_name || undefined,
+            password
+          });
+          this.currentUser = updated;
+          const navName = document.getElementById('user-display-name');
+          if (navName) navName.textContent = updated.full_name || updated.username;
+          this.closeModal('modal-admin-own-credentials');
+          this.showToast("Vos identifiants Administrateur ont été mis à jour avec succès.", "success");
+        } catch (err) {
+          this.showToast(`Erreur de mise à jour : ${err.message}`, "danger");
+        }
+      };
+    }
+
+    // Boutons Impression Fiches Identifiants Découpables (Étudiants & Enseignants séparément)
+    const btnPrintStudentSlips = document.getElementById('btn-admin-print-student-slips');
+    if (btnPrintStudentSlips) {
+      btnPrintStudentSlips.onclick = () => this.openPrintCredentialsSlipsModal('student');
+    }
+    const btnPrintTeacherSlips = document.getElementById('btn-admin-print-teacher-slips');
+    if (btnPrintTeacherSlips) {
+      btnPrintTeacherSlips.onclick = () => this.openPrintCredentialsSlipsModal('teacher');
+    }
+    const btnExecPrintSlips = document.getElementById('btn-execute-print-slips');
+    if (btnExecPrintSlips) {
+      btnExecPrintSlips.onclick = () => this.printCredentialsSlipsWindow();
     }
 
     // Filtres, Tri & Recherche Bulletins (REV-45, REV-47)
@@ -3513,8 +3911,8 @@ class AppController {
         try {
           if (mode === 'create') {
             await api.createUser({
-              id,
-              username,
+              id: id || undefined,
+              username: username || undefined,
               full_name,
               email,
               group_id,
@@ -3525,6 +3923,7 @@ class AppController {
             this.showToast(`Étudiant "${full_name}" créé avec succès.`, "success");
           } else {
             await api.updateUser(id, {
+              username: username || undefined,
               full_name,
               email,
               group_id,
@@ -3557,8 +3956,8 @@ class AppController {
         try {
           if (mode === 'create') {
             await api.createUser({
-              id,
-              username,
+              id: id || undefined,
+              username: username || undefined,
               full_name,
               email,
               password,
@@ -3567,8 +3966,10 @@ class AppController {
             this.showToast(`Enseignant "${full_name}" créé avec succès.`, "success");
           } else {
             await api.updateUser(id, {
+              username: username || undefined,
               full_name,
-              email
+              email,
+              password: password || undefined
             });
             this.showToast(`Enseignant "${full_name}" mis à jour.`, "success");
           }
@@ -3867,7 +4268,15 @@ class AppController {
       btn.onclick = async () => {
         const id = btn.getAttribute('data-id');
         const name = btn.getAttribute('data-name');
-        if (confirm(`Confirmez-vous la suppression définitive de l'étudiant "${name}" (${id}) ?`)) {
+        const ok = await this.showConfirmModal({
+          title: "Supprimer l'étudiant",
+          message: `Confirmez-vous la suppression définitive de l'étudiant "${name}" (${id}) ?`,
+          confirmText: "Supprimer",
+          cancelText: "Annuler",
+          icon: "🗑️",
+          danger: true
+        });
+        if (ok) {
           try {
             await api.deleteUser(id);
             this.showToast("Étudiant supprimé avec succès.", "success");
@@ -3900,7 +4309,7 @@ class AppController {
       idInput.value = data.id;
       idInput.disabled = true;
       userInput.value = data.username;
-      userInput.disabled = true;
+      userInput.disabled = false;
       nameInput.value = data.full_name || '';
       emailInput.value = data.email || '';
       groupSelect.value = data.group_id || '';
@@ -3928,7 +4337,7 @@ class AppController {
   async loadAdminTeachers() {
     const tbody = document.getElementById('admin-teachers-table-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Chargement des enseignants...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">Chargement des enseignants...</td></tr>';
     try {
       const teachers = await api.listUsers('teacher');
       this._adminTeachersList = teachers;
@@ -3937,7 +4346,7 @@ class AppController {
       if (countEl) countEl.textContent = `${teachers.length} enseignant(s) au total`;
 
       if (teachers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun enseignant enregistré.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun enseignant enregistré.</td></tr>';
         return;
       }
 
@@ -3953,6 +4362,7 @@ class AppController {
           <td style="padding:10px 14px; font-family:monospace; font-weight:600;">${this._escapeHtml(t.id)}</td>
           <td style="padding:10px 14px; font-weight:600; color:var(--text-primary);">${this._escapeHtml(t.username)}</td>
           <td style="padding:10px 14px;">${this._escapeHtml(t.full_name)}</td>
+          <td style="padding:10px 14px;"><span style="font-family:monospace; font-size:0.85rem; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px; border:1px solid var(--card-border); color:#34d399;">${this._escapeHtml(t.plain_password || '••••••••')}</span></td>
           <td style="padding:10px 14px; font-size:0.82rem; color:var(--text-secondary);">${this._escapeHtml(t.email || '—')}</td>
           <td style="padding:10px 14px;">${modulesBadges}</td>
           <td style="padding:10px 14px; text-align:center;">
@@ -3977,7 +4387,15 @@ class AppController {
         btn.onclick = async () => {
           const id = btn.getAttribute('data-id');
           const name = btn.getAttribute('data-name');
-          if (confirm(`Confirmez-vous la suppression de l'enseignant "${name}" (${id}) ?`)) {
+          const ok = await this.showConfirmModal({
+            title: "Supprimer l'enseignant",
+            message: `Confirmez-vous la suppression de l'enseignant "${name}" (${id}) ?`,
+            confirmText: "Supprimer",
+            cancelText: "Annuler",
+            icon: "🗑️",
+            danger: true
+          });
+          if (ok) {
             try {
               await api.deleteUser(id);
               this.showToast("Enseignant supprimé avec succès.", "success");
@@ -3990,7 +4408,7 @@ class AppController {
         };
       });
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--danger);">Erreur : ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--danger);">Erreur : ${err.message}</td></tr>`;
     }
   }
 
@@ -4011,11 +4429,12 @@ class AppController {
       idInput.value = data.id;
       idInput.disabled = true;
       userInput.value = data.username;
-      userInput.disabled = true;
+      userInput.disabled = false;
       nameInput.value = data.full_name || '';
       emailInput.value = data.email || '';
-      passInput.placeholder = "(Inchangé)";
-      passInput.disabled = true;
+      passInput.value = data.plain_password || '';
+      passInput.placeholder = "Nouveau mot de passe enseignant";
+      passInput.disabled = false;
     } else {
       title.textContent = '➕ Nouvel Enseignant';
       idInput.value = '';
@@ -4024,7 +4443,8 @@ class AppController {
       userInput.disabled = false;
       nameInput.value = '';
       emailInput.value = '';
-      passInput.placeholder = "••••••••";
+      passInput.value = '';
+      passInput.placeholder = "Auto-généré si vide";
       passInput.disabled = false;
     }
     modal.classList.add('active');
@@ -4095,7 +4515,15 @@ class AppController {
         btn.onclick = async () => {
           const code = btn.getAttribute('data-code');
           const title = btn.getAttribute('data-title');
-          if (confirm(`Confirmez-vous la suppression définitive du module "${title}" (${code}) ?`)) {
+          const ok = await this.showConfirmModal({
+            title: "Supprimer le module",
+            message: `Confirmez-vous la suppression définitive du module "${title}" (${code}) ?`,
+            confirmText: "Supprimer",
+            cancelText: "Annuler",
+            icon: "🗑️",
+            danger: true
+          });
+          if (ok) {
             try {
               await api.deleteModule(code);
               this.showToast("Module supprimé avec succès.", "success");
@@ -4210,7 +4638,7 @@ class AppController {
   async loadAdminExams() {
     const tbody = document.getElementById('admin-exams-table-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">Chargement des examens...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Chargement des examens...</td></tr>';
     try {
       const exams = await api.request('/exams');
       this._adminExamsList = exams;
@@ -4219,7 +4647,7 @@ class AppController {
       if (countEl) countEl.textContent = `${exams.length} examen(s) programmé(s)`;
 
       if (exams.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun examen créé pour le moment.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun examen créé pour le moment.</td></tr>';
         return;
       }
 
@@ -4227,18 +4655,35 @@ class AppController {
       exams.forEach(ex => {
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--card-border)';
+
+        const sessStatus = ex.session_status || 'not_started';
+        const isCompleted = sessStatus === 'completed';
+        let statusBadgeHtml = `<span class="badge" style="background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid #64748b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⚪ Non démarré</span>`;
+        if (sessStatus === 'waiting') {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⏳ Salle ouverte</span>`;
+        } else if (sessStatus === 'in_progress') {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟢 En cours (LIVE)</span>`;
+        } else if (isCompleted) {
+          statusBadgeHtml = `<span class="badge" style="background:rgba(168,85,247,0.18); color:#d8b4fe; border:1px solid #a855f7; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟣 Terminé (${ex.submitted_count || 0} copie(s))</span>`;
+        }
+
         tr.innerHTML = `
           <td style="padding:10px 14px; font-family:monospace; font-size:0.8rem; color:var(--text-muted);">${this._escapeHtml(ex.id)}</td>
           <td style="padding:10px 14px; font-weight:600; color:var(--text-primary);">${this._escapeHtml(ex.title)}</td>
           <td style="padding:10px 14px;"><span class="badge" style="background:rgba(99,102,241,0.15); color:#818cf8; font-size:0.78rem; padding:2px 8px; border-radius:10px;">${this._escapeHtml(ex.module_code)}</span></td>
+          <td style="padding:10px 14px;">${statusBadgeHtml}</td>
           <td style="padding:10px 14px; font-size:0.85rem;">${ex.duration_minutes} min</td>
           <td style="padding:10px 14px; font-size:0.85rem; font-weight:600;">/ ${ex.global_points}</td>
           <td style="padding:10px 14px; font-size:0.85rem;">${ex.questions ? ex.questions.length : (ex.question_count || '—')} quest.</td>
           <td style="padding:10px 14px; text-align:center;">
             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:center;">
               <button class="btn btn-primary btn-admin-proctor-exam" data-id="${ex.id}" style="padding:4px 8px; font-size:0.78rem;">🖥️ Surveiller</button>
-              <button class="btn btn-secondary btn-admin-analysis-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Analyse psychométrique & discrimination">📊</button>
               <button class="btn btn-secondary btn-admin-questions-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" style="padding:4px 8px; font-size:0.78rem;" title="Gérer les questions">📝</button>
+              ${isCompleted ? `
+                <button class="btn btn-secondary btn-admin-analysis-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Analyse psychométrique & discrimination">📊</button>
+                <button class="btn btn-secondary btn-admin-grades-csv-exam" data-id="${ex.id}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(16,185,129,0.18); border-color:#10b981; color:#6ee7b7;" title="Télécharger les notes finales de tous les étudiants (CSV)">📥 Notes CSV</button>
+                <button class="btn btn-secondary btn-admin-grades-pdf-exam" data-id="${ex.id}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(245,158,11,0.18); border-color:#f59e0b; color:#fcd34d;" title="Télécharger le PV des notes finales de tous les étudiants (PDF)">📄 PV PDF</button>
+              ` : ''}
               <button class="btn btn-secondary btn-admin-export-pkg-exam" data-id="${ex.id}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;" title="Exporter Package .exam.zip pour transfert USB">📦</button>
               <button class="btn btn-danger btn-admin-delete-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" style="padding:4px 8px; font-size:0.78rem;">🗑️</button>
             </div>
@@ -4271,6 +4716,32 @@ class AppController {
         };
       });
 
+      tbody.querySelectorAll('.btn-admin-grades-csv-exam').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-id');
+          const moduleCode = btn.getAttribute('data-module');
+          try {
+            await api.downloadExamResultsCsv(id, moduleCode);
+            this.showToast('Notes finales (CSV) téléchargées avec succès.', 'success');
+          } catch (e) {
+            this.showToast(`Erreur lors du téléchargement CSV : ${e.message}`, 'danger');
+          }
+        };
+      });
+
+      tbody.querySelectorAll('.btn-admin-grades-pdf-exam').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-id');
+          const moduleCode = btn.getAttribute('data-module');
+          try {
+            await api.downloadExamResultsPdf(id, moduleCode);
+            this.showToast('PV des notes finales (PDF) téléchargé avec succès.', 'success');
+          } catch (e) {
+            this.showToast(`Erreur lors du téléchargement PDF : ${e.message}`, 'danger');
+          }
+        };
+      });
+
       tbody.querySelectorAll('.btn-admin-export-pkg-exam').forEach(btn => {
         btn.onclick = async () => {
           const id = btn.getAttribute('data-id');
@@ -4287,7 +4758,15 @@ class AppController {
         btn.onclick = async () => {
           const id = btn.getAttribute('data-id');
           const title = btn.getAttribute('data-title');
-          if (confirm(`Confirmez-vous la suppression de l'examen "${title}" ?\nToutes les sessions et questions associées seront supprimées.`)) {
+          const ok = await this.showConfirmModal({
+            title: "Supprimer l'examen",
+            message: `Confirmez-vous la suppression de l'examen "${title}" ?\nToutes les sessions et questions associées seront supprimées.`,
+            confirmText: "Supprimer",
+            cancelText: "Annuler",
+            icon: "🗑️",
+            danger: true
+          });
+          if (ok) {
             try {
               await api.deleteExam(id);
               this.showToast("Examen supprimé avec succès.", "success");
@@ -4947,7 +5426,15 @@ class AppController {
       tbody.querySelectorAll('.btn-delete-question-item').forEach(btn => {
         btn.onclick = async () => {
           const qId = btn.getAttribute('data-qid');
-          if (confirm("Confirmez-vous la suppression de cette question ?")) {
+          const ok = await this.showConfirmModal({
+            title: "Supprimer la question",
+            message: "Confirmez-vous la suppression de cette question ?",
+            confirmText: "Supprimer",
+            cancelText: "Annuler",
+            icon: "🗑️",
+            danger: true
+          });
+          if (ok) {
             try {
               await api.deleteQuestion(examId, qId);
               this.showToast("Question supprimée avec succès.", "success");
@@ -5406,6 +5893,541 @@ class AppController {
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+
+  // =========================================================================
+  // HUB UNIFIÉ DES CENTRES D'ENTRAÎNEMENT (PYTHON & LINUX)
+  // =========================================================================
+
+  renderTrainingHubView() {
+    this.switchView('view-training-hub');
+    this.activeOriginView = 'view-training-hub';
+
+    const btnBack = document.getElementById('btn-training-hub-back-dash');
+    if (btnBack) {
+      btnBack.onclick = () => this.renderDashboard(this.currentUser);
+    }
+
+    // Boutons d'accès Python
+    const btnPy1 = document.getElementById('btn-hub-open-python');
+    const btnPyPrac = document.getElementById('btn-hub-card-python-prac');
+    const btnPyTheo = document.getElementById('btn-hub-card-python-theo');
+
+    if (btnPy1) btnPy1.onclick = () => this.renderTrainingCenterView();
+    if (btnPyPrac) btnPyPrac.onclick = () => this.renderTrainingCenterView();
+    if (btnPyTheo) btnPyTheo.onclick = () => this.renderTrainingCenterView();
+
+    // Boutons d'accès Linux
+    const btnLx1 = document.getElementById('btn-hub-open-linux');
+    const btnLxPrac = document.getElementById('btn-hub-card-linux-prac');
+    const btnLxTheo = document.getElementById('btn-hub-card-linux-theo');
+
+    if (btnLx1) btnLx1.onclick = () => this.renderLinuxTrainingCenter();
+    if (btnLxPrac) btnLxPrac.onclick = () => this.renderLinuxTrainingCenter();
+    if (btnLxTheo) {
+      btnLxTheo.onclick = async () => {
+        await this.renderLinuxTrainingCenter();
+        if (this.linuxRunner) {
+          this.linuxRunner.currentMode = 'theoretical';
+          await this.linuxRunner.renderHub();
+        }
+      };
+    }
+  }
+
+  showStudentExamsTab() {
+    this.switchView('view-dashboard');
+    setTimeout(() => {
+      document.getElementById('official-exams-grid')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }
+
+  // =========================================================================
+  // PV & BULLETINS DE CLASSE PAR SPÉCIALITÉ ET MODULE
+  // =========================================================================
+
+  async renderClassSheetView() {
+    this.switchView('view-class-bulletins');
+    const backBtn = document.getElementById('btn-class-sheet-back');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        if (this.currentUser && this.currentUser.role === 'admin') {
+          this.renderAdminView();
+        } else {
+          this.renderTeacherView();
+        }
+      };
+    }
+
+    // Charger les listes de spécialités et de modules disponibles
+    try {
+      const [groups, modules] = await Promise.all([
+        api.listGroups().catch(() => []),
+        api.listAdminModules().catch(() => [])
+      ]);
+
+      const selectSpec = document.getElementById('class-sheet-filter-speciality');
+      if (selectSpec && Array.isArray(groups) && groups.length > 0) {
+        selectSpec.innerHTML = groups.map(g => `
+          <option value="${g.id}">${g.name || g.id}</option>
+        `).join('');
+      }
+
+      const selectMod = document.getElementById('class-sheet-filter-module');
+      if (selectMod && Array.isArray(modules) && modules.length > 0) {
+        selectMod.innerHTML = modules.map(m => `
+          <option value="${m.code}">${m.code} (${m.title})</option>
+        `).join('');
+      }
+    } catch (_) {}
+
+    // Attacher les écouteurs de rafraîchissement et téléchargement
+    const btnRefresh = document.getElementById('btn-class-sheet-refresh');
+    if (btnRefresh) {
+      btnRefresh.onclick = () => this.loadClassSheet();
+    }
+
+    const selectSpec = document.getElementById('class-sheet-filter-speciality');
+    if (selectSpec) selectSpec.onchange = () => this.loadClassSheet();
+
+    const selectMod = document.getElementById('class-sheet-filter-module');
+    if (selectMod) selectMod.onchange = () => this.loadClassSheet();
+
+    const btnPdf = document.getElementById('btn-class-sheet-export-pdf');
+    if (btnPdf) {
+      btnPdf.onclick = async () => {
+        const spec = document.getElementById('class-sheet-filter-speciality')?.value || 'DEV-IA';
+        const mod = document.getElementById('class-sheet-filter-module')?.value || 'PYTHON_INIT';
+        try {
+          await api.downloadClassSheetPdf(spec, mod);
+        } catch (e) {
+          this.showToast(`Erreur export PDF : ${e.message}`, 'danger');
+        }
+      };
+    }
+
+    const btnCsv = document.getElementById('btn-class-sheet-export-csv');
+    if (btnCsv) {
+      btnCsv.onclick = async () => {
+        const spec = document.getElementById('class-sheet-filter-speciality')?.value || 'DEV-IA';
+        const mod = document.getElementById('class-sheet-filter-module')?.value || 'PYTHON_INIT';
+        try {
+          await api.downloadClassSheetCsv(spec, mod);
+        } catch (e) {
+          this.showToast(`Erreur export CSV : ${e.message}`, 'danger');
+        }
+      };
+    }
+
+    await this.loadClassSheet();
+  }
+
+  async loadClassSheet() {
+    const spec = document.getElementById('class-sheet-filter-speciality')?.value || 'DEV-IA';
+    const mod = document.getElementById('class-sheet-filter-module')?.value || 'PYTHON_INIT';
+    const tbody = document.getElementById('class-sheet-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">Génération du procès-verbal de classe...</td></tr>';
+
+    try {
+      const data = await api.getClassSheet(spec, mod);
+      const students = data.students || [];
+      const stats = data.class_stats || {};
+
+      // Mettre à jour les KPI Cards
+      const elEnrolled = document.getElementById('class-sheet-kpi-enrolled');
+      const elEvaluated = document.getElementById('class-sheet-kpi-evaluated');
+      const elAvg = document.getElementById('class-sheet-kpi-average');
+      const elSuccess = document.getElementById('class-sheet-kpi-success-rate');
+
+      if (elEnrolled) elEnrolled.textContent = stats.enrolled_count || students.length;
+      if (elEvaluated) elEvaluated.textContent = stats.evaluated_count || 0;
+      if (elAvg) elAvg.textContent = stats.class_average !== null ? `${stats.class_average.toFixed(2)} / 20` : '—';
+      if (elSuccess) elSuccess.textContent = `${stats.success_rate_percent || 0}%`;
+
+      if (students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun étudiant inscrit dans cette filière.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = students.map((s, idx) => {
+        const theoStr = s.theoretical_score !== null ? `<span style="font-weight:700; color:#3b82f6;">${Number(s.theoretical_score).toFixed(2)}</span>` : '<span style="color:var(--text-muted);">—</span>';
+        const pracStr = s.practical_score !== null ? `<span style="font-weight:700; color:#10b981;">${Number(s.practical_score).toFixed(2)}</span>` : '<span style="color:var(--text-muted);">—</span>';
+        const avgStr = s.module_average !== null ? `<strong style="font-size:1.05rem; color:${s.module_average >= 10 ? '#10b981' : '#ef4444'};">${Number(s.module_average).toFixed(2)} / 20</strong>` : '<span style="color:var(--text-muted);">—</span>';
+
+        let statusBadge = '<span class="badge" style="background:rgba(255,255,255,0.08); color:var(--text-muted);">En cours</span>';
+        if (s.status === 'ADMIS') {
+          statusBadge = '<span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3);">✓ ADMIS</span>';
+        } else if (s.status === 'AJOURNÉ') {
+          statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3);">✗ AJOURNÉ</span>';
+        }
+
+        return `
+          <tr style="border-bottom: 1px solid var(--card-border);">
+            <td style="padding:12px 14px; font-family:var(--font-mono); font-size:0.85rem; color:var(--text-muted);">${s.student_id}</td>
+            <td style="padding:12px 14px; font-weight:600; color:var(--text-primary);">${s.full_name} <small style="color:var(--text-muted);">(@${s.username})</small></td>
+            <td style="padding:12px 14px; text-align:center;">${theoStr}</td>
+            <td style="padding:12px 14px; text-align:center;">${pracStr}</td>
+            <td style="padding:12px 14px; text-align:center;">${avgStr}</td>
+            <td style="padding:12px 14px; text-align:center;">${statusBadge}</td>
+            <td style="padding:12px 14px; text-align:right;">
+              <button class="btn btn-secondary btn-sm btn-open-student-individual-bulletin" data-id="${s.student_id}" style="padding:4px 10px; font-size:0.8rem;">
+                📄 Bulletin
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('.btn-open-student-individual-bulletin').forEach(btn => {
+        btn.onclick = () => {
+          const stId = btn.getAttribute('data-id');
+          this.openStudentBulletinModal(stId);
+        };
+      });
+
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#ef4444;">Erreur lors du chargement : ${err.message}</td></tr>`;
+    }
+  }
+
+  // =========================================================================
+  // MODAL : GÉNÉRATEUR D'ÉPREUVES PYTHON (BANQUE D'EXERCICES)
+  // =========================================================================
+
+  initPythonGeneratorModal() {
+    const btnOpen = document.getElementById('btn-open-python-generator-modal');
+    const modal = document.getElementById('modal-python-generator');
+    const form = document.getElementById('form-python-generator');
+
+    if (btnOpen && modal) {
+      btnOpen.onclick = async () => {
+        try {
+          const stats = await api.getPythonBankStats();
+          const statsBox = document.getElementById('py-gen-bank-stats-box');
+          if (statsBox && stats) {
+            const theo = stats.theoretical || {};
+            const prac = stats.practical || {};
+            statsBox.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span>📚 <strong>Banque QCM :</strong> ${theo.total_mcqs || 414} questions (${theo.total_exam_marked || 83} marquées examen)</span>
+                <span>💻 <strong>Banque Code :</strong> ${prac.total_challenges || 47} défis (${prac.exam_marked_count || 16} marqués examen)</span>
+              </div>
+            `;
+          }
+        } catch (_) {}
+        modal.classList.add('active');
+      };
+    }
+
+    if (form) {
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('py-gen-title')?.value.trim();
+        const exam_type = document.getElementById('py-gen-type')?.value || 'theoretical';
+        const duration_minutes = parseInt(document.getElementById('py-gen-duration')?.value, 10) || 45;
+        const room_id = document.getElementById('py-gen-room')?.value.trim() || 'SALLE-CENTRAL-01';
+
+        const diff_easy = parseInt(document.getElementById('py-gen-diff-easy')?.value, 10) || 10;
+        const diff_medium = parseInt(document.getElementById('py-gen-diff-medium')?.value, 10) || 10;
+        const diff_hard = parseInt(document.getElementById('py-gen-diff-hard')?.value, 10) || 5;
+        const diff_vhard = parseInt(document.getElementById('py-gen-diff-vhard')?.value, 10) || 5;
+
+        const submitBtn = document.getElementById('btn-submit-python-generator');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "⏳ Génération en cours...";
+        }
+
+        try {
+          const res = await api.generatePythonExam({
+            title,
+            exam_type,
+            duration_minutes,
+            room_id,
+            difficulty_counts: {
+              easy: diff_easy,
+              medium: diff_medium,
+              hard: diff_hard,
+              "very hard": diff_vhard
+            }
+          });
+
+          this.showToast(res.message || "Épreuve Python générée avec succès !", "success");
+          this.closeModal('modal-python-generator');
+          form.reset();
+          await this.renderTeacherView();
+        } catch (err) {
+          this.showToast(`Erreur génération Python : ${err.message}`, "danger");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "⚡ Générer & Ouvrir la Session";
+          }
+        }
+      };
+    }
+  }
+
+  // =========================================================================
+  // PURGE SÉCURISÉE DES EXAMENS & NOTES (ADMIN)
+  // =========================================================================
+
+  initClearExamsHandler() {
+    const btnClear = document.getElementById('btn-admin-clear-exams');
+    if (btnClear) {
+      btnClear.onclick = async () => {
+        const confirmed = await this.showConfirmModal({
+          title: "Purge Totale des Examens & Notes",
+          message: "⚠️ ATTENTION : Êtes-vous certain de vouloir purger TOUS les examens, sessions et notes ?\n\nLes comptes utilisateurs et modules seront conservés.\nCette action est irréversible.",
+          confirmText: "🗑️ Purger Tout",
+          cancelText: "Annuler",
+          icon: "⚠️",
+          danger: true
+        });
+        if (!confirmed) return;
+
+        try {
+          const res = await api.clearAllExamsAndScores(false);
+          this.showToast(res.message || "Examens et notes purgés avec succès.", "success");
+          await this.loadAdminOverview();
+          await this.loadAdminResults();
+        } catch (err) {
+          this.showToast(`Erreur lors de la purge : ${err.message}`, "danger");
+        }
+      };
+    }
+  }
+
+  // =========================================================================
+  // MODALE PERSONNALISÉE DE CONFIRMATION & ALERTE (ZÉRO ALERT/CONFIRM NATIF)
+  // =========================================================================
+
+  showConfirmModal({
+    title = "Confirmation",
+    message = "Êtes-vous certain de vouloir effectuer cette action ?",
+    confirmText = "Confirmer",
+    cancelText = "Annuler",
+    icon = "⚠️",
+    danger = false
+  } = {}) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-custom-dialog');
+      if (!modal) {
+        resolve(true);
+        return;
+      }
+      const iconEl = document.getElementById('custom-dialog-icon');
+      const titleEl = document.getElementById('custom-dialog-title');
+      const msgEl = document.getElementById('custom-dialog-message');
+      const btnConfirm = document.getElementById('btn-custom-dialog-confirm');
+      const btnCancel = document.getElementById('btn-custom-dialog-cancel');
+
+      if (iconEl) iconEl.textContent = icon;
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+
+      if (btnConfirm) {
+        btnConfirm.textContent = confirmText;
+        btnConfirm.className = danger ? 'btn btn-danger' : 'btn btn-primary';
+        btnConfirm.style.background = danger ? '#ef4444' : '';
+      }
+      if (btnCancel) {
+        btnCancel.style.display = 'inline-flex';
+        btnCancel.textContent = cancelText;
+      }
+
+      const cleanup = (result) => {
+        modal.classList.remove('active');
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnCancel) btnCancel.onclick = null;
+        resolve(result);
+      };
+
+      if (btnConfirm) btnConfirm.onclick = () => cleanup(true);
+      if (btnCancel) btnCancel.onclick = () => cleanup(false);
+
+      modal.classList.add('active');
+    });
+  }
+
+  showAlertModal({
+    title = "Information",
+    message = "",
+    buttonText = "Fermer",
+    icon = "ℹ️"
+  } = {}) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-custom-dialog');
+      if (!modal) {
+        this.showToast(message, "info");
+        resolve(true);
+        return;
+      }
+      const iconEl = document.getElementById('custom-dialog-icon');
+      const titleEl = document.getElementById('custom-dialog-title');
+      const msgEl = document.getElementById('custom-dialog-message');
+      const btnConfirm = document.getElementById('btn-custom-dialog-confirm');
+      const btnCancel = document.getElementById('btn-custom-dialog-cancel');
+
+      if (iconEl) iconEl.textContent = icon;
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+      if (btnCancel) btnCancel.style.display = 'none';
+      if (btnConfirm) {
+        btnConfirm.textContent = buttonText;
+        btnConfirm.className = 'btn btn-primary';
+        btnConfirm.style.background = '';
+        btnConfirm.onclick = () => {
+          modal.classList.remove('active');
+          resolve(true);
+        };
+      }
+      modal.classList.add('active');
+    });
+  }
+
+  // =========================================================================
+  // FICHES IDENTIFIANTS DÉCOUPABLES (✂️) SÉPARÉES ÉTUDIANTS / ENSEIGNANTS
+  // =========================================================================
+
+  async openPrintCredentialsSlipsModal(role = 'student') {
+    const modal = document.getElementById('modal-print-credentials-slips');
+    const titleEl = document.getElementById('print-slips-modal-title');
+    const container = document.getElementById('printable-credentials-slips-container');
+    if (!modal || !container) return;
+
+    this._currentPrintSlipsRole = role;
+    if (titleEl) {
+      titleEl.textContent = role === 'teacher'
+        ? '✂️ Fiches Identifiants Découpables — Enseignants'
+        : '✂️ Fiches Identifiants Découpables — Étudiants';
+    }
+    container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:24px; color:var(--text-secondary);">Préparation des fiches identifiants à découper...</div>';
+    modal.classList.add('active');
+
+    try {
+      let users = await api.listUsers(role);
+      if (role === 'student') {
+        const filterYearVal = document.getElementById('admin-students-filter-year')?.value || '';
+        const filterGroupVal = document.getElementById('admin-students-filter-group')?.value || '';
+        if (filterYearVal) users = users.filter(u => u.enrollment_year === filterYearVal);
+        if (filterGroupVal) users = users.filter(u => u.group_id === filterGroupVal);
+      }
+
+      this._currentPrintSlipsUsers = users;
+      if (!users || users.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:24px; color:var(--text-muted);">Aucun compte à imprimer pour cette sélection.</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(u => {
+        const roleLabel = role === 'teacher' ? 'ENSEIGNANT / SURVEILLANT' : `ÉTUDIANT • ${this._escapeHtml(u.group_id || 'SPÉCIALITÉ')}`;
+        const subMeta = role === 'teacher'
+          ? `Modules : ${(u.assigned_modules || []).map(m => m.code || m).join(', ') || 'Aucun'}`
+          : `Matricule : ${this._escapeHtml(u.id)} • Année : ${this._escapeHtml(u.enrollment_year || '2025-2026')}`;
+
+        return `
+          <div class="credential-cut-slip" style="border: 2px dashed #64748b; border-radius: 10px; padding: 14px 16px; background: rgba(15, 23, 42, 0.65); position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(148,163,184,0.25); padding-bottom:6px; margin-bottom:8px;">
+              <span style="font-size:0.72rem; font-weight:800; letter-spacing:0.06em; color:#60a5fa;">✂️ FICHE D'ACCÈS INDIVIDUELLE</span>
+              <span style="font-size:0.72rem; font-weight:700; color:#a78bfa;">${roleLabel}</span>
+            </div>
+            <div style="font-size:1rem; font-weight:800; color:var(--text-primary); margin-bottom:3px;">${this._escapeHtml(u.full_name || u.username)}</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:10px;">${subMeta}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:rgba(0,0,0,0.28); padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
+              <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Identifiant (Login)</div>
+                <div style="font-family:var(--font-mono); font-size:0.95rem; font-weight:800; color:#38bdf8;">${this._escapeHtml(u.username)}</div>
+              </div>
+              <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Mot de Passe</div>
+                <div style="font-family:var(--font-mono); font-size:0.95rem; font-weight:800; color:#34d399;">${this._escapeHtml(u.plain_password || '••••••••')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      container.innerHTML = `<div style="grid-column:1/-1; color:var(--danger); padding:16px;">Erreur : ${this._escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  printCredentialsSlipsWindow() {
+    const users = this._currentPrintSlipsUsers || [];
+    const role = this._currentPrintSlipsRole || 'student';
+    if (!users.length) {
+      this.showToast("Aucune fiche à imprimer.", "warning");
+      return;
+    }
+
+    const title = role === 'teacher'
+      ? "Fiches d'Identifiants à Découper — Enseignants"
+      : "Fiches d'Identifiants à Découper — Étudiants";
+
+    const slipsHtml = users.map(u => {
+      const roleLabel = role === 'teacher' ? 'ENSEIGNANT / SURVEILLANT' : `ÉTUDIANT • ${this._escapeHtml(u.group_id || 'SPÉCIALITÉ')}`;
+      const subMeta = role === 'teacher'
+        ? `ID : ${this._escapeHtml(u.id)} • Modules : ${(u.assigned_modules || []).map(m => m.code || m).join(', ') || 'Aucun'}`
+        : `Matricule : ${this._escapeHtml(u.id)} • Année : ${this._escapeHtml(u.enrollment_year || '2025-2026')}`;
+      return `
+        <div class="slip">
+          <div class="slip-header">
+            <span>✂️ PLATEFORME D'EXAMEN — FICHE D'IDENTIFIANTS</span>
+            <strong>${roleLabel}</strong>
+          </div>
+          <div class="slip-name">${this._escapeHtml(u.full_name || u.username)}</div>
+          <div class="slip-meta">${subMeta}</div>
+          <div class="slip-creds">
+            <div>
+              <span class="lbl">Identifiant (Login) :</span>
+              <span class="val">${this._escapeHtml(u.username)}</span>
+            </div>
+            <div>
+              <span class="lbl">Mot de passe :</span>
+              <span class="val">${this._escapeHtml(u.plain_password || '••••••••')}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const w = window.open('', '_blank', 'width=950,height=750');
+    if (!w) {
+      window.print();
+      return;
+    }
+    w.document.write(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 16px; color: #0f172a; background: #fff; }
+    h1 { font-size: 16px; margin: 0 0 12px 0; text-align: center; text-transform: uppercase; letter-spacing: 0.04em; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .slip { border: 2px dashed #334155; border-radius: 8px; padding: 12px 14px; page-break-inside: avoid; }
+    .slip-header { display: flex; justify-content: space-between; font-size: 10px; color: #475569; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 6px; }
+    .slip-name { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+    .slip-meta { font-size: 11px; color: #475569; margin-bottom: 8px; }
+    .slip-creds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; }
+    .lbl { display: block; font-size: 10px; text-transform: uppercase; color: #64748b; }
+    .val { font-family: Consolas, monospace; font-size: 14px; font-weight: 800; color: #0f172a; }
+    @media print {
+      body { margin: 8mm; }
+    }
+  </style>
+</head>
+<body>
+  <h1>${title}</h1>
+  <div class="grid">${slipsHtml}</div>
+  <script>window.onload = function() { window.print(); };</script>
+</body>
+</html>`);
+    w.document.close();
+  }
+
 }
 
 // Exposer globalement window.showToast

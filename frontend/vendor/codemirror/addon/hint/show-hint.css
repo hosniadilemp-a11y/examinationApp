@@ -1,18 +1,73 @@
-.CodeMirror-hints {
+.CodeMirror-hints-container {
   position: absolute;
   z-index: 10000;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #1e293b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  max-width: 320px;
+  min-width: 220px;
+  animation: fadeInHint 0.15s ease-out;
+}
+
+@keyframes fadeInHint {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.CodeMirror-hints-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  background: rgba(15, 23, 42, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: #94a3b8;
+  user-select: none;
+}
+
+.CodeMirror-hints-title {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.CodeMirror-hints-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 3px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.CodeMirror-hints-close-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.CodeMirror-hints {
+  position: static;
   overflow: hidden;
   list-style: none;
   margin: 0;
   padding: 4px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: #1e293b;
+  border-radius: 0;
+  border: none;
+  background: transparent;
   font-size: 13px;
   font-family: var(--font-mono, monospace);
-  max-height: 18em;
+  max-height: 16em;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  box-shadow: none;
 }
 
 .CodeMirror-hint {
@@ -42,8 +97,8 @@ li.CodeMirror-hint-active {
   font-family: var(--font-sans, sans-serif);
 }
 
+.hint-badge-var     { background: #38bdf8; color: #0f172a; }
 .hint-badge-keyword { background: #ff79c6; color: #0f172a; }
 .hint-badge-builtin { background: #50fa7b; color: #0f172a; }
 .hint-badge-module  { background: #8be9fd; color: #0f172a; }
 .hint-badge-snippet { background: #bd93f9; color: #0f172a; }
-

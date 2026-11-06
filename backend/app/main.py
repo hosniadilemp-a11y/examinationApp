@@ -83,17 +83,12 @@ def init_db():
         elif not admin.plain_password:
             admin.plain_password = settings.INITIAL_ADMIN_PASSWORD
             
-        # 2. Création des Modules et Cours Académiques
+        # 2. Création des Modules et Cours Académiques (3 modules de test + ALGO pour piliers bulletins)
         initial_modules = [
             ("ALGO", "Bases d'Algorithmique", "Variables, boucles, récursivité, tris et complexités fondamentales."),
             ("PYTHON_INIT", "Initiation à Python", "Apprentissage des bases du langage Python, structures de données et algorithmes fondamentaux."),
-            ("CRYPTO", "Cryptographie", "Introduction à la sécurité de l'information, chiffrements symétriques/asymétriques, hachage et signatures numériques."),
-            ("LINUX_ADMIN", "Administration des Systèmes Linux", "Gestion des serveurs Linux, arborescence système, droits utilisateurs, scripts bash et processus."),
-            ("DEV_WEB", "Développement Web & APIs", "Architectures RESTful, FastAPI, protocoles HTTP, client-serveur et sécurité web."),
-            ("DATABASE_SQL", "Bases de Données & SQL", "Modélisation relationnelle, algèbre relationnelle, requêtes SQL, indexation et transactions ACID."),
-            ("NETWORKS", "Réseaux & Protocoles de Communication", "Modèle OSI, suite TCP/IP, routage, sous-réseaux, DNS et analyse de trames."),
-            ("AI_ML", "Intelligence Artificielle & Machine Learning", "Apprentissage supervisé et non-supervisé, classification, régression, réseaux de neurones."),
-            ("DATA_STRUCT", "Structures de Données Avancées", "Arbres binaires de recherche, tas, graphes, tables de hachage et algorithmes avancés.")
+            ("CRYPTO", "Cryptographie & Sécurité", "Introduction à la sécurité de l'information, chiffrements symétriques/asymétriques, hachage et signatures numériques."),
+            ("LINUX_ADMIN", "Administration des Systèmes Linux", "Gestion des serveurs Linux, arborescence système, droits utilisateurs, scripts bash et processus.")
         ]
         
         for code, title, desc in initial_modules:
@@ -101,22 +96,14 @@ def init_db():
             if not existing_mod:
                 db.add(Module(code=code, title=title, description=desc))
 
-        # 3. Amorçage optionnel des comptes et groupes initiaux (configuré via .env)
+        # 3. Amorçage optionnel des comptes et des 4 Spécialités (configuré via .env)
         if settings.AUTO_SEED_DEFAULT_USERS:
-            g1 = db.query(Group).filter(Group.id == "GRP-1").first()
-            if not g1:
-                g1 = Group(id="GRP-1", name="Groupe 1 (Salle A)", description="Groupe de TP Salle A")
-                db.add(g1)
-            g2 = db.query(Group).filter(Group.id == "GRP-2").first()
-            if not g2:
-                g2 = Group(id="GRP-2", name="Groupe 2 (Salle B)", description="Groupe de TP Salle B")
-                db.add(g2)
-
-            # Création des 3 Spécialités (REV-14 / REV-42)
+            # Création des 4 Spécialités officielles (4 classes de 4 étudiants = 16 étudiants)
             specialties = [
-                ("DEV-IA", "Développement & Intelligence Artificielle", "Spécialité Génie Logiciel, Python & IA"),
-                ("SYS-ADMIN", "Administration Systèmes & Réseaux", "Spécialité Systèmes Linux, Réseaux & Cloud"),
-                ("CYBER-SEC", "Cybersécurité & Données", "Spécialité Sécurité de l'Information, Crypto & Audit")
+                ("DEV-IA", "Classe 1 : Développement & IA", "Spécialité Génie Logiciel, Python & Intelligence Artificielle"),
+                ("SYS-ADMIN", "Classe 2 : Systèmes & Réseaux Linux", "Spécialité Systèmes Linux, Réseaux & Cloud"),
+                ("CYBER-SEC", "Classe 3 : Cybersécurité & Cryptographie", "Spécialité Sécurité de l'Information, Crypto & Audit"),
+                ("GRP-1", "Classe 4 : Génie Logiciel & Systèmes (Groupe 1)", "Spécialité Ingénierie Logicielle & Systèmes")
             ]
             for grp_id, grp_name, grp_desc in specialties:
                 g = db.query(Group).filter(Group.id == grp_id).first()
@@ -124,7 +111,7 @@ def init_db():
                     db.add(Group(id=grp_id, name=grp_name, description=grp_desc))
             db.flush()
 
-            # Enseignant initial avec tous les modules assignés
+            # Enseignant initial avec les modules assignés
             teacher = db.query(User).filter(User.username == settings.INITIAL_TEACHER_USERNAME).first()
             if not teacher:
                 teacher = User(
@@ -143,12 +130,39 @@ def init_db():
             elif not teacher.plain_password:
                 teacher.plain_password = settings.INITIAL_TEACHER_PASSWORD
 
-            for m_code in ["PYTHON_INIT", "ALGO", "CRYPTO", "LINUX_ADMIN", "DEV_WEB", "DATABASE_SQL", "NETWORKS", "AI_ML", "DATA_STRUCT"]:
+            for m_code in ["PYTHON_INIT", "ALGO", "CRYPTO", "LINUX_ADMIN"]:
                 mod = db.query(Module).filter(Module.code == m_code).first()
                 if mod and mod not in teacher.assigned_modules:
                     teacher.assigned_modules.append(mod)
 
-            # Étudiant initial par défaut
+            # Enseignants dédiés aux 3 modules de test (PYTHON_INIT, CRYPTO, LINUX_ADMIN)
+            module_teachers = [
+                ("TCH-PYTHON", "prof_python", "ProfPython1!", "Dr. Martin Laurent (Resp. Python)", "martin.python@ecole.fr", ["PYTHON_INIT"]),
+                ("TCH-CRYPTO", "prof_crypto", "ProfCrypto1!", "Dr. Sophie Bernard (Resp. Crypto)", "sophie.crypto@ecole.fr", ["CRYPTO"]),
+                ("TCH-LINUX", "prof_linux", "ProfLinux1!", "Dr. Karim Mansouri (Resp. Linux)", "karim.linux@ecole.fr", ["LINUX_ADMIN"]),
+            ]
+            for t_id, t_user, t_pwd, t_name, t_mail, t_mods in module_teachers:
+                t_obj = db.query(User).filter(User.username == t_user).first()
+                if not t_obj:
+                    t_obj = User(
+                        id=t_id,
+                        username=t_user,
+                        password_hash=hash_password(t_pwd),
+                        plain_password=t_pwd,
+                        full_name=t_name,
+                        email=t_mail,
+                        role="teacher",
+                        must_change_password=False,
+                        is_active=True
+                    )
+                    db.add(t_obj)
+                    db.flush()
+                for m_code in t_mods:
+                    mod = db.query(Module).filter(Module.code == m_code).first()
+                    if mod and mod not in t_obj.assigned_modules:
+                        t_obj.assigned_modules.append(mod)
+
+            # Étudiant initial par défaut (Classe GRP-1)
             student = db.query(User).filter(User.username == settings.INITIAL_STUDENT_USERNAME).first()
             if not student:
                 student = User(
@@ -156,10 +170,11 @@ def init_db():
                     username=settings.INITIAL_STUDENT_USERNAME,
                     password_hash=hash_password(settings.INITIAL_STUDENT_PASSWORD),
                     plain_password=settings.INITIAL_STUDENT_PASSWORD,
-                    full_name=settings.INITIAL_STUDENT_NAME,
+                    full_name="Alice Dupont (GL-1)",
                     email="etudiant1@exam.local",
                     role="student",
-                    group_id="DEV-IA",
+                    group_id="GRP-1",
+                    enrollment_year="2025-2026",
                     must_change_password=False,
                     is_active=True
                 )
@@ -167,23 +182,27 @@ def init_db():
             elif not student.plain_password:
                 student.plain_password = settings.INITIAL_STUDENT_PASSWORD
 
-            # 4 étudiants par spécialité (12 étudiants de test - REV-14)
+            # 4 classes × 4 étudiants = 16 étudiants complets avec toutes leurs informations
             seeded_students = [
-                # Spécialité DEV-IA
+                # Classe 1 : DEV-IA (4 étudiants)
                 ("etu_dev1", "Alice Dev (IA-1)", "StudentDev1!", "alice.dev@exam.local", "DEV-IA"),
                 ("etu_dev2", "Bob Dev (IA-2)", "StudentDev2!", "bob.dev@exam.local", "DEV-IA"),
                 ("etu_dev3", "Clara Dev (IA-3)", "StudentDev3!", "clara.dev@exam.local", "DEV-IA"),
                 ("etu_dev4", "David Dev (IA-4)", "StudentDev4!", "david.dev@exam.local", "DEV-IA"),
-                # Spécialité SYS-ADMIN
+                # Classe 2 : SYS-ADMIN (4 étudiants)
                 ("etu_sys1", "Emma Sys (Linux-1)", "StudentSys1!", "emma.sys@exam.local", "SYS-ADMIN"),
                 ("etu_sys2", "Fares Sys (Linux-2)", "StudentSys2!", "fares.sys@exam.local", "SYS-ADMIN"),
                 ("etu_sys3", "Gilles Sys (Linux-3)", "StudentSys3!", "gilles.sys@exam.local", "SYS-ADMIN"),
                 ("etu_sys4", "Hajar Sys (Linux-4)", "StudentSys4!", "hajar.sys@exam.local", "SYS-ADMIN"),
-                # Spécialité CYBER-SEC
+                # Classe 3 : CYBER-SEC (4 étudiants)
                 ("etu_sec1", "Ines Sec (Crypto-1)", "StudentSec1!", "ines.sec@exam.local", "CYBER-SEC"),
                 ("etu_sec2", "Jules Sec (Crypto-2)", "StudentSec2!", "jules.sec@exam.local", "CYBER-SEC"),
                 ("etu_sec3", "Karim Sec (Crypto-3)", "StudentSec3!", "karim.sec@exam.local", "CYBER-SEC"),
                 ("etu_sec4", "Lena Sec (Crypto-4)", "StudentSec4!", "lena.sec@exam.local", "CYBER-SEC"),
+                # Classe 4 : GRP-1 (3 étudiants + etudiant1 = 4 étudiants)
+                ("etu_log2", "Thomas Garnier (GL-2)", "StudentLog2!", "thomas.log@exam.local", "GRP-1"),
+                ("etu_log3", "Camille Chevalier (GL-3)", "StudentLog3!", "camille.log@exam.local", "GRP-1"),
+                ("etu_log4", "Maxime Lambert (GL-4)", "StudentLog4!", "maxime.log@exam.local", "GRP-1"),
             ]
 
             for u_name, f_name, pwd, mail, gid in seeded_students:
@@ -198,14 +217,21 @@ def init_db():
                         email=mail,
                         role="student",
                         group_id=gid,
+                        enrollment_year="2025-2026",
                         must_change_password=False,
                         is_active=True
                     ))
                 elif not existing_s.plain_password:
                     existing_s.plain_password = pwd
 
-            # Amorçage réaliste des notes piliers et examens pour la gestion des bulletins (REV-46)
-            _seed_realistic_bulletin_data(db)
+            # Amorçage des examens modèles pour les 3 modules si absents
+            from scripts.reset_and_seed_exact_3_exams import reset_and_seed_3_exams
+            e1 = db.query(Exam).filter(Exam.id == "EXAM-THEO-PYTHON").first()
+            e2 = db.query(Exam).filter(Exam.id == "EXAM-PRAC-PYTHON").first()
+            e3 = db.query(Exam).filter(Exam.id == "EXAM-THEO-CRYPTO").first()
+            e4 = db.query(Exam).filter(Exam.id == "EXAM-THEO-LINUX").first()
+            if not e1 or not e2 or not e3 or not e4:
+                reset_and_seed_3_exams(db)
 
         db.commit()
     finally:
@@ -333,6 +359,9 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="Plateforme web d'examen et d'entraînement pour salles de TP en réseau local autonome.",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
     lifespan=lifespan
 )
 
@@ -344,6 +373,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Empêcher la mise en cache agressive des scripts JS et fichiers HTML côté client
+@app.middleware("http")
+async def add_no_cache_headers(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.endswith(".js") or path.endswith(".html") or path == "/":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 # Inclusion des routeurs
 app.include_router(auth.router)

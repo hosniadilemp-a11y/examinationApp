@@ -110,18 +110,18 @@ export class LinuxRunner {
     try {
       const [prog, chaptersRes, challengesRes] = await Promise.all([
         this.api.getLinuxProgression().catch(() => progData),
-        this.api.getLinuxChapters().catch(() => ({ chapters: [] })),
+        this.api.getLinuxChapters().catch(() => []),
         this.api.getLinuxChallenges(this.selectedLevel).catch(() => [])
       ]);
       this.progression = prog || progData;
-      this.curriculum = chaptersRes || { chapters: [] };
+      this.curriculum = Array.isArray(chaptersRes) ? chaptersRes : ((chaptersRes && chaptersRes.chapters) || []);
       this.challenges = Array.isArray(challengesRes) ? challengesRes : [];
     } catch (err) {
       console.warn("Erreur chargement hub Linux:", err);
     }
 
     const prog = this.progression || progData;
-    const chapters = (this.curriculum && this.curriculum.chapters) || [];
+    const chapters = Array.isArray(this.curriculum) ? this.curriculum : ((this.curriculum && this.curriculum.chapters) || []);
 
     this.container.innerHTML = `
       <div class="dashboard-container" style="max-width: 1200px; margin: 0 auto; padding: 24px 20px;">
@@ -327,6 +327,14 @@ export class LinuxRunner {
    * @private
    */
   _renderTheoreticalSectionHtml(chapters) {
+    if (!chapters || chapters.length === 0) {
+      return `
+        <div style="padding: 40px; text-align: center; color: var(--text-muted); background: var(--bg-surface); border: 1px solid var(--card-border); border-radius: 8px;">
+          <p>Chargement des chapitres d'administration Linux...</p>
+        </div>
+      `;
+    }
+
     const chaptersCards = chapters.map(ch => `
       <div class="card chapter-item-card" data-ch-id="${ch.id}" style="padding: 18px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: var(--bg-surface);">
         <div>
@@ -335,7 +343,7 @@ export class LinuxRunner {
               Chapitre 0${ch.order || 1}
             </span>
             <span style="font-size:0.78rem; color:var(--text-muted);">
-              ${ch.mcq_questions_count || 16} Questions QCM
+              ${ch.mcq_count || ch.mcq_questions_count || 6} Questions QCM
             </span>
           </div>
           <h4 style="margin: 0 0 6px 0; font-size: 1.05rem; color: var(--text-primary);">${this._escapeHtml(ch.title)}</h4>
@@ -979,8 +987,18 @@ export class LinuxRunner {
   async startTheoryQuiz(chapterId = null) {
     try {
       let quizzes = [];
-      if (this.api && this.api.getLinuxTheoryQuizzes) {
-        quizzes = await this.api.getLinuxTheoryQuizzes();
+      if (chapterId && this.api && this.api.getLinuxChapter) {
+        try {
+          const chap = await this.api.getLinuxChapter(chapterId, 'theoretical');
+          if (chap && chap.items) {
+            quizzes = chap.items.filter(item => item.type !== 'linux_cmd' && item.options);
+          }
+        } catch (_) {}
+      }
+      if (!quizzes || quizzes.length === 0) {
+        if (this.api && this.api.getLinuxTheoryQuizzes) {
+          quizzes = await this.api.getLinuxTheoryQuizzes();
+        }
       }
       if (!quizzes || quizzes.length === 0) {
         // Fallback session
@@ -989,7 +1007,7 @@ export class LinuxRunner {
           assessment_type: 'theoretical',
           count: 8
         });
-        quizzes = (session.items || []).filter(item => item.type !== 'linux_cmd');
+        quizzes = (session.items || []).filter(item => item.type !== 'linux_cmd' && item.options);
       }
 
       if (!quizzes || quizzes.length === 0) {
@@ -1028,10 +1046,11 @@ export class LinuxRunner {
 
     const optionsHtml = options.map((opt, i) => {
       const optId = `opt-${i}`;
+      const optText = (typeof opt === 'object' && opt !== null) ? (opt.text || opt.title || opt.label || '') : String(opt);
       return `
         <label for="${optId}" class="quiz-option-label" style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; cursor:pointer; margin-bottom:10px; transition:background 0.15s, border-color 0.15s;">
           <input type="radio" name="theory-quiz-option" id="${optId}" value="${i}" style="accent-color:#10b981; transform:scale(1.2);" />
-          <span style="font-size:0.95rem; color:#f8fafc;">${this._escapeHtml(opt)}</span>
+          <span style="font-size:0.95rem; color:var(--text-primary);">${this._escapeHtml(optText)}</span>
         </label>
       `;
     }).join('');
@@ -1156,6 +1175,18 @@ export class LinuxRunner {
     const score = this.theoryScore;
     const grade20 = total > 0 ? ((score / total) * 20).toFixed(1) : '20.0';
     const pct = total > 0 ? Math.round((score / total) * 100) : 100;
+
+    // Envoi de la session théorique au backend pour synchronisation et historique
+    if (this.api && this.api.submitLinuxSession && this.theoryAnswers.length > 0) {
+      const answersForBackend = this.theoryAnswers.map(ans => ({
+        id: ans.question_id,
+        type: "single_choice",
+        topic: "Linux",
+        student_answer: ans.selected_index,
+        is_correct: ans.is_correct
+      }));
+      this.api.submitLinuxSession(answersForBackend).catch(() => {});
+    }
 
     this.container.innerHTML = `
       <div class="dashboard-container" style="max-width: 680px; margin: 40px auto; text-align: center; padding: 32px 20px;">

@@ -443,7 +443,9 @@ def evaluate_linux_challenge(
         "max_points": total_points,
         "public_results": public_results,
         "hidden_results": hidden_results,
-        "message": message
+        "message": message,
+        "explanation": challenge.get("explanation", ""),
+        "solution": challenge.get("solution", "")
     }
 
 def sync_student_linux_pillar(
@@ -602,6 +604,8 @@ def get_linux_chapter_details(chapter_id: str, assessment_type: str = "all") -> 
                     ce_copy = dict(ce)
                     ce_copy["public_tests"] = ce.get("public_tests", [])
                     ce_copy.pop("hidden_tests", None)
+                    ce_copy.pop("solution", None)
+                    ce_copy.pop("explanation", None)
                     items.append(ce_copy)
             return {
                 "chapter_id": ch["id"],
@@ -639,6 +643,8 @@ def generate_linux_session(
                 ce_copy = dict(ce)
                 ce_copy["public_tests"] = ce.get("public_tests", [])
                 ce_copy.pop("hidden_tests", None)
+                ce_copy.pop("solution", None)
+                ce_copy.pop("explanation", None)
                 pool.append(ce_copy)
 
     # Filtrer par niveau si demandé
