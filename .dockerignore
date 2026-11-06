@@ -1,0 +1,41 @@
+# Git & IDEs
+.git
+.gitignore
+.agent
+.agents
+.gemini
+.vscode
+.idea
+
+# Python caches
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache
+.coverage
+htmlcov/
+*.egg-info/
+.venv
+venv/
+env/
+
+# Databases & local state
+*.db
+*.db-shm
+*.db-wal
+data/*.db
+exam_app.db*
+
+# Logs & temp files
+*.log
+scratch/
+oldapps/
+*.png
+*.jpg
+*.jpeg
+
+# Environments
+.env
+.env.local
+

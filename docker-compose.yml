@@ -49,6 +49,7 @@ services:
       - STUDENT_USER=${STUDENT_USER:-etudiant1}
       - STUDENT_PASS=${STUDENT_PASS:-etudiant123}
       - AUTO_SEED_DEFAULT_USERS=${AUTO_SEED_DEFAULT_USERS:-true}
+      - SEED_DATA=${SEED_DATA:-true}
     volumes:
       - room_data:/app/data
     healthcheck:

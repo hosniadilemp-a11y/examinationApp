@@ -7,6 +7,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV ENVIRONMENT=production
+ENV PYTHONPATH=/app
 ENV SQLITE_DB_PATH=/app/data/exam_app.db
 
 WORKDIR /app
@@ -24,7 +25,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copie de l'ensemble du projet
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
+COPY scripts/ ./scripts/
+COPY deployment/ ./deployment/
 COPY docs/ ./docs/
+
+# Script de point d'entrée avec auto-amorçage
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 # Création du répertoire de données persistantes pour SQLite WAL
 RUN mkdir -p /app/data
@@ -35,6 +42,9 @@ EXPOSE 8000
 # Contrôle de santé intégré
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
+
+# Point d'entrée avec gestion de la base de données et du peuplement
+ENTRYPOINT ["./entrypoint.sh"]
 
 # Lancement du serveur FastAPI Uvicorn
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

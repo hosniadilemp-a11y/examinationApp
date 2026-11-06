@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     # Base de données : PostgreSQL prioritaire, avec bascule SQLite WAL locale
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://exam_user:exam_password@localhost:5432/exam_db")
-    SQLITE_FALLBACK_URL: str = "sqlite:///./exam_app.db"
+    SQLITE_FALLBACK_URL: str = os.getenv("SQLITE_FALLBACK_URL", f"sqlite:///{os.getenv('SQLITE_DB_PATH', './exam_app.db')}")
     
     # Sécurité JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "exam_quiz_lan_insecure_default_secret_key_change_in_prod_998877")
