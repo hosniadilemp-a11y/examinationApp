@@ -49,11 +49,11 @@ def _auto_migrate_schema(engine):
                         cur.execute("ALTER TABLE exams ADD COLUMN exam_type VARCHAR DEFAULT 'theoretical'")
                     if "passing_score" not in ecols:
                         cur.execute("ALTER TABLE exams ADD COLUMN passing_score FLOAT DEFAULT 10.0")
-                cur.execute("PRAGMA table_info(exams)")
-                ecols = [r[1] for r in cur.fetchall()]
-                if ecols:
-                    if "exam_type" not in ecols:
-                        cur.execute("ALTER TABLE exams ADD COLUMN exam_type VARCHAR DEFAULT 'theoretical'")
+                cur.execute("PRAGMA table_info(student_attempts)")
+                scols = [r[1] for r in cur.fetchall()]
+                if scols:
+                    if "suspended_until" not in scols:
+                        cur.execute("ALTER TABLE student_attempts ADD COLUMN suspended_until DATETIME")
                 conn.commit()
                 conn.close()
             except Exception as e:

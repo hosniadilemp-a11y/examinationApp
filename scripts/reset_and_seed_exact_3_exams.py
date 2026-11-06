@@ -30,10 +30,12 @@ from backend.app.models import (
     exam_groups, teacher_modules
 )
 from backend.app.security import hash_password
+from backend.app.services.python_exam_generator import normalize_curriculum_question
 
 
 def _load_extra_35_python_mcqs():
-    """Extrait 35 questions QCM officielles depuis curriculum.json pour compléter EXAM-THEO-PYTHON à 40 questions."""
+    """Extrait 35 questions officielles depuis curriculum.json pour compléter EXAM-THEO-PYTHON à 40 questions,
+    en respectant fidèlement leurs types (mcq, intruder, yesno, simple_blank, matching)."""
     curriculum_path = os.path.join(
         os.path.dirname(__file__), "..", "backend", "app", "data", "python_training", "curriculum.json"
     )
@@ -50,25 +52,17 @@ def _load_extra_35_python_mcqs():
                 else:
                     others.append(q)
         pool = exam_marked + others
-        for q in pool[:35]:
-            opts = q.get("options", [])
-            opts_clean = [o.get("text", str(o)) if isinstance(o, dict) else str(o) for o in opts]
-            corr = q.get("correct", 0)
-            if isinstance(corr, list):
-                corr_val = corr[0] if corr else 0
-            else:
-                corr_val = int(corr) if corr is not None else 0
-            extracted.append({
-                "prompt": q.get("text") or q.get("prompt") or "Question Python",
-                "options": opts_clean if opts_clean else ["Vrai", "Faux"],
-                "correct": corr_val
-            })
+        for i, q in enumerate(pool[:35], start=6):
+            norm = normalize_curriculum_question(q, idx=i)
+            extracted.append(norm)
     while len(extracted) < 35:
-        idx = len(extracted) + 1
+        idx = len(extracted) + 6
         extracted.append({
-            "prompt": f"En Python, quelle est la valeur de `len(range({idx}))` ?",
+            "type": "single_choice",
+            "prompt_markdown": f"En Python, quelle est la valeur de `len(range({idx}))` ?",
             "options": [str(idx), str(idx - 1), str(idx + 1), "0"],
-            "correct": 0
+            "correct_answers": 0,
+            "negative_penalty": 0.0
         })
     return extracted[:35]
 
@@ -335,11 +329,12 @@ def reset_and_seed_3_exams(db=None, clear_practice=False):
                 id=f"Q-TPY-{idx}",
                 exam_id=exam_theo_py.id,
                 ordering=idx,
-                type="single_choice",
-                prompt_markdown=eq["prompt"],
+                type=eq.get("type", "single_choice"),
+                prompt_markdown=eq["prompt_markdown"],
                 points=1.0,
+                negative_penalty=eq.get("negative_penalty", 0.0),
                 options_json=json.dumps(eq["options"], ensure_ascii=False),
-                correct_answers_json=json.dumps(eq["correct"])
+                correct_answers_json=json.dumps(eq["correct_answers"], ensure_ascii=False)
             ))
 
         for q in q_theo_python:

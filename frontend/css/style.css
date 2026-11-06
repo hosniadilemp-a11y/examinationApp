@@ -3435,3 +3435,84 @@ pre.code-block {
   color: #ffffff !important;
   border-color: #1d4ed8 !important;
 }
+
+
+/* =========================================================================
+   TYPOGRAPHIE ADAPTATIVE & CONTRÔLE DE ZOOM D'EXAMEN (SCOPÉ À #view-exam)
+   ========================================================================= */
+#view-exam {
+  --exam-font-scale: 1;
+}
+
+#view-exam .question-card {
+  font-size: calc(1.05rem * var(--exam-font-scale, 1));
+}
+
+#view-exam .question-prompt {
+  font-size: calc(1.35rem * var(--exam-font-scale, 1)) !important;
+  line-height: 1.55 !important;
+}
+
+#view-exam .option-item {
+  font-size: calc(1.15rem * var(--exam-font-scale, 1)) !important;
+  padding: calc(15px * var(--exam-font-scale, 1)) calc(18px * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam .option-item label,
+#view-exam .boolean-btn,
+#view-exam .matching-item,
+#view-exam .fill-blank-input {
+  font-size: calc(1.15rem * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam pre.code-block,
+#view-exam pre code,
+#view-exam .CodeMirror {
+  font-size: calc(1.05rem * var(--exam-font-scale, 1)) !important;
+  line-height: 1.5 !important;
+}
+
+.exam-font-adjuster button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.exam-font-adjuster button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================================================
+   ESPACE ENSEIGNANT : TABLEAU DES ÉPREUVES PLEINE LARGEUR SANS DÉFORMATION
+   ========================================================================= */
+.teacher-exams-container {
+  width: 100% !important;
+  display: block !important;
+}
+
+.teacher-exams-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+}
+
+.teacher-exams-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.teacher-exams-table th,
+.teacher-exams-table td {
+  white-space: nowrap;
+}
+
+.teacher-exams-table td:nth-child(3) {
+  white-space: normal;
+  min-width: 260px;
+}

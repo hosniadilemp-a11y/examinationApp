@@ -138,7 +138,7 @@ def import_students_csv(
                     role="student",
                     group_id=group_id if group_id else None,
                     enrollment_year=enrollment_year,
-                    must_change_password=False,
+                    must_change_password=True if not raw_pwd else False,
                     is_active=True
                 )
                 db.add(new_student)
@@ -239,7 +239,7 @@ def import_teachers_csv(
                     full_name=full_name,
                     email=email,
                     role="teacher",
-                    must_change_password=False,
+                    must_change_password=True if not raw_pwd else False,
                     is_active=True
                 )
                 db.add(target_teacher)

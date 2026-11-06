@@ -140,7 +140,7 @@ def create_user(
         role=payload.role,
         group_id=payload.group_id,
         enrollment_year=payload.enrollment_year.strip() if payload.enrollment_year else "2025-2026",
-        must_change_password=payload.must_change_password if payload.must_change_password is not None else False,
+        must_change_password=payload.must_change_password if payload.must_change_password is not None else (payload.role == "student"),
         is_active=True
     )
     db.add(new_user)

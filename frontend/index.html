@@ -781,6 +781,13 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
             <h2 id="exam-active-title" style="font-size: 1.4rem;">Examen en cours</h2>
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <!-- Contrôles de taille de police (spécifique à l'examen) -->
+              <div class="exam-font-adjuster" style="display: inline-flex; align-items: center; background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); border-radius: 8px; padding: 2px 4px; gap: 2px;" title="Ajuster la taille du texte de l'épreuve">
+                <button type="button" id="btn-exam-font-decrease" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.82rem; font-weight: 700; line-height: 1;" title="Diminuer la taille">A-</button>
+                <span id="label-exam-font-scale" style="font-size: 0.78rem; font-family: var(--font-mono); font-weight: 700; color: var(--text-secondary); padding: 0 4px; min-width: 42px; text-align: center;">100%</span>
+                <button type="button" id="btn-exam-font-increase" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.82rem; font-weight: 700; line-height: 1;" title="Agrandir la taille">A+</button>
+                <button type="button" id="btn-exam-font-reset" class="btn btn-secondary" style="padding: 4px 6px; font-size: 0.82rem; line-height: 1;" title="Réinitialiser à 100%">↺</button>
+              </div>
               <button id="btn-toggle-fullscreen" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
                 <span>⛶</span> Plein Écran
               </button>
@@ -899,7 +906,7 @@
 
     <!-- 7. VUE DÉDIÉE : ENSEIGNANT / GESTION DES EXAMENS (REV-13, REV-15) -->
     <main id="view-teacher" class="view">
-      <div class="dashboard-container" style="max-width: 1200px;">
+      <div class="dashboard-container" style="max-width: 1400px; width: 100%;">
         <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:20px;">
           <div>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
@@ -966,7 +973,7 @@
               <span style="color:#a78bfa;">🟣 Terminé (Notes & PV disponibles)</span>
             </div>
           </div>
-          <div id="teacher-exams-list" class="card-grid">
+          <div id="teacher-exams-list" class="teacher-exams-container" style="width:100%;">
             <!-- Liste dynamique des examens -->
           </div>
         </div>
@@ -995,8 +1002,7 @@
                 <span id="proctor-session-timer" style="font-family:monospace; font-size:1.15rem; color:#a5b4fc;">--:--</span>
               </div>
               <div id="proctor-server-clock-card" style="display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.4); padding:4px 12px; border-radius:12px; color:#93c5fd; font-weight:700;">
-                <span>🕒 Heure Serveur :</span>
-                <span id="proctor-server-clock" style="font-family:monospace; font-size:1.05rem; color:#bfdbfe;">--:--:--</span>
+                <span id="proctor-server-clock" style="font-family:monospace; font-size:1.05rem; color:#bfdbfe;">🕒 Heure Serveur : --:--:--</span>
               </div>
             </div>
           </div>
@@ -1008,9 +1014,6 @@
             </button>
             <button id="btn-proctor-close-all" class="btn btn-danger" style="padding:10px 16px; font-weight:700; background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-color:#dc2626;">
               🛑 Clôturer l'Épreuve
-            </button>
-            <button id="btn-proctor-extend-all" class="btn btn-secondary" style="padding:10px 16px; font-weight:600;">
-              ⏱️ +5 Min (Tous)
             </button>
             <button id="btn-proctor-download-grades-csv" class="btn btn-secondary" style="padding:10px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.2); border-color:#10b981; color:#6ee7b7;" title="Télécharger les notes finales de tous les étudiants en CSV">
               <span>📥</span> Notes Finales (CSV)
@@ -1046,7 +1049,6 @@
                   <th style="padding:12px 16px;">Poste / Candidat</th>
                   <th style="padding:12px 16px;">Statut</th>
                   <th style="padding:12px 16px;">Progression</th>
-                  <th style="padding:12px 16px;">Temps Restant</th>
                   <th style="padding:12px 16px;">Alertes Anti-Triche</th>
                   <th style="padding:12px 16px;">Dernière Activité</th>
                   <th style="padding:12px 16px; text-align:right;">Actions</th>
@@ -1819,20 +1821,28 @@
     </div>
   </div>
 
-  <!-- OVERLAY ROUGE : SUSPENSION ANTI-TRICHE (> 10s) -->
+  <!-- OVERLAY ROUGE : SUSPENSION ANTI-TRICHE (4 avertissements ou > 10s) -->
   <div id="overlay-suspension" class="suspension-overlay">
     <div class="suspension-card">
       <div class="suspension-icon">🔒</div>
       <h2>Épreuve Suspendue</h2>
       <p id="suspension-reason-text">
-        Sortie d'écran non autorisée détectée (> 10 secondes).
+        4 avertissements atteints ou sortie d'écran non autorisée (> 10 secondes).
       </p>
+
+      <!-- Compte à rebours de suspension de 5 minutes -->
+      <div id="suspension-countdown-box" style="margin: 16px 0; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; padding: 14px 18px;">
+        <div style="font-size: 0.82rem; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Durée de suspension disciplinaire</div>
+        <div id="suspension-timer-digits" style="font-family: var(--font-mono); font-size: 2.2rem; font-weight: 800; color: #ef4444; letter-spacing: 2px;">05:00</div>
+        <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 4px;">Reprise automatique à la fin du décompte ou sur déblocage direct par l'enseignant.</div>
+      </div>
+
       <p style="font-size: 0.9rem; color: #fca5a5;">
-        Votre terminal a été verrouillé par mesure d'intégrité. Veuillez avertir immédiatement votre surveillant pour demander le déblocage à distance.
+        Votre poste a été verrouillé par mesure d'intégrité. Veuillez avertir votre surveillant pour demander un déblocage anticipé.
       </p>
-      <div style="margin-top: 24px;">
+      <div style="margin-top: 20px;">
         <span class="suspension-status-badge">
-          En attente du signal de déblocage du surveillant...
+          En attente du signal de déblocage ou de la fin du décompte...
         </span>
       </div>
     </div>
@@ -2364,7 +2374,7 @@
           <p style="margin:4px 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Imprimez cette planche et découpez suivant les pointillés pour distribuer les accès individuels.</p>
         </div>
         <div style="display:flex; gap:8px;">
-          <button type="button" id="btn-trigger-print-slips" class="btn btn-primary" style="padding:8px 16px; font-weight:600;">
+          <button type="button" id="btn-execute-print-slips" class="btn btn-primary" style="padding:8px 16px; font-weight:600;">
             🖨️ Lancer l'Impression / PDF
           </button>
           <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-print-credentials-slips" style="padding:8px 14px;">
@@ -2372,7 +2382,7 @@
           </button>
         </div>
       </div>
-      <div id="printable-slips-container" style="background:#ffffff; color:#0f172a; padding:20px; border-radius:8px;">
+      <div id="printable-credentials-slips-container" style="background:#ffffff; color:#0f172a; padding:20px; border-radius:8px;">
         <!-- Cartes à découper injectées dynamiquement -->
       </div>
     </div>

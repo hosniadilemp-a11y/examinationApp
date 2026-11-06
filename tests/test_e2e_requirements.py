@@ -317,7 +317,7 @@ class TestTier1FeatureCoverage:
 
         # Vérification du tableau dans renderTeacherView
         assert "teacher-exams-table" in app_content, "Class 'teacher-exams-table' missing in app.js"
-        assert "Module & Statut" in app_content, "Column 'Module & Statut' missing"
+        assert ("Module & Statut" in app_content or "Statut Session" in app_content), "Column 'Module & Statut' or 'Statut Session' missing"
         assert "Titre de l'Épreuve" in app_content, "Column 'Titre de l'Épreuve' missing"
         assert "Type" in app_content, "Column 'Type' missing"
         assert "Durée" in app_content, "Column 'Durée' missing"

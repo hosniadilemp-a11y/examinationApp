@@ -1,8 +1,10 @@
 """
 Service de génération automatisée d'épreuves officielles Python.
 Permet d'extraire des questions de la banque d'exercices du Centre d'Entraînement Python :
-- Volet Théorique : Sélection de 30 questions (priorité aux questions marquées Exams=True, complétées si besoin),
+- Volet Théorique : Sélection de 40 questions par défaut (priorité aux questions marquées Exams=True, complétées si besoin),
   avec distribution aléatoire de 20 questions par étudiant lors de l'épreuve.
+  Respecte fidèlement les 5 types de questions de la banque (mcq simple/multiple, intruder, yesno -> boolean,
+  simple_blank -> fill_blank avec bloc de code, matching -> appariement).
 - Volet Pratique : Sélection de 10 défis (priorité aux défis marqués is_exam=True, complétés si besoin),
   avec distribution aléatoire de 5 défis par étudiant lors de l'épreuve.
 """
@@ -23,17 +25,107 @@ CODING_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "data", "python_training", "coding_challenges.json"
 )
 
+
 def _load_curriculum_data() -> Dict[str, Any]:
     if not os.path.exists(CURRICULUM_PATH):
         return {"chapters": []}
     with open(CURRICULUM_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def _load_coding_challenges() -> List[Dict[str, Any]]:
     if not os.path.exists(CODING_PATH):
         return []
     with open(CODING_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def normalize_curriculum_question(q_data: Dict[str, Any], idx: int = 1) -> Dict[str, Any]:
+    """
+    Convertit fidèlement une question brute de curriculum.json (mcq, intruder, yesno, simple_blank, matching)
+    vers le schéma normalisé Question (type, prompt_markdown, options, correct_answers, penalty).
+    """
+    raw_type = (q_data.get("type") or "mcq").strip().lower()
+    base_prompt = (q_data.get("text") or q_data.get("prompt") or f"Question Python #{idx}").strip()
+    penalty = float(q_data.get("penalty") or 0.0)
+
+    if raw_type == "yesno":
+        corr_bool = bool(q_data.get("correct", False))
+        return {
+            "type": "boolean",
+            "prompt_markdown": base_prompt,
+            "options": [
+                {"id": "true", "text": "Vrai"},
+                {"id": "false", "text": "Faux"}
+            ],
+            "correct_answers": corr_bool,
+            "negative_penalty": penalty,
+        }
+
+    if raw_type == "simple_blank":
+        code_snippet = (q_data.get("code") or "").strip()
+        prompt_md = base_prompt
+        if code_snippet and code_snippet not in prompt_md:
+            prompt_md = f"{base_prompt}\n\n```python\n{code_snippet}\n```"
+        ans = q_data.get("answer")
+        if ans is None:
+            ans = q_data.get("correct", "")
+        if isinstance(ans, list):
+            corr_list = [str(a).strip() for a in ans if str(a).strip()]
+        else:
+            corr_list = [str(ans).strip()] if str(ans).strip() else [""]
+        return {
+            "type": "fill_blank",
+            "prompt_markdown": prompt_md,
+            "options": [],
+            "correct_answers": corr_list,
+            "negative_penalty": penalty,
+        }
+
+    if raw_type == "matching":
+        pairs = q_data.get("pairs")
+        if not isinstance(pairs, dict):
+            pairs = q_data.get("correct") if isinstance(q_data.get("correct"), dict) else {}
+        left_list = [str(k) for k in pairs.keys()]
+        right_list = [str(v) for v in pairs.values()]
+        return {
+            "type": "matching",
+            "prompt_markdown": base_prompt,
+            "options": {"left": left_list, "right": right_list},
+            "correct_answers": {str(k): str(v) for k, v in pairs.items()},
+            "negative_penalty": penalty,
+        }
+
+    # Cas QCM ('mcq', 'intruder', 'single_choice', 'multi_choice')
+    opts_raw = q_data.get("options") or []
+    opts_clean = []
+    for o in opts_raw:
+        if isinstance(o, dict):
+            opts_clean.append(str(o.get("text", o.get("id", ""))))
+        else:
+            opts_clean.append(str(o))
+
+    corr_raw = q_data.get("correct", 0)
+    if isinstance(corr_raw, list):
+        if len(corr_raw) > 1:
+            q_type = "multi_choice"
+            corr_val = [int(x) if isinstance(x, int) or (isinstance(x, str) and x.isdigit()) else x for x in corr_raw]
+        else:
+            q_type = "single_choice"
+            first_c = corr_raw[0] if corr_raw else 0
+            corr_val = int(first_c) if isinstance(first_c, int) or (isinstance(first_c, str) and str(first_c).isdigit()) else 0
+    else:
+        q_type = "single_choice"
+        corr_val = int(corr_raw) if isinstance(corr_raw, int) or (isinstance(corr_raw, str) and str(corr_raw).isdigit()) else 0
+
+    return {
+        "type": q_type,
+        "prompt_markdown": base_prompt,
+        "options": opts_clean,
+        "correct_answers": corr_val,
+        "negative_penalty": penalty,
+    }
+
 
 def get_python_bank_stats() -> Dict[str, Any]:
     """
@@ -76,7 +168,6 @@ def get_python_bank_stats() -> Dict[str, Any]:
             "exam_marked_count": ch_exam_count
         })
 
-    # Statistiques des défis pratiques
     coding_stats = {
         "total_challenges": len(coding),
         "exam_marked_count": sum(1 for c in coding if c.get("is_exam") or c.get("Exams")),
@@ -107,6 +198,7 @@ def get_python_bank_stats() -> Dict[str, Any]:
         "practical": coding_stats
     }
 
+
 def generate_python_exam(
     db: Session,
     title: str,
@@ -125,7 +217,6 @@ def generate_python_exam(
     - Épreuve Pratique : Sélection de 10 défis de programmation (priorité à is_exam=True),
       avec tag [CONFIG_RANDOM_STUDENT_QUESTIONS=5] pour que chaque étudiant reçoive 5 défis.
     """
-    # Assurer que le module PYTHON_INIT existe
     mod = db.query(Module).filter(Module.code == "PYTHON_INIT").first()
     if not mod:
         mod = Module(code="PYTHON_INIT", title="Programmation Python Fondamentale")
@@ -139,7 +230,7 @@ def generate_python_exam(
         target_total = target_count if target_count else (requested_by_diff if requested_by_diff > 0 else 40)
         questions_per_student = 20
         tag = f"[CONFIG_RANDOM_STUDENT_QUESTIONS={questions_per_student}]"
-        instructions = f"Épreuve Officielle Théorique Python. QCM et questions de compréhension. Tirage au sort de 20 questions parmi {target_total} pour chaque candidat. {tag}"
+        instructions = f"Épreuve Officielle Théorique Python. Tirage au sort de 20 questions parmi {target_total} pour chaque candidat (ordre et choix mélangés). {tag}"
 
         curr = _load_curriculum_data()
         all_mcqs = []
@@ -151,16 +242,13 @@ def generate_python_exam(
                 q_copy["chapter_id"] = ch.get("id")
                 all_mcqs.append(q_copy)
 
-        # Filtrage / priorisation : questions marquées Exams=True en premier
         exam_flagged = [q for q in all_mcqs if q.get("Exams") or q.get("is_exam")]
         other_questions = [q for q in all_mcqs if not (q.get("Exams") or q.get("is_exam"))]
 
-        # Si des quotas de difficulté sont demandés
         selected_pool = []
         if difficulty_counts:
-            for diff, target_count in difficulty_counts.items():
+            for diff, diff_target in difficulty_counts.items():
                 diff_norm = diff.lower()
-                # Priorité aux questions marquées examen
                 flagged_for_diff = [q for q in exam_flagged if q.get("difficulty", "medium").lower() == diff_norm]
                 other_for_diff = [q for q in other_questions if q.get("difficulty", "medium").lower() == diff_norm]
 
@@ -168,9 +256,8 @@ def generate_python_exam(
                 random.shuffle(other_for_diff)
 
                 combined_for_diff = flagged_for_diff + other_for_diff
-                selected_pool.extend(combined_for_diff[:target_count])
+                selected_pool.extend(combined_for_diff[:diff_target])
 
-        # Compléter si le quota demandé n'atteint pas 30 ou si difficulty_counts n'est pas fourni
         random.shuffle(exam_flagged)
         random.shuffle(other_questions)
         candidates = exam_flagged + other_questions
@@ -183,7 +270,6 @@ def generate_python_exam(
                 selected_pool.append(c)
                 seen_ids.add(c.get("id"))
 
-        # Si la base contient moins de 30 questions, prendre le maximum
         final_questions_data = selected_pool[:target_total]
 
         new_exam = Exam(
@@ -204,36 +290,25 @@ def generate_python_exam(
         db.add(new_exam)
         db.flush()
 
-        # Attribution des points par question : 1 point par question pour l'étudiant
         pts_per_q = round(20.0 / questions_per_student, 2)
         for idx, q_data in enumerate(final_questions_data, start=1):
             q_id = f"Q-PY-THEO-{uuid.uuid4().hex[:8].upper()}"
-            opts = q_data.get("options", [])
-            corr = q_data.get("correct")
-
-            # Normalisation options
-            opts_clean = []
-            for o in opts:
-                if isinstance(o, dict):
-                    opts_clean.append(o.get("text", str(o)))
-                else:
-                    opts_clean.append(str(o))
+            norm = normalize_curriculum_question(q_data, idx)
 
             new_q = Question(
                 id=q_id,
                 exam_id=new_exam.id,
                 ordering=idx,
-                type="single_choice",
-                prompt_markdown=q_data.get("text") or q_data.get("prompt") or f"Question Python #{idx}",
+                type=norm["type"],
+                prompt_markdown=norm["prompt_markdown"],
                 points=pts_per_q,
-                negative_penalty=float(q_data.get("penalty") or 0.0),
-                options_json=json.dumps(opts_clean),
-                correct_answers_json=json.dumps([corr] if isinstance(corr, int) else (corr or [0]))
+                negative_penalty=norm["negative_penalty"],
+                options_json=json.dumps(norm["options"], ensure_ascii=False),
+                correct_answers_json=json.dumps(norm["correct_answers"], ensure_ascii=False)
             )
             db.add(new_q)
 
     else:
-        # Épreuve Pratique
         target_total = 10
         challenges_per_student = 5
         tag = f"[CONFIG_RANDOM_STUDENT_QUESTIONS={challenges_per_student}]"
@@ -246,7 +321,6 @@ def generate_python_exam(
         random.shuffle(exam_flagged)
         random.shuffle(other_challenges)
 
-        # Priorité aux défis marqués is_exam=True, complétés si pas assez
         candidates = exam_flagged + other_challenges
         final_challenges = candidates[:target_total]
 
@@ -272,7 +346,6 @@ def generate_python_exam(
         for idx, c_data in enumerate(final_challenges, start=1):
             q_id = f"Q-PY-PRAC-{uuid.uuid4().hex[:8].upper()}"
 
-            # Construction des options et tests
             public_tests = c_data.get("public_tests", [])
             hidden_tests = c_data.get("hidden_tests", [])
             starter_code = c_data.get("starter_code", "# Écrivez votre code Python ici\n")
@@ -299,12 +372,11 @@ def generate_python_exam(
                 prompt_markdown=prompt_md,
                 points=pts_per_challenge,
                 negative_penalty=0.0,
-                options_json=json.dumps(options_dict),
-                correct_answers_json=json.dumps(correct_dict)
+                options_json=json.dumps(options_dict, ensure_ascii=False),
+                correct_answers_json=json.dumps(correct_dict, ensure_ascii=False)
             )
             db.add(new_q)
 
-    # Assigner les groupes demandés ou tous les groupes par défaut
     if assigned_groups:
         for gid in assigned_groups:
             grp = db.query(Group).filter(Group.id == gid).first()
@@ -319,4 +391,3 @@ def generate_python_exam(
     db.commit()
     db.refresh(new_exam)
     return new_exam
-

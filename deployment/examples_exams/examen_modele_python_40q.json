@@ -1,88 +1,734 @@
 {
+  "id": "EXAM-THEO-PYTHON",
+  "title": "Épreuve Officielle : Théorie Python",
   "module_code": "PYTHON_INIT",
-  "title": "Examen Officiel : Programmation Python Fondamentale",
-  "instructions": "Épreuve officielle sur poste individuel. Durée : 45 minutes. Calculatrice et documents interdits.",
   "duration_minutes": 45,
   "global_points": 20.0,
-  "navigation_mode": "free",
-  "shuffle_questions": true,
-  "shuffle_options": true,
-  "partial_credit_enabled": true,
-  "default_negative_penalty": 0.5,
-  "group_ids": ["DEV-IA"],
+  "instructions": "Épreuve officielle théorique de programmation Python (Banque de 40 questions : tirage aléatoire de 20 questions par étudiant, ordre des questions et des choix mélangés). [CONFIG_RANDOM_STUDENT_QUESTIONS=20]",
   "questions": [
     {
+      "id": "Q-TPY-1",
       "ordering": 1,
-      "type": "boolean",
-      "prompt_markdown": "En Python, les dictionnaires (`dict`) sont des structures de données mutables.",
-      "points": 2.0,
-      "negative_penalty": 0.5,
-      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
-      "correct_answers_json": "true"
-    },
-    {
-      "ordering": 2,
       "type": "single_choice",
-      "prompt_markdown": "Que renvoie l'expression suivante en Python ?\n\n```python\nlen(set([1, 2, 2, 3, 3, 3]))\n```",
-      "points": 2.0,
+      "prompt_markdown": "Quelle est la sortie exacte de l'expression Python `[x**2 for x in range(4) if x % 2 == 0]` ?",
+      "points": 1.0,
       "negative_penalty": 0.5,
-      "options_json": "[{\"id\": \"0\", \"text\": \"6\"}, {\"id\": \"1\", \"text\": \"3\"}, {\"id\": \"2\", \"text\": \"1\"}, {\"id\": \"3\", \"text\": \"TypeError\"}]",
-      "correct_answers_json": "[1]"
+      "options": [
+        "[0, 4]",
+        "[0, 1, 4, 9]",
+        "[4, 16]",
+        "[2, 4]"
+      ],
+      "correct_answers": 0
     },
     {
-      "ordering": 3,
+      "id": "Q-TPY-2",
+      "ordering": 2,
       "type": "multi_choice",
-      "prompt_markdown": "Parmi les types de données suivants, lesquels sont **immutables** en Python ?",
-      "points": 3.0,
+      "prompt_markdown": "Parmi les types suivants en Python, lesquels sont **immuables** (immutable) ? *(Plusieurs réponses)*",
+      "points": 1.0,
       "negative_penalty": 0.5,
-      "options_json": "[{\"id\": \"0\", \"text\": \"tuple\"}, {\"id\": \"1\", \"text\": \"list\"}, {\"id\": \"2\", \"text\": \"str\"}, {\"id\": \"3\", \"text\": \"int\"}, {\"id\": \"4\", \"text\": \"dict\"}]",
-      "correct_answers_json": "[0, 2, 3]"
+      "options": [
+        "tuple",
+        "list",
+        "str",
+        "dict",
+        "frozenset"
+      ],
+      "correct_answers": [
+        0,
+        2,
+        4
+      ]
     },
     {
+      "id": "Q-TPY-3",
+      "ordering": 3,
+      "type": "boolean",
+      "prompt_markdown": "En Python 3, l'opérateur `//` effectue toujours une division entière (floor division).",
+      "points": 1.0,
+      "negative_penalty": 0.5,
+      "options": [],
+      "correct_answers": true
+    },
+    {
+      "id": "Q-TPY-4",
       "ordering": 4,
       "type": "fill_blank",
-      "prompt_markdown": "Quel mot-clé permet de déclarer une fonction anonyme en une seule ligne en Python ?",
-      "points": 2.0,
-      "negative_penalty": 0.0,
-      "options_json": "[]",
-      "correct_answers_json": "[\"lambda\"]"
+      "prompt_markdown": "Quel mot-clé Python permet de définir une fonction génératrice qui produit des valeurs à la demande ? `_____`",
+      "points": 1.0,
+      "negative_penalty": 0.5,
+      "options": [],
+      "correct_answers": [
+        "yield"
+      ]
     },
     {
+      "id": "Q-TPY-5",
       "ordering": 5,
       "type": "matching",
-      "prompt_markdown": "Associez chaque méthode spéciale dunder à son rôle usuel :",
-      "points": 4.0,
-      "negative_penalty": 0.0,
-      "options_json": "{\"left\": [\"__init__\", \"__str__\", \"__len__\", \"__eq__\"], \"right\": [\"Initialisation de l'instance\", \"Représentation textuelle conviviale\", \"Calcul de la taille / longueur\", \"Comparaison d'égalité ==\"]}",
-      "correct_answers_json": "{\"__init__\": \"Initialisation de l'instance\", \"__str__\": \"Représentation textuelle conviviale\", \"__len__\": \"Calcul de la taille / longueur\", \"__eq__\": \"Comparaison d'égalité ==\"}"
+      "prompt_markdown": "Associez chaque méthode ou fonction Python à son rôle exact :",
+      "points": 1.0,
+      "negative_penalty": 0.5,
+      "options": [
+        {
+          "left": "len(obj)",
+          "right": "Retourne le nombre d'éléments d'une collection"
+        },
+        {
+          "left": "enumerate(it)",
+          "right": "Fournit des tuples (indice, valeur) lors d'une itération"
+        },
+        {
+          "left": "zip(a, b)",
+          "right": "Agrège en parallèle les éléments de plusieurs itérables"
+        }
+      ],
+      "correct_answers": {
+        "len(obj)": "Retourne le nombre d'éléments d'une collection",
+        "enumerate(it)": "Fournit des tuples (indice, valeur) lors d'une itération",
+        "zip(a, b)": "Agrège en parallèle les éléments de plusieurs itérables"
+      }
     },
     {
+      "id": "Q-TPY-6",
       "ordering": 6,
       "type": "single_choice",
-      "prompt_markdown": "Quelle est la complexité temporelle moyenne d'une recherche d'élément (`x in s`) dans un `set` Python contenant $n$ éléments ?",
-      "points": 2.0,
-      "negative_penalty": 0.5,
-      "options_json": "[{\"id\": \"0\", \"text\": \"O(1)\"}, {\"id\": \"1\", \"text\": \"O(n)\"}, {\"id\": \"2\", \"text\": \"O(log n)\"}, {\"id\": \"3\", \"text\": \"O(n log n)\"}]",
-      "correct_answers_json": "[0]"
+      "prompt_markdown": "Comment insère-t-on un commentaire sur une ligne en Python ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "// commentaire",
+        "# commentaire",
+        "/* commentaire */",
+        "<!-- commentaire -->",
+        "-- commentaire",
+        "## commentaire"
+      ],
+      "correct_answers": 1
     },
     {
+      "id": "Q-TPY-7",
       "ordering": 7,
-      "type": "fill_blank",
-      "prompt_markdown": "Dans un bloc `try ... except`, quel bloc facultatif est garanti de s'exécuter qu'une exception soit levée ou non ?",
-      "points": 2.0,
-      "negative_penalty": 0.0,
-      "options_json": "[]",
-      "correct_answers_json": "[\"finally\"]"
+      "type": "single_choice",
+      "prompt_markdown": "Quel opérateur effectue l'exponentiation ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "^",
+        "**",
+        "^^",
+        "exp()",
+        "pow",
+        "/*"
+      ],
+      "correct_answers": 1
     },
     {
+      "id": "Q-TPY-8",
       "ordering": 8,
-      "type": "boolean",
-      "prompt_markdown": "En Python, l'opérateur `is` teste l'identité en mémoire (`id(a) == id(b)`), tandis que l'opérateur `==` teste l'égalité de valeur.",
-      "points": 3.0,
-      "negative_penalty": 0.5,
-      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
-      "correct_answers_json": "true"
+      "type": "single_choice",
+      "prompt_markdown": "Quelle valeur retourne l'expression `3 * 'ab' + 'c'` ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "abababc",
+        "abababc",
+        "3abc",
+        "ab3c",
+        "Erreur",
+        "aabbc"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-9",
+      "ordering": 9,
+      "type": "multi_choice",
+      "prompt_markdown": "Quelle est la différence entre `==` et `is` ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "== compare les valeurs, is compare les identités",
+        "is compare les valeurs, == compare les références",
+        "Aucune différence",
+        "== ne fonctionne que sur les nombres",
+        "is est réservé aux singletons",
+        "is ne supporte pas les booléens"
+      ],
+      "correct_answers": [
+        0,
+        4
+      ]
+    },
+    {
+      "id": "Q-TPY-10",
+      "ordering": 10,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle sera la sortie de :\nprint(type(lambda: None))",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "<class 'function'>",
+        "<class 'lambda'>",
+        "<class 'NoneType'>",
+        "<class 'callable'>",
+        "<class 'type'>",
+        "Erreur de syntaxe"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-11",
+      "ordering": 11,
+      "type": "single_choice",
+      "prompt_markdown": "Quel sera le résultat de l'exécution suivante ?\n\nx = 10\ndef f():\n    print(x)\n    x = 5\nf()",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "10",
+        "5",
+        "UnboundLocalError",
+        "NameError",
+        "None",
+        "0"
+      ],
+      "correct_answers": 2
+    },
+    {
+      "id": "Q-TPY-12",
+      "ordering": 12,
+      "type": "fill_blank",
+      "prompt_markdown": "Complétez le code ci-dessous pour ajouter le nombre 4 à la liste `x` :\n\n```python\nx = [1, 2, 3]\nx.____(4)\nprint(x)\n```",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": [],
+      "correct_answers": [
+        "append"
+      ]
+    },
+    {
+      "id": "Q-TPY-13",
+      "ordering": 13,
+      "type": "fill_blank",
+      "prompt_markdown": "Complétez le code ci-dessous pour insérer la valeur 10 à la première position (index 0) de la liste `x` :\n\n```python\nx = [1, 2, 3]\nx.____(0, 10)\nprint(x)\n```",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": [],
+      "correct_answers": [
+        "insert"
+      ]
+    },
+    {
+      "id": "Q-TPY-14",
+      "ordering": 14,
+      "type": "single_choice",
+      "prompt_markdown": "Que produit l'expression `bool('False')` en Python ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "True",
+        "False",
+        "Lève une ValueError",
+        "Lève une TypeError"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-15",
+      "ordering": 15,
+      "type": "single_choice",
+      "prompt_markdown": "Que produit le code suivant ?\n```python\nx = 10\ndef f():\n    print(x)\n    x = 20\nf()\n```",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "10",
+        "20",
+        "Lève une UnboundLocalError",
+        "Affiche 10 puis lève une NameError"
+      ],
+      "correct_answers": 2
+    },
+    {
+      "id": "Q-TPY-16",
+      "ordering": 16,
+      "type": "fill_blank",
+      "prompt_markdown": "Complétez le code ci-dessous pour obtenir le quotient et le reste de la division de 10 par 3 en une seule opération :\n\n```python\nquotient, reste = ____(10, 3)\n```",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": [],
+      "correct_answers": [
+        "divmod"
+      ]
+    },
+    {
+      "id": "Q-TPY-17",
+      "ordering": 17,
+      "type": "multi_choice",
+      "prompt_markdown": "Parmi les suivants, lequel est immuable (tuple) ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "(1, 2, 3)",
+        "[1, 2, 3]",
+        "{1, 2, 3}",
+        "{'a':1}",
+        "bytearray(b'abc')",
+        "frozenset({1,2})"
+      ],
+      "correct_answers": [
+        0,
+        5
+      ]
+    },
+    {
+      "id": "Q-TPY-18",
+      "ordering": 18,
+      "type": "multi_choice",
+      "prompt_markdown": "Quel(s) type(s) Python peu(ven)t servir de clé de dictionnaire ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "int",
+        "str",
+        "tuple contenant des entiers",
+        "list",
+        "dict",
+        "frozenset"
+      ],
+      "correct_answers": [
+        0,
+        1,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "Q-TPY-19",
+      "ordering": 19,
+      "type": "single_choice",
+      "prompt_markdown": "Soit a = [1,2,[3,4]] ; b = a.copy() ; b[2][0] = 99. Que vaut a ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "[1,2,[3,4]]",
+        "[1,2,[99,4]]",
+        "[1,2,99,4]",
+        "Leve une exception",
+        "a n'est pas modifié",
+        "[1,2,[3,4,99]]"
+      ],
+      "correct_answers": 1
+    },
+    {
+      "id": "Q-TPY-20",
+      "ordering": 20,
+      "type": "multi_choice",
+      "prompt_markdown": "Quel(s) type(s) supporte(nt) l'opérateur `|` en Python (sans définition de __or__ personnalisée) ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "set",
+        "frozenset",
+        "dict (Python 3.9+ pour la fusion)",
+        "int (bitwise OR)",
+        "bool",
+        "liste"
+      ],
+      "correct_answers": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "Q-TPY-21",
+      "ordering": 21,
+      "type": "single_choice",
+      "prompt_markdown": "Lequel des types suivants n'est PAS un type numérique natif en Python ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "int",
+        "double",
+        "float",
+        "complex"
+      ],
+      "correct_answers": 1
+    },
+    {
+      "id": "Q-TPY-22",
+      "ordering": 22,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle est la sortie de `print((1, 2) + (3,))` ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "(1, 2, 3)",
+        "(4, 2)",
+        "Lève une TypeError",
+        "(1, 2, (3,))"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-23",
+      "ordering": 23,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque valeur littérale à son type de collection :",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": {
+        "left": [
+          "[1, 2]",
+          "{\"a\": 1}",
+          "{1, 2}"
+        ],
+        "right": [
+          "list",
+          "dict",
+          "set"
+        ]
+      },
+      "correct_answers": {
+        "[1, 2]": "list",
+        "{\"a\": 1}": "dict",
+        "{1, 2}": "set"
+      }
+    },
+    {
+      "id": "Q-TPY-24",
+      "ordering": 24,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque méthode de dictionnaire à son comportement :",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": {
+        "left": [
+          "items()",
+          "keys()",
+          "values()"
+        ],
+        "right": [
+          "Renvoie les paires (clé, valeur)",
+          "Renvoie les clés du dictionnaire",
+          "Renvoie les valeurs"
+        ]
+      },
+      "correct_answers": {
+        "items()": "Renvoie les paires (clé, valeur)",
+        "keys()": "Renvoie les clés du dictionnaire",
+        "values()": "Renvoie les valeurs"
+      }
+    },
+    {
+      "id": "Q-TPY-25",
+      "ordering": 25,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle structure permet de répéter un bloc tant qu'une condition est vraie ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "for",
+        "while",
+        "do...while",
+        "repeat",
+        "loop",
+        "until"
+      ],
+      "correct_answers": 1
+    },
+    {
+      "id": "Q-TPY-26",
+      "ordering": 26,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle(s) structure(s) Python gère(nt) la correspondance de motifs (pattern matching) ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "if/elif/else",
+        "match/case (Python 3.10+)",
+        "switch/case",
+        "try/except",
+        "ternary operator",
+        "for/else"
+      ],
+      "correct_answers": 1
+    },
+    {
+      "id": "Q-TPY-27",
+      "ordering": 27,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle sera la sortie de ce code ?\nfor i in range(3):\n    print(i)\nelse:\n    print('fini')",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "0 1 2 fini",
+        "0 1 2",
+        "fini",
+        "0 1 2 None",
+        "Erreur de syntaxe",
+        "0 1 2 puis fini sur la même ligne"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-28",
+      "ordering": 28,
+      "type": "multi_choice",
+      "prompt_markdown": "Quand utilise-t-on `raise ... from ...` dans la gestion des exceptions ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "Pour enchaîner des exceptions (exception chain) en conservant le contexte",
+        "Pour supprimer le traceback de l'exception originale",
+        "Pour convertir une exception en une autre tout en gardant la cause",
+        "Pour lever plusieurs exceptions simultanément",
+        "C'est un sucre syntaxique pour `raise exc1; raise exc2`",
+        "Nécessite que la cause soit une instance d'une sous-classe de BaseException"
+      ],
+      "correct_answers": [
+        0,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "Q-TPY-29",
+      "ordering": 29,
+      "type": "single_choice",
+      "prompt_markdown": "Lequel des opérateurs logiques suivants n'existe PAS nativement en Python ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "and",
+        "or",
+        "not",
+        "xor"
+      ],
+      "correct_answers": 3
+    },
+    {
+      "id": "Q-TPY-30",
+      "ordering": 30,
+      "type": "single_choice",
+      "prompt_markdown": "Quel est l'effet de `pass` dans un bloc de code ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "Il arrête l'exécution",
+        "Il renvoie None",
+        "Il ne fait rien (instruction vide)",
+        "Il lève une exception"
+      ],
+      "correct_answers": 2
+    },
+    {
+      "id": "Q-TPY-31",
+      "ordering": 31,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque instruction de contrôle à son effet dans une boucle :",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": {
+        "left": [
+          "break",
+          "continue",
+          "pass"
+        ],
+        "right": [
+          "Termine la boucle immédiatement",
+          "Passe à l'itération suivante",
+          "Ne fait rien (instruction vide)"
+        ]
+      },
+      "correct_answers": {
+        "break": "Termine la boucle immédiatement",
+        "continue": "Passe à l'itération suivante",
+        "pass": "Ne fait rien (instruction vide)"
+      }
+    },
+    {
+      "id": "Q-TPY-32",
+      "ordering": 32,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque structure conditionnelle à son type d'action :",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": {
+        "left": [
+          "elif",
+          "else",
+          "if"
+        ],
+        "right": [
+          "Exécute si la précédente a échoué et la nouvelle est vraie",
+          "Exécute si toutes les autres ont échoué",
+          "Exécute si la condition initiale est vraie"
+        ]
+      },
+      "correct_answers": {
+        "elif": "Exécute si la précédente a échoué et la nouvelle est vraie",
+        "else": "Exécute si toutes les autres ont échoué",
+        "if": "Exécute si la condition initiale est vraie"
+      }
+    },
+    {
+      "id": "Q-TPY-33",
+      "ordering": 33,
+      "type": "single_choice",
+      "prompt_markdown": "Quel module fournit les opérations mathématiques de base (sqrt, sin, etc.) ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "math",
+        "cmath",
+        "numpy",
+        "random",
+        "statistics",
+        "decimal"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-34",
+      "ordering": 34,
+      "type": "multi_choice",
+      "prompt_markdown": "Quels modules de la bibliothèque standard permettent de gérer les arguments de ligne de commande ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "sys.argv",
+        "argparse",
+        "getopt",
+        "click",
+        "typer",
+        "optparse (obsolète)"
+      ],
+      "correct_answers": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "Q-TPY-35",
+      "ordering": 35,
+      "type": "multi_choice",
+      "prompt_markdown": "Quelle méthode de `subprocess.run()` capture proprement stdout sans bloquer ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "capture_output=True",
+        "stdout=subprocess.PIPE",
+        "text=True",
+        "shell=True",
+        "check=True",
+        "timeout=5"
+      ],
+      "correct_answers": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "Q-TPY-36",
+      "ordering": 36,
+      "type": "single_choice",
+      "prompt_markdown": "Quel module remplace `os.chdir` et `os.getcwd` par une approche orientée objet moderne ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "pathlib.Path.cwd() et chdir()",
+        "os.path",
+        "shutil",
+        "sys",
+        "os.scandir()",
+        "None, il n'existe pas de méthode orientée objet dans la stdlib"
+      ],
+      "correct_answers": 0
+    },
+    {
+      "id": "Q-TPY-37",
+      "ordering": 37,
+      "type": "single_choice",
+      "prompt_markdown": "Lequel de ces modules standard n'est PAS principalement conçu pour manipuler des dates et du temps ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "datetime",
+        "time",
+        "calendar",
+        "math"
+      ],
+      "correct_answers": 3
+    },
+    {
+      "id": "Q-TPY-38",
+      "ordering": 38,
+      "type": "single_choice",
+      "prompt_markdown": "Dans le module `datetime`, quelle méthode analyse une chaîne de caractères pour créer un objet `datetime` avec un format donné ?",
+      "points": 1.0,
+      "negative_penalty": 0.25,
+      "options": [
+        "strftime",
+        "strptime",
+        "parse",
+        "to_datetime"
+      ],
+      "correct_answers": 1
+    },
+    {
+      "id": "Q-TPY-39",
+      "ordering": 39,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque fonction de module standard à son action :",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": {
+        "left": [
+          "math.floor()",
+          "random.shuffle()",
+          "sys.exit()"
+        ],
+        "right": [
+          "Arrondir vers le bas",
+          "Mélanger une liste",
+          "Quitter le programme"
+        ]
+      },
+      "correct_answers": {
+        "math.floor()": "Arrondir vers le bas",
+        "random.shuffle()": "Mélanger une liste",
+        "sys.exit()": "Quitter le programme"
+      }
+    },
+    {
+      "id": "Q-TPY-40",
+      "ordering": 40,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque fonction de module standard à son action :",
+      "points": 1.0,
+      "negative_penalty": 0.0,
+      "options": {
+        "left": [
+          "math.ceil()",
+          "os.path.exists()",
+          "random.randint(1, 6)"
+        ],
+        "right": [
+          "Arrondir vers le haut",
+          "Vérifie si un chemin de fichier existe",
+          "Génère un entier de 1 à 6 inclus"
+        ]
+      },
+      "correct_answers": {
+        "math.ceil()": "Arrondir vers le haut",
+        "os.path.exists()": "Vérifie si un chemin de fichier existe",
+        "random.randint(1, 6)": "Génère un entier de 1 à 6 inclus"
+      }
     }
   ]
 }
-

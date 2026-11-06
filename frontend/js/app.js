@@ -2866,7 +2866,7 @@ class AppController {
           <td style="padding:12px 10px; vertical-align:middle;">
             <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border-color:#3b82f6; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
           </td>
-          <td style="padding:12px 10px; vertical-align:middle;">
+          <td style="padding:12px 10px; vertical-align:middle; white-space:nowrap;">
             ${statusBadgeHtml}
           </td>
           <td style="padding:12px 10px; vertical-align:middle;">
@@ -3374,7 +3374,6 @@ class AppController {
     setBtnVisible('btn-proctor-launch-all', isWaiting);
     // 2. Pendant l'épreuve (in_progress) : uniquement "Clôturer", "+5 Min (Tous)", "Rafraîchir"
     setBtnVisible('btn-proctor-close-all', isInProgress);
-    setBtnVisible('btn-proctor-extend-all', isInProgress);
     setBtnVisible('btn-proctor-refresh', !isFinished);
     // 3. Après clôture (completed/finished/closed) : uniquement les exports finaux & Analyse Psychométrique
     setBtnVisible('btn-proctor-download-grades-csv', isFinished);
@@ -3436,14 +3435,16 @@ class AppController {
               <div class="proctor-progress-fill" style="width:${c.progress_pct}%; height:100%; background:#3b82f6; transition:width 0.3s ease;"></div>
             </div>
           </td>
-          <td style="padding:12px 16px; font-family:var(--font-mono); font-size:0.88rem; color:#93c5fd;">
-            ${timeText}
-          </td>
           <td style="padding:12px 16px;">
             ${c.suspension_count > 0 ? `
               <span class="user-tag" style="background:rgba(239,68,68,0.15); color:#fca5a5; border-color:rgba(239,68,68,0.3); font-weight:600; font-size:0.78rem;">
                 ⚠️ ${c.suspension_count} avert.
               </span>
+              ${c.status === 'suspended' && c.suspension_remaining_seconds ? `
+                <span class="user-tag" style="background:rgba(239,68,68,0.25); color:#ef4444; font-family:var(--font-mono); font-weight:700; font-size:0.75rem;">
+                  ⏱️ ${Math.floor(c.suspension_remaining_seconds / 60)}m ${c.suspension_remaining_seconds % 60}s
+                </span>
+              ` : ''}
               ${c.suspension_reason ? `<div style="font-size:0.75rem; color:#f87171; margin-top:2px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${this._escapeHtml(c.suspension_reason)}">${this._escapeHtml(c.suspension_reason)}</div>` : ''}
             ` : '<span style="color:var(--text-muted); font-size:0.8rem;">0 alerte</span>'}
           </td>
@@ -3463,11 +3464,7 @@ class AppController {
                   🛑 Forcer
                 </button>
               ` : ''}
-              ${c.status === 'in_progress' ? `
-                <button class="btn btn-secondary btn-card-extend" data-sid="${c.student_id}" style="padding:4px 8px; font-size:0.78rem;">
-                  +5m
-                </button>
-              ` : ''}
+
               ${c.status === 'not_entered' ? `
                 <span style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Poste non connecté</span>
               ` : ''}
@@ -3530,27 +3527,64 @@ class AppController {
     }
 
     if (data.recent_audit_logs && data.recent_audit_logs.length) {
-      const feed = document.getElementById('proctor-live-feed');
-      if (feed && !feed.hasChildNodes()) {
-        data.recent_audit_logs.forEach(l => {
-          this._logProctorFeed(`[${new Date(l.timestamp).toLocaleTimeString('fr-FR')}] [${l.event_type}] ${JSON.stringify(l.details)}`);
-        });
-      }
+      this._loggedAuditLogIds = this._loggedAuditLogIds || new Set();
+      data.recent_audit_logs.forEach(l => {
+        if (!this._loggedAuditLogIds.has(l.id)) {
+          this._loggedAuditLogIds.add(l.id);
+          const detailStr = typeof l.details === 'object' ? JSON.stringify(l.details) : (l.details || '');
+          this._logProctorFeed(`[${new Date(l.timestamp).toLocaleTimeString('fr-FR')}] [${l.event_type}] Étudiant ${l.student_id || 'Système'} : ${detailStr}`);
+        }
+      });
     }
   }
 
   _handleProctorWebSocketMessage(msg, sessionId) {
     const timeStr = new Date().toLocaleTimeString('fr-FR');
-    if (msg.type === 'STUDENT_UNLOCKED') {
-      this._logProctorFeed(`[${timeStr}] 🔓 Étudiant débloqué.`);
+    if (msg.type === 'STUDENT_CONNECTED') {
+      this._logProctorFeed(`[${timeStr}] 🟢 Étudiant ${msg.student_id} connecté au poste d'épreuve.`);
+    } else if (msg.type === 'STUDENT_DISCONNECTED') {
+      this._logProctorFeed(`[${timeStr}] 🔴 Déconnexion détectée pour l'étudiant ${msg.student_id}.`);
+    } else if (msg.type === 'STUDENT_UNLOCKED') {
+      this._logProctorFeed(`[${timeStr}] 🔓 Étudiant ${msg.student_id} débloqué par le surveillant.`);
     } else if (msg.type === 'STUDENT_SUBMITTED') {
       this._logProctorFeed(`[${timeStr}] ✅ Épreuve soumise par ${msg.student_id}. Note : ${msg.final_mark}/20.`);
     } else if (msg.type === 'SECURITY_EVENT') {
-      this._logProctorFeed(`[${timeStr}] ⚠️ Alerte sécurité : ${msg.event_type || 'Avertissement'} sur le poste ${msg.student_id}.`);
+      const suspBadge = msg.is_suspended ? ' ⛔ SUSPENDU (5 MIN)' : '';
+      this._logProctorFeed(`[${timeStr}] ⚠️ Sécurité [${msg.event_type || 'Avertissement'}] : ${msg.student_name || msg.student_id} (${msg.suspension_count || 1} avert.) — ${msg.reason || 'Sortie plein écran/focus'}${suspBadge}`);
     } else {
-      this._logProctorFeed(`[${timeStr}] 📡 Événement [${msg.type || 'TELEMETRY'}] reçu.`);
+      this._logProctorFeed(`[${timeStr}] 📡 Événement [${msg.type || 'TELEMETRY'}] poste ${msg.student_id || ''}.`);
     }
     this.refreshProctorOverview(sessionId);
+  }
+
+  _connectStudentTelemetryWebSocket(sessionId, studentId) {
+    if (this._studentWs) {
+      try { this._studentWs.close(); } catch (_) {}
+      this._studentWs = null;
+    }
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}/api/proctor/ws/session/${sessionId}/student/${studentId}`;
+    try {
+      this._studentWs = new WebSocket(wsUrl);
+      this._studentWs.onopen = () => {
+        console.log(`[StudentTelemetry] Connecté au canal de session ${sessionId}`);
+      };
+      this._studentWs.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'ATTEMPT_UNLOCKED') {
+            if (this.activeAntiCheat) {
+              this.activeAntiCheat._unlockSuspension();
+            }
+            this.hideSuspensionScreen();
+          }
+        } catch (_) {}
+      };
+      this._studentWs.onerror = () => {};
+      this._studentWs.onclose = () => {
+        this._studentWs = null;
+      };
+    } catch (_) {}
   }
 
   _logProctorFeed(text) {
@@ -3773,7 +3807,7 @@ class AppController {
     if (btnPrintTeacherSlips) {
       btnPrintTeacherSlips.onclick = () => this.openPrintCredentialsSlipsModal('teacher');
     }
-    const btnExecPrintSlips = document.getElementById('btn-execute-print-slips');
+    const btnExecPrintSlips = document.getElementById('btn-execute-print-slips') || document.getElementById('btn-trigger-print-slips');
     if (btnExecPrintSlips) {
       btnExecPrintSlips.onclick = () => this.printCredentialsSlipsWindow();
     }
@@ -6294,7 +6328,7 @@ class AppController {
   async openPrintCredentialsSlipsModal(role = 'student') {
     const modal = document.getElementById('modal-print-credentials-slips');
     const titleEl = document.getElementById('print-slips-modal-title');
-    const container = document.getElementById('printable-credentials-slips-container');
+    const container = document.getElementById('printable-credentials-slips-container') || document.getElementById('printable-slips-container');
     if (!modal || !container) return;
 
     this._currentPrintSlipsRole = role;

@@ -35,7 +35,46 @@ export class ExamRunner {
     this.currentIndex = 0;
     this._startTimer();
     this._attachKeyboardNavigation();
+    this._initFontScaleControls();
     this.render();
+  }
+
+  _initFontScaleControls() {
+    const viewExam = document.getElementById('view-exam');
+    const btnDecrease = document.getElementById('btn-exam-font-decrease');
+    const btnIncrease = document.getElementById('btn-exam-font-increase');
+    const btnReset = document.getElementById('btn-exam-font-reset');
+    const labelScale = document.getElementById('label-exam-font-scale');
+
+    if (!viewExam) return;
+
+    let savedScale = parseFloat(localStorage.getItem('exam_font_scale')) || 1.0;
+    if (savedScale < 0.85 || savedScale > 1.45) savedScale = 1.0;
+
+    const applyScale = (s) => {
+      savedScale = Math.round(s * 100) / 100;
+      viewExam.style.setProperty('--exam-font-scale', savedScale);
+      try { localStorage.setItem('exam_font_scale', savedScale); } catch (_) {}
+      if (labelScale) labelScale.textContent = `${Math.round(savedScale * 100)}%`;
+    };
+
+    applyScale(savedScale);
+
+    if (btnDecrease) {
+      btnDecrease.onclick = () => {
+        if (savedScale > 0.85) applyScale(savedScale - 0.1);
+      };
+    }
+    if (btnIncrease) {
+      btnIncrease.onclick = () => {
+        if (savedScale < 1.4) applyScale(savedScale + 0.1);
+      };
+    }
+    if (btnReset) {
+      btnReset.onclick = () => {
+        applyScale(1.0);
+      };
+    }
   }
 
   stop() {

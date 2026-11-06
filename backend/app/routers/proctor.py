@@ -109,6 +109,20 @@ def get_session_proctor_overview(
         
     exam = session.exam
     total_questions = len(exam.questions) if exam else 0
+    if exam and exam.instructions:
+        instr = exam.instructions
+        if "CONFIG_RANDOM_STUDENT_QUESTIONS=" in instr:
+            try:
+                target_k = int(instr.split("CONFIG_RANDOM_STUDENT_QUESTIONS=")[1].split("]")[0])
+                if 0 < target_k < total_questions:
+                    total_questions = target_k
+            except Exception:
+                pass
+        elif getattr(exam, "exam_type", "") == "theoretical" and "PYTHON" in (exam.module_code or "") and total_questions > 20:
+            total_questions = 20
+        elif getattr(exam, "exam_type", "") == "practical" and "PYTHON" in (exam.module_code or "") and total_questions > 5:
+            total_questions = 5
+
     now = datetime.now(timezone.utc)
     
     attempt_by_student = {att.student_id: att for att in session.attempts}
@@ -125,6 +139,22 @@ def get_session_proctor_overview(
         seen_ids.add(student.id)
         att = attempt_by_student.get(student.id)
         if att:
+            # Auto-resumption si les 5 minutes de suspension sont terminées
+            suspension_remaining_sec = 0
+            if att.status == "suspended":
+                if att.suspended_until:
+                    s_until = att.suspended_until
+                    if s_until.tzinfo is None:
+                        s_until = s_until.replace(tzinfo=timezone.utc)
+                    if now >= s_until:
+                        att.status = "in_progress"
+                        att.suspension_reason = None
+                        att.suspension_count = 0
+                        att.suspended_until = None
+                        db.commit()
+                    else:
+                        suspension_remaining_sec = max(0, int((s_until - now).total_seconds()))
+
             answered_count = len(att.answers)
             progress_pct = round((answered_count / total_questions) * 100) if total_questions > 0 else 0
             elapsed_seconds = 0
@@ -162,6 +192,7 @@ def get_session_proctor_overview(
                 "is_online": is_online,
                 "suspension_reason": att.suspension_reason,
                 "suspension_count": att.suspension_count,
+                "suspension_remaining_seconds": suspension_remaining_sec,
                 "answered_count": answered_count,
                 "total_questions": total_questions,
                 "progress_pct": progress_pct,
@@ -494,6 +525,7 @@ async def unlock_student_attempt(
     attempt.status = "in_progress"
     attempt.suspension_reason = None
     attempt.suspension_count = 0  # REV-29 : Remise à zéro du compteur d'avertissements au déblocage
+    attempt.suspended_until = None
     
     db.add(AuditLog(
         session_id=session_id,
@@ -549,6 +581,7 @@ async def unlock_all_student_attempts(
         att.status = "in_progress"
         att.suspension_reason = None
         att.suspension_count = 0
+        att.suspended_until = None
         await ws_manager.send_to_student(session_id, att.student_id, {
             "type": "ATTEMPT_UNLOCKED",
             "attempt_id": att.id,

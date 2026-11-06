@@ -87,7 +87,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     id: Optional[str] = None  # Si absent, généré automatiquement
     password: Optional[str] = None  # Si absent, généré automatiquement par le système
-    must_change_password: Optional[bool] = False
+    must_change_password: Optional[bool] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

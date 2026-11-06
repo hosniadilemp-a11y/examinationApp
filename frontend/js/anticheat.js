@@ -276,13 +276,32 @@ export class AntiCheatManager {
 
   async _triggerSuspension(reason) {
     this.isSuspended = true;
-    console.error(`[AntiCheat] SUSPENSION DÉCLENCHÉE : ${reason}`);
+    console.error(`[AntiCheat] SUSPENSION DÉCLENCHÉE (5 MIN) : ${reason}`);
+
+    this.suspensionRemainingSeconds = 300; // 5 minutes
+    this._updateSuspensionTimerDisplay();
+
+    // Démarrer le décompte local de 5 minutes
+    if (this._suspensionInterval) clearInterval(this._suspensionInterval);
+    this._suspensionInterval = setInterval(() => {
+      this.suspensionRemainingSeconds = Math.max(0, this.suspensionRemainingSeconds - 1);
+      this._updateSuspensionTimerDisplay();
+      if (this.suspensionRemainingSeconds <= 0) {
+        clearInterval(this._suspensionInterval);
+        this._suspensionInterval = null;
+        this._unlockSuspension();
+      }
+    }, 1000);
 
     // Notification au serveur backend
-    await api.reportSecurityEvent(this.attemptId, "AWAY_10S", {
-      reason,
-      duration_seconds: this.awaySeconds
-    });
+    const eventType = this.warningsCount >= this.maxWarnings ? "SUSPENDED_4_WARNINGS" : "AWAY_10S";
+    try {
+      await api.reportSecurityEvent(this.attemptId, eventType, {
+        reason,
+        duration_seconds: Math.max(this.awaySeconds, 300),
+        warning_number: this.warningsCount
+      });
+    } catch (_) {}
 
     // Déclenchement de l'affichage de l'écran rouge de suspension
     this.onSuspended(reason);
@@ -291,24 +310,48 @@ export class AntiCheatManager {
     this._startStatusPolling();
   }
 
+  _updateSuspensionTimerDisplay() {
+    const el = document.getElementById('suspension-timer-digits');
+    if (!el) return;
+    const s = this.suspensionRemainingSeconds || 0;
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    el.textContent = `${mm}:${ss}`;
+  }
+
+  _unlockSuspension() {
+    this._stopStatusPolling();
+    if (this._suspensionInterval) {
+      clearInterval(this._suspensionInterval);
+      this._suspensionInterval = null;
+    }
+    this.isSuspended = false;
+    this.warningsCount = 0;
+    this.lastWarningTime = 0;
+    this.awaySeconds = 0;
+    this.suspensionRemainingSeconds = 0;
+    this.requestFullscreen();
+    const examView = document.getElementById('view-exam');
+    const overlayFs = document.getElementById('overlay-fullscreen-required');
+    if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
+    if (overlayFs) overlayFs.classList.remove('active');
+    this.onUnlocked();
+  }
+
   _startStatusPolling() {
     this._stopStatusPolling();
     this.statusPollInterval = setInterval(async () => {
       try {
         const statusData = await api.checkAttemptStatus(this.attemptId);
-        if (statusData && statusData.status === "in_progress") {
-          // L'enseignant a cliqué sur "Débloquer" !
-          this._stopStatusPolling();
-          this.isSuspended = false;
-          this.warningsCount = 0; // REV-29 : Remise à zéro du compteur d'avertissements au déblocage
-          this.lastWarningTime = 0;
-          this.awaySeconds = 0;
-          this.requestFullscreen();
-          const examView = document.getElementById('view-exam');
-          const overlayFs = document.getElementById('overlay-fullscreen-required');
-          if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
-          if (overlayFs) overlayFs.classList.remove('active');
-          this.onUnlocked();
+        if (statusData) {
+          if (typeof statusData.suspension_remaining_seconds === 'number' && statusData.status === 'suspended') {
+            this.suspensionRemainingSeconds = statusData.suspension_remaining_seconds;
+            this._updateSuspensionTimerDisplay();
+          }
+          if (statusData.status === "in_progress") {
+            // Déblocage par le surveillant ou fin automatique des 5 minutes
+            this._unlockSuspension();
+          }
         }
       } catch (_) {}
     }, 2000);
@@ -318,6 +361,10 @@ export class AntiCheatManager {
     if (this.statusPollInterval) {
       clearInterval(this.statusPollInterval);
       this.statusPollInterval = null;
+    }
+    if (this._suspensionInterval) {
+      clearInterval(this._suspensionInterval);
+      this._suspensionInterval = null;
     }
   }
 

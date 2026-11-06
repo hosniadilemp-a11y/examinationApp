@@ -140,6 +140,7 @@ class StudentAttempt(Base):
     final_mark = Column(Float, nullable=True)
     suspension_reason = Column(String, nullable=True)
     suspension_count = Column(Integer, nullable=False, default=0)
+    suspended_until = Column(DateTime, nullable=True)
     client_ip = Column(String, nullable=True)
     
     # Relations

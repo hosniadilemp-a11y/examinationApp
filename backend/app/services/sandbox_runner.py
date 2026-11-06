@@ -60,6 +60,33 @@ def normalize_output(value: Any) -> str:
     lines = [line.rstrip() for line in text.split("\n")]
     return "\n".join(lines).strip()
 
+def _inject_function_harness(python_code: str) -> str:
+    """Injecte un wrapper pour tester automatiquement les fonctions 'solution(...)' si l'utilisateur n'utilise pas print/input."""
+    if ("def solution(" in python_code or "def solution (" in python_code) and "print(" not in python_code and "input(" not in python_code:
+        return (
+            "\nif __name__ == '__main__':\n"
+            "    import sys\n"
+            "    _raw = sys.stdin.read().strip()\n"
+            "    if _raw:\n"
+            "        for _l in _raw.splitlines():\n"
+            "            _l = _l.strip()\n"
+            "            if not _l: continue\n"
+            "            _args = []\n"
+            "            for _part in _l.split():\n"
+            "                try:\n"
+            "                    _args.append(int(_part))\n"
+            "                except ValueError:\n"
+            "                    try:\n"
+            "                        _args.append(float(_part))\n"
+            "                    except ValueError:\n"
+            "                        _args.append(_part)\n"
+            "            if 'solution' in globals() and callable(globals()['solution']):\n"
+            "                _res = globals()['solution'](*_args)\n"
+            "                if _res is not None:\n"
+            "                    print(_res)\n"
+        )
+    return ""
+
 def run_python_script(script_path: str, input_data: str, timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS) -> Dict[str, Any]:
     """Exécute un script Python dans un sous-processus isolé avec capture métriques."""
     start_time = time.perf_counter()
@@ -118,7 +145,8 @@ def run_python_script(script_path: str, input_data: str, timeout_seconds: float 
 def execute_user_code_with_input(python_code: str, custom_input: str, timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS) -> Dict[str, Any]:
     """Exécute le code Python de l'étudiant avec une entrée personnalisée (Console E/S)."""
     sandbox_header = "import sys\n"
-    full_code = sandbox_header + "\n" + python_code + "\n" + FIGURE_HOOK
+    harness = _inject_function_harness(python_code)
+    full_code = sandbox_header + "\n" + python_code + "\n" + harness + "\n" + FIGURE_HOOK
     
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False, encoding="utf-8") as temp_file:
         temp_file.write(full_code)
@@ -153,7 +181,8 @@ def execute_user_code_against_tests(
     Si mask_hidden_output=True, les sorties attendues des tests cachés ne sont jamais révélées au client.
     """
     sandbox_header = "import sys\n"
-    full_code = sandbox_header + "\n" + python_code + "\n" + FIGURE_HOOK
+    harness = _inject_function_harness(python_code)
+    full_code = sandbox_header + "\n" + python_code + "\n" + harness + "\n" + FIGURE_HOOK
     
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False, encoding="utf-8") as temp_file:
         temp_file.write(full_code)

@@ -255,7 +255,7 @@ def test_waiting_room_fullscreen_and_dashboard_navigation_contract():
 
     # REV-35 : Confirmation et alerte lors de l'abandon de la salle d'attente
     assert "btn-waiting-room-leave" in app_js, "btn-waiting-room-leave doit être géré dans app.js"
-    assert "confirm(" in app_js, "Un dialogue de confirmation doit prévenir l'étudiant avant de quitter la salle d'attente"
+    assert ("showConfirmModal(" in app_js or "confirm(" in app_js), "Un dialogue de confirmation doit prévenir l'étudiant avant de quitter la salle d'attente"
     assert "exitFullscreen" in app_js, "La sortie propre du plein écran doit être déclenchée lors de la confirmation d'abandon"
 
 def test_proctor_countdown_timer_authoritative_clock(client, admin_headers, teacher_headers):

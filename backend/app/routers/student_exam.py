@@ -1,7 +1,7 @@
 import json
 import uuid
 import random
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
@@ -14,6 +14,7 @@ from backend.app.schemas import QuestionStudentView
 from backend.app.services.grading import evaluate_answer
 from backend.app.services.training_service import get_level, get_level_title
 from backend.app.services.sandbox_runner import execute_user_code_against_tests, execute_user_code_with_input
+from backend.app.services.websocket_manager import ws_manager
 from backend.app.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/student", tags=["Interface d'Examen Étudiant"])
@@ -379,15 +380,17 @@ def save_student_answer(
     }
 
 @router.post("/attempts/{attempt_id}/security-event")
-def report_security_event(
+async def report_security_event(
     attempt_id: str,
     payload: Dict[str, Any],  # {"event_type": "AWAY_10S" | "FULLSCREEN_EXIT" | "BLUR", "details": ...}
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
-    Signale un événement de sécurité (ex: sortie de plein écran, absence >10s).
-    Si l'absence dépasse 10 secondes, suspend automatiquement l'épreuve.
+    Signale un événement de sécurité (ex: sortie de plein écran, absence >10s, avertissement répétitif).
+    Règles disciplinaires :
+    - 4 avertissements cumulés OU absence > 10 secondes = Suspension de 5 minutes (300 secondes).
+    - Diffusion en direct de l'événement aux surveillants via WebSocket.
     """
     attempt = db.query(StudentAttempt).filter(
         StudentAttempt.id == attempt_id,
@@ -399,14 +402,23 @@ def report_security_event(
 
     event_type = payload.get("event_type", "SECURITY_ALERT")
     details = payload.get("details", {})
+    now = datetime.now(timezone.utc)
 
-    # Règle des 10 secondes d'absence : déclenche la suspension automatique
+    warning_number = details.get("warning_number", attempt.suspension_count + 1 if "WARNING" in event_type else attempt.suspension_count)
+    reason = details.get("reason") or payload.get("reason", "Alerte de sécurité anti-triche")
+
     is_suspended = False
-    if event_type == "AWAY_10S" or details.get("duration_seconds", 0) >= 10:
+    suspension_duration_sec = 300  # 5 minutes
+
+    if event_type in ["AWAY_10S", "SUSPENDED_4_WARNINGS"] or warning_number >= 4 or details.get("duration_seconds", 0) >= 10:
         attempt.status = "suspended"
-        attempt.suspension_count += 1
-        attempt.suspension_reason = "Sortie de plein écran ou changement d'onglet (>10 secondes)"
+        attempt.suspension_count = max(attempt.suspension_count, warning_number, 1)
+        attempt.suspension_reason = reason or ("Sortie prolongée de l'écran (10s)" if event_type == "AWAY_10S" else "4 avertissements anti-triche atteints : suspension disciplinaire de 5 minutes")
+        attempt.suspended_until = now + timedelta(seconds=suspension_duration_sec)
         is_suspended = True
+    else:
+        if "WARNING" in event_type:
+            attempt.suspension_count = warning_number
 
     db.add(AuditLog(
         session_id=attempt.session_id,
@@ -416,11 +428,31 @@ def report_security_event(
     ))
     db.commit()
 
+    # Diffusion en direct aux surveillants
+    try:
+        await ws_manager.broadcast_to_teachers(attempt.session_id, {
+            "type": "SECURITY_EVENT",
+            "session_id": attempt.session_id,
+            "student_id": current_user.id,
+            "student_name": current_user.full_name,
+            "event_type": event_type,
+            "reason": attempt.suspension_reason or reason,
+            "suspension_count": attempt.suspension_count,
+            "is_suspended": is_suspended,
+            "suspended_until": attempt.suspended_until.isoformat() if attempt.suspended_until else None,
+            "suspension_remaining_seconds": suspension_duration_sec if is_suspended else 0,
+            "timestamp": now.isoformat()
+        })
+    except Exception:
+        pass
+
     return {
         "status": attempt.status,
         "is_suspended": is_suspended,
         "suspension_count": attempt.suspension_count,
-        "message": "Épreuve suspendue. Contactez votre surveillant pour déblocage." if is_suspended else "Alerte de sécurité enregistrée."
+        "suspended_until": attempt.suspended_until.isoformat() if attempt.suspended_until else None,
+        "suspension_remaining_seconds": suspension_duration_sec if is_suspended else 0,
+        "message": "Épreuve suspendue pour 5 minutes. Déblocage automatique à l'issue ou par le surveillant." if is_suspended else "Alerte de sécurité enregistrée."
     }
 
 @router.get("/attempts/{attempt_id}/status")
@@ -429,7 +461,7 @@ def check_attempt_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Permet au client étudiant de vérifier en temps réel si le surveillant a levé la suspension."""
+    """Permet au client étudiant de vérifier en temps réel si le surveillant a levé la suspension ou si les 5 min sont écoulées."""
     attempt = db.query(StudentAttempt).filter(
         StudentAttempt.id == attempt_id,
         StudentAttempt.student_id == current_user.id
@@ -439,6 +471,23 @@ def check_attempt_status(
         raise HTTPException(status_code=404, detail="Tentative introuvable.")
 
     now = datetime.now(timezone.utc)
+    
+    # Auto-resumption si suspension_until est écoulé (5 minutes)
+    suspension_remaining_seconds = 0
+    if attempt.status == "suspended":
+        if attempt.suspended_until:
+            s_until = attempt.suspended_until
+            if s_until.tzinfo is None:
+                s_until = s_until.replace(tzinfo=timezone.utc)
+            if now >= s_until:
+                attempt.status = "in_progress"
+                attempt.suspension_reason = None
+                attempt.suspension_count = 0
+                attempt.suspended_until = None
+                db.commit()
+            else:
+                suspension_remaining_seconds = max(0, int((s_until - now).total_seconds()))
+
     exam = attempt.session.exam if attempt.session else None
     start_time = attempt.started_at or now
     if start_time.tzinfo is None:
@@ -452,8 +501,9 @@ def check_attempt_status(
         "session_status": attempt.session.status if attempt.session else "unknown",
         "suspension_reason": attempt.suspension_reason,
         "suspension_count": attempt.suspension_count,
+        "suspension_remaining_seconds": suspension_remaining_seconds,
         "remaining_seconds": remaining_seconds,
-        "server_time_hms": datetime.now().strftime("%H:%M:%S"),
+        "server_time_hms": now.strftime("%H:%M:%S"),
         "server_epoch_ms": int(now.timestamp() * 1000),
         "final_mark": attempt.final_mark,
         "raw_score": attempt.raw_score
