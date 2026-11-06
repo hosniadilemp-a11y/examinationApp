@@ -2434,6 +2434,8 @@ class AppController {
   // --- Lancement d'un Examen Officiel (avec Salle d'Attente Interactive REV-25) ---
   async launchOfficialExam(examId) {
     this.activeOriginView = 'view-student';
+    // Activation synchrone immédiate du plein écran sur le geste utilisateur
+    this.requestFullscreen();
     try {
       const examData = await api.startOrResumeExam(examId);
 
@@ -2808,6 +2810,21 @@ class AppController {
       `;
       breakdownBox.appendChild(card);
     });
+
+    // Rendu dynamique des formules mathématiques LaTeX (KaTeX) dans les explications et énoncés
+    if (window.renderMathInElement) {
+      try {
+        window.renderMathInElement(breakdownBox, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      } catch (_) {}
+    }
   }
 
   _formatAnswerValue(val) {
@@ -5072,46 +5089,93 @@ class AppController {
 
   _renderSimpleMarkdown(text) {
     if (!text) return '';
-    // Nettoie les en-têtes préfixés du type **[...]** ou [...] (REV-21)
-    let clean = String(text).replace(/^(\*\*\[(.*?)\]\*\*|\[(.*?)\])\s*/, '');
+    let processed = String(text);
+
+    // 0. Nettoyage initial : en-têtes préfixés du type **[...]** ou [...] (REV-21) et phrases parasites
+    processed = processed
+      .replace(/^(\*\*\[(.*?)\]\*\*|\[(.*?)\])\s*/, '')
+      .replace(/\*?Écrivez votre fonction\/script Python ci-dessous et testez son exécution locale\s*:?\*?/gi, '')
+      .trim();
+
+    // 1. Extraire et protéger les formules mathématiques KaTeX ($$...$$ et $...$)
+    const mathBlocks = [];
+    processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+      const id = `___MATHBLOCK_${mathBlocks.length}___`;
+      mathBlocks.push(this._escapeHtml(match));
+      return id;
+    });
+    processed = processed.replace(/(^|[^\\])\$([^\$\r\n]+?)\$/g, (match, prefix, formula) => {
+      if (/^\s*\d+([.,]\d+)?\s*$/.test(formula)) return match;
+      const id = `___MATHINLINE_${mathBlocks.length}___`;
+      mathBlocks.push(this._escapeHtml(`$${formula}$`));
+      return prefix + id;
+    });
+
+    // 2. Extraire et protéger les blocs de code explicites (```lang ... ```)
     const codeBlocks = [];
-    let processed = clean.replace(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/g, (match, code) => {
+    processed = processed.replace(/```([a-zA-Z0-9_\-+#.]*)[ \t]*[\r\n]+([\s\S]*?)[\r\n]*```/g, (match, lang, code) => {
       const id = `___CODEBLOCK_${codeBlocks.length}___`;
-      codeBlocks.push(`<pre class="code-block"><code>${this._escapeHtml(code)}</code></pre>`);
+      const cleanLang = (lang || '').trim().toLowerCase();
+      const displayLang = cleanLang ? (cleanLang === 'py' ? 'python' : cleanLang) : 'code';
+      const cleanCode = code.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
+      const escapedCode = this._escapeHtml(cleanCode);
+      const blockHtml = `\n\n<div class="formatted-code-container"><div class="formatted-code-header"><span class="code-lang-badge">${this._escapeHtml(displayLang)}</span></div><pre class="code-block"><code class="language-${displayLang}">${escapedCode}</code></pre></div>\n\n`;
+      codeBlocks.push(blockHtml);
       return id;
     });
 
+    // 3. Extraire et protéger les segments de code inline (`...`)
     const inlineCodes = [];
-    processed = processed.replace(/`([^`]+)`/g, (match, code) => {
+    processed = processed.replace(/`([^`\r\n]+)`/g, (match, code) => {
       const id = `___INLINECODE_${inlineCodes.length}___`;
-      inlineCodes.push(`<code>${this._escapeHtml(code)}</code>`);
+      inlineCodes.push(`<code class="md-inline-code">${this._escapeHtml(code)}</code>`);
       return id;
     });
 
-    processed = this._escapeHtml(processed);
+    // 4. Échappement HTML sécurisé du texte libre
+    const segments = processed.split(/(___[A-Z0-9_]+___)/g);
+    processed = segments.map(seg => {
+      if (seg.startsWith('___')) return seg;
+      return this._escapeHtml(seg);
+    }).join('');
 
-    processed = processed.replace(/^### (.*$)/gim, '<h4 style="color:#93c5fd; margin:10px 0 6px 0; font-size:1.05rem;">$1</h4>');
-    processed = processed.replace(/^## (.*$)/gim, '<h3 style="color:#60a5fa; margin:12px 0 8px 0; font-size:1.15rem;">$1</h3>');
-    processed = processed.replace(/^# (.*$)/gim, '<h2 style="color:#3b82f6; margin:14px 0 10px 0; font-size:1.25rem;">$1</h2>');
+    // 5. Titres Markdown (####, ###, ##, #)
+    processed = processed.replace(/^#### (.*$)/gim, '\n\n<h5 style="color:#bfdbfe; margin:10px 0 6px 0; font-size:1.0rem; font-weight:700;">$1</h5>\n\n');
+    processed = processed.replace(/^### (.*$)/gim, '\n\n<h4 style="color:#93c5fd; margin:12px 0 6px 0; font-size:1.08rem; font-weight:700;">$1</h4>\n\n');
+    processed = processed.replace(/^## (.*$)/gim, '\n\n<h3 style="color:#60a5fa; margin:14px 0 8px 0; font-size:1.18rem; font-weight:700;">$1</h3>\n\n');
+    processed = processed.replace(/^# (.*$)/gim, '\n\n<h2 style="color:#3b82f6; margin:16px 0 10px 0; font-size:1.28rem; font-weight:700;">$1</h2>\n\n');
 
-    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);">$1</strong>');
-    processed = processed.replace(/\*(.*?)\*/g, '<em style="color:#cbd5e1;">$1</em>');
+    // 6. Typographie (Gras et Italique)
+    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary); font-weight:700;">$1</strong>');
+    processed = processed.replace(/\*(.*?)\*/g, '<em style="color:#cbd5e1; font-style:italic;">$1</em>');
 
-    const paragraphs = processed.split(/\n\s*\n/);
+    // 7. Listes ordonnées et non-ordonnées
+    processed = processed.replace(/(?:^|\n)((?:[ \t]*[-*]\s+[^\n]+(?:\r?\n|$))+)/g, (match, listBlock) => {
+      const items = listBlock.trim().split(/\r?\n/).map(l => l.replace(/^[ \t]*[-*]\s+/, '').trim()).filter(Boolean);
+      return '\n\n<ul class="md-list">' + items.map(it => `<li>${it}</li>`).join('') + '</ul>\n\n';
+    });
+
+    // 8. Restitution des paragraphes
+    const paragraphs = processed.split(/\r?\n\s*\r?\n/);
     processed = paragraphs.map(p => {
       const trimmed = p.trim();
       if (!trimmed) return '';
-      if (trimmed.startsWith('<h') || trimmed.startsWith('___CODEBLOCK_')) {
+      if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<div') || trimmed.startsWith('___CODEBLOCK_')) {
         return trimmed;
       }
-      return `<p style="margin-bottom:8px; line-height:1.55;">${trimmed.replace(/\n/g, '<br>')}</p>`;
+      return `<p style="margin-bottom:8px; line-height:1.6;">${trimmed.replace(/\r?\n/g, '<br>')}</p>`;
     }).filter(Boolean).join('');
 
+    // 9. Restitution des éléments protégés
     codeBlocks.forEach((block, idx) => {
-      processed = processed.replace(`___CODEBLOCK_${idx}___`, block);
+      processed = processed.split(`___CODEBLOCK_${idx}___`).join(block);
     });
     inlineCodes.forEach((code, idx) => {
-      processed = processed.replace(`___INLINECODE_${idx}___`, code);
+      processed = processed.split(`___INLINECODE_${idx}___`).join(code);
+    });
+    mathBlocks.forEach((math, idx) => {
+      processed = processed.split(`___MATHBLOCK_${idx}___`).join(math);
+      processed = processed.split(`___MATHINLINE_${idx}___`).join(math);
     });
 
     return processed;
@@ -5190,24 +5254,28 @@ class AppController {
   }
 
   requestFullscreen() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(() => {});
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
+    try {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) {
+          try { elem.webkitRequestFullscreen(); } catch (_) {}
+        }
       }
-    }
+    } catch (_) {}
   }
 
   exitFullscreen() {
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          try { document.webkitExitFullscreen(); } catch (_) {}
+        }
       }
-    }
+    } catch (_) {}
   }
 
   _handleWaitingRoomFullscreenChange() {

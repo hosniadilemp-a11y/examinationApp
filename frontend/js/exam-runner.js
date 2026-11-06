@@ -214,6 +214,25 @@ export class ExamRunner {
     }
   }
 
+  goToQuestion(idx) {
+    if (idx < 0 || idx >= this.questions.length || idx === this.currentIndex) return;
+    // Sauvegarde transparente de la solution courante avant navigation
+    const currentQ = this.questions[this.currentIndex];
+    if (currentQ) {
+      const qId = currentQ.id;
+      const editorEl = document.getElementById('input-coding-editor');
+      if (editorEl) {
+        this.answers[qId] = editorEl._cmInstance ? editorEl._cmInstance.getValue() : editorEl.value;
+      }
+      const linuxEditor = document.getElementById('linux-script-editor');
+      if (linuxEditor) {
+        this.answers[qId] = linuxEditor.value;
+      }
+    }
+    this.currentIndex = idx;
+    this.render();
+  }
+
   render() {
     this._renderPalette();
     this._renderCurrentQuestion();
@@ -235,8 +254,7 @@ export class ExamRunner {
       if (this.flaggedQuestions.has(q.id)) btn.classList.add('flagged');
 
       btn.onclick = () => {
-        this.currentIndex = idx;
-        this.render();
+        this.goToQuestion(idx);
       };
       palette.appendChild(btn);
     });
@@ -1352,7 +1370,7 @@ export class ExamRunner {
     }
 
     // Gestion du bouton de copie des exemples d'entrée (stdin)
-    container.querySelectorAll('.btn-copy-io').forEach(btn => {
+    document.querySelectorAll('.btn-copy-io').forEach(btn => {
       btn.onclick = (e) => {
         e.preventDefault();
         const textToCopy = btn.getAttribute('data-copy');
@@ -2150,8 +2168,7 @@ Tapez vos commandes directement dans l'invite ci-dessous ou cliquez sur ▶️ E
       prevBtn.disabled = (this.currentIndex === 0);
       prevBtn.onclick = () => {
         if (this.currentIndex > 0) {
-          this.currentIndex--;
-          this.render();
+          this.goToQuestion(this.currentIndex - 1);
         }
       };
     }
@@ -2166,8 +2183,7 @@ Tapez vos commandes directement dans l'invite ci-dessous ou cliquez sur ▶️ E
         nextBtn.className = "btn btn-primary";
         nextBtn.onclick = () => {
           if (this.currentIndex < this.questions.length - 1) {
-            this.currentIndex++;
-            this.render();
+            this.goToQuestion(this.currentIndex + 1);
           }
         };
       }

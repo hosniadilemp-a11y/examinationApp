@@ -117,11 +117,14 @@ export class AntiCheatManager {
   }
 
   requestFullscreen() {
-    const elem = document.documentElement;
-    const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? Promise.resolve(elem.webkitRequestFullscreen()) : null);
-    if (p && p.then) {
-      p.catch(() => {});
-    }
+    try {
+      const elem = document.documentElement;
+      if (document.fullscreenElement || document.webkitFullscreenElement) return;
+      const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? elem.webkitRequestFullscreen() : null);
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {});
+      }
+    } catch (_) {}
   }
 
   _registerWarning(reason) {
@@ -382,7 +385,11 @@ export class AntiCheatManager {
             this._unlockSuspension();
           }
         }
-      } catch (_) {}
+      } catch (err) {
+        if (err && (err.status === 404 || (err.message && err.message.includes('404')))) {
+          this._stopStatusPolling();
+        }
+      }
     }, 2000);
   }
 
