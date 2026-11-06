@@ -3655,3 +3655,181 @@ pre.code-block {
   white-space: normal;
   min-width: 260px;
 }
+
+/* =========================================================================
+   STYLE ENRICHI DU RENDU MARKDOWN, CODE & OPTIONS D'EXAMEN
+   ========================================================================= */
+
+/* Blocs de code préformatés avec en-tête et bouton de copie */
+.formatted-code-container {
+  margin: 14px 0 16px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #090d16;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.formatted-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
+}
+
+.code-lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #93c5fd;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+
+.btn-copy-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-code:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.formatted-code-container pre.code-block {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 14px 18px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.94rem !important;
+  line-height: 1.55 !important;
+  color: #e2e8f0 !important;
+  overflow-x: auto;
+}
+
+/* Code en ligne dans le texte de question */
+.md-inline-code {
+  background: rgba(30, 41, 59, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: #93c5fd;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+/* Formatage des options de type code / expressions */
+.option-code,
+.option-code-expr {
+  display: inline-block;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  color: #93c5fd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: break-word;
+  transition: all 0.15s ease;
+}
+
+.option-item:hover .option-code,
+.option-item:hover .option-code-expr {
+  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(30, 58, 138, 0.3);
+  color: #bfdbfe;
+}
+
+.option-item.selected .option-code,
+.option-item.selected .option-code-expr {
+  background: rgba(37, 99, 235, 0.25);
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+}
+
+/* Listes Markdown (puces et numérotées) */
+.md-list,
+.md-list-ordered {
+  margin: 10px 0 16px 20px;
+  padding-left: 8px;
+  color: var(--text-primary);
+  line-height: 1.65;
+}
+
+.md-list li,
+.md-list-ordered li {
+  margin-bottom: 6px;
+}
+
+/* Tableaux Markdown */
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.md-table th {
+  background: rgba(30, 41, 59, 0.85);
+  color: #93c5fd;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-bottom: 2px solid var(--card-border);
+}
+
+.md-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-size: 0.92rem;
+}
+
+.md-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Adaptation au zoom typographique (#view-exam avec --exam-font-scale) */
+#view-exam .formatted-code-container pre.code-block,
+#view-exam .formatted-code-container pre code {
+  font-size: calc(0.96rem * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam .option-code,
+#view-exam .option-code-expr,
+#view-exam .md-inline-code {
+  font-size: calc(0.95rem * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam .md-paragraph,
+#view-exam .md-list li,
+#view-exam .md-list-ordered li {
+  font-size: calc(1.02rem * var(--exam-font-scale, 1)) !important;
+}

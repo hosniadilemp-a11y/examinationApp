@@ -368,7 +368,7 @@ def generate_training_session(
                         "topic_id": ch["id"],
                         "difficulty": diff,
                         "title": c.get("title", ""),
-                        "prompt_markdown": f"### {c.get('title', '')}\n\n{c.get('description', '')}\n\n*Écrivez votre fonction/script Python ci-dessous et testez son exécution locale :*",
+                        "prompt_markdown": c.get("description", ""),
                         "description": c.get("description", ""),
                         "starter_code": c.get("starter_code", ""),
                         "public_tests": c.get("public_tests", []),

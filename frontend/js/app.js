@@ -2075,11 +2075,15 @@ class AppController {
 
     const questions = session.items.map((q, idx) => {
       if (q.type === 'coding' || q.type === 'code') {
+        let pMd = q.prompt_markdown || q.prompt || q.description || '';
+        pMd = pMd.replace(/\*?Écrivez votre fonction\/script Python ci-dessous et testez son exécution locale\s*:?\*?/gi, '').trim();
         return {
           id: q.id,
+          title: q.title || '',
+          topic: q.topic || '',
           type: 'coding',
           points: q.points || 4.0,
-          prompt_markdown: q.prompt_markdown || q.prompt || q.description || '',
+          prompt_markdown: pMd,
           starter_code: q.starter_code || '# Écrivez votre code Python ici\n',
           public_tests: q.public_tests || [],
           hint1: q.hint1 || '',

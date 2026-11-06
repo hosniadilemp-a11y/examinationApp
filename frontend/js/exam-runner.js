@@ -271,7 +271,10 @@ export class ExamRunner {
     };
 
     // Extraction et nettoyage des métadonnées de difficulté et de thème (REV-21)
-    let cleanPrompt = q.prompt_markdown || '';
+    let cleanPrompt = (q.prompt_markdown || '')
+      .replace(/\*?Écrivez votre fonction\/script Python ci-dessous et testez son exécution locale\s*:?\*?/gi, '')
+      .replace(/\*?Write your Python function\/script below and test its local execution\s*:?\*?/gi, '')
+      .trim();
     let extractedTopic = q.topic || '';
     let extractedDifficulty = q.difficulty || '';
 
@@ -360,7 +363,7 @@ export class ExamRunner {
         optionsHtml += `
           <div class="option-item ${isSelected ? 'selected' : ''}" data-val="${optId}">
             <div class="option-indicator"></div>
-            <div>${this._escapeHtml(optText)}</div>
+            <div>${this._formatOptionText(optText)}</div>
           </div>
         `;
       });
@@ -379,7 +382,7 @@ export class ExamRunner {
         optionsHtml += `
           <div class="option-item ${isSelected ? 'selected' : ''}" data-val="${optId}" data-multi="true">
             <div class="option-indicator"></div>
-            <div>${this._escapeHtml(optText)}</div>
+            <div>${this._formatOptionText(optText)}</div>
           </div>
         `;
       });
@@ -418,7 +421,7 @@ export class ExamRunner {
         const selectedVal = userMatches[left] || '';
         optionsHtml += `
           <div class="matching-pair" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; margin-bottom:10px; background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); gap:16px;">
-            <div style="font-weight:600; flex:1; color:var(--text-primary); font-family:var(--font-mono); font-size:0.92rem;">${this._escapeHtml(left)}</div>
+            <div style="font-weight:600; flex:1; color:var(--text-primary); font-family:var(--font-mono); font-size:0.92rem;">${this._formatOptionText(left)}</div>
             <div style="flex:1;">
               <select class="form-control matching-select" data-left="${this._escapeHtml(left)}" style="width:100%; font-size:0.88rem; padding:8px 12px;">
                 <option value="">— Choisir une correspondance —</option>
@@ -632,6 +635,37 @@ export class ExamRunner {
       const publicTests = question.public_tests || [];
       this._attachLinuxChallengeListeners(question, publicTests);
     }
+
+    // Rendu automatique des formules mathématiques KaTeX dans les questions théoriques et options
+    const examContainer = document.getElementById('question-container');
+    if (examContainer && window.renderMathInElement) {
+      try {
+        window.renderMathInElement(examContainer, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      } catch (_) {}
+    }
+
+    // Attachement de la copie sur tous les boutons de code dans la question
+    if (examContainer) {
+      examContainer.querySelectorAll('.btn-copy-code').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const code = btn.getAttribute('data-code') || '';
+          navigator.clipboard.writeText(code).then(() => {
+            const prev = btn.textContent;
+            btn.textContent = '✅ Copié !';
+            setTimeout(() => { btn.textContent = prev; }, 1800);
+          });
+        };
+      });
+    }
   }
 
   // --- Formatage Intelligent des Variables d'Entrée Décomposées ---
@@ -688,6 +722,18 @@ export class ExamRunner {
 
     // Calcul de la progression globale des exercices de code
     const answeredCodingCount = this.questions.filter(ques => this._hasAnswer(ques.id)).length;
+
+    // Nettoyage des phrases superflues et des titres redondants dans l'énoncé markdown
+    let cleanPromptHtml = (promptHtml || '')
+      .replace(/\*?Écrivez votre fonction\/script Python ci-dessous et testez son exécution locale\s*:?\*?/gi, '')
+      .replace(/<p[^>]*>\s*\*?Écrivez votre fonction\/script Python[^\n<]*\s*<\/p>/gi, '')
+      .trim();
+
+    if (q.title) {
+      const escapedTitle = this._escapeHtml(q.title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const titleRegex = new RegExp(`^<h[234][^>]*>\\s*${escapedTitle}\\s*<\\/h[234]>`, 'i');
+      cleanPromptHtml = cleanPromptHtml.replace(titleRegex, '').trim();
+    }
 
     container.innerHTML = `
       <div class="practical-workspace-container" style="display:flex; flex-direction:column; height:100%; width:100%; overflow:hidden;">
@@ -751,7 +797,7 @@ export class ExamRunner {
 
             <div id="problem-description" class="markdown-body" style="flex:1; overflow-y:auto; line-height:1.75; font-size:1.05rem; color:#e2e8f0; padding-right:8px;">
               <div class="problem-statement-body" style="font-size:1.05rem; line-height:1.75; margin-bottom:20px; color:#f1f5f9;">
-                ${promptHtml}
+                ${cleanPromptHtml}
               </div>
 
               <!-- Exemples d'Exécution & Tests Publics Structurés -->
@@ -1575,6 +1621,18 @@ export class ExamRunner {
       `;
     }
 
+    // Nettoyage des phrases superflues et des titres redondants dans l'énoncé markdown
+    let cleanPromptHtml = (promptHtml || '')
+      .replace(/\*?Écrivez votre fonction\/script Python ci-dessous et testez son exécution locale\s*:?\*?/gi, '')
+      .replace(/<p[^>]*>\s*\*?Écrivez votre fonction\/script Python[^\n<]*\s*<\/p>/gi, '')
+      .trim();
+
+    if (q.title) {
+      const escapedTitle = this._escapeHtml(q.title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const titleRegex = new RegExp(`^<h[234][^>]*>\\s*${escapedTitle}\\s*<\\/h[234]>`, 'i');
+      cleanPromptHtml = cleanPromptHtml.replace(titleRegex, '').trim();
+    }
+
     container.innerHTML = `
       <div class="practical-workspace-container" style="display:flex; flex-direction:column; height:100%; width:100%; overflow:hidden;">
         <!-- BANDEAU DE NAVIGATION INTERACTIF DES DÉFIS -->
@@ -1633,7 +1691,7 @@ export class ExamRunner {
             </div>
 
             <div class="problem-body" style="font-size:1.02rem; line-height:1.7; color:#e2e8f0;">
-              ${promptHtml}
+              ${cleanPromptHtml}
             </div>
 
 ${initialFsHtml}
@@ -2177,54 +2235,238 @@ Tapez vos commandes directement dans l'invite ci-dessous ou cliquez sur ▶️ E
     }
   }
 
+  _formatOptionText(optText) {
+    if (optText === null || optText === undefined) return '';
+    const text = String(optText).trim();
+    if (!text) return '';
+
+    // 1. Si le texte contient explicitement du code entre backticks `...`
+    if (text.includes('`')) {
+      return text.replace(/`([^`]+)`/g, (match, code) => {
+        return `<code class="option-code">${this._escapeHtml(code)}</code>`;
+      });
+    }
+
+    // 2. Détection intelligente si l'option entière est une expression de code ou type Python
+    const isCodeExpr = (
+      // Enceintes littérales : listes [], ensembles / dictionnaires {}, tuples (x, y) ou ()
+      (/^\[[\s\S]*\]$/.test(text)) ||
+      (/^\{[\s\S]*\}$/.test(text)) ||
+      (/^\(\s*\)$/.test(text) || /^\([\s\S]+,[\s\S]*\)$/.test(text)) ||
+      // Types natifs Python
+      (/^(int|float|str|bool|list|tuple|dict|set|frozenset|bytes|bytearray|complex|NoneType|callable|type)$/.test(text)) ||
+      // Constantes
+      (/^(True|False|None)$/.test(text)) ||
+      // Représentation de type <class '...'>
+      (/^<class\s+'[^']+'>$/.test(text)) ||
+      // Exceptions et erreurs Python courantes
+      (/^[A-Z][a-zA-Z0-9]*(Error|Exception|Warning)$/.test(text)) ||
+      // Opérateurs seuls ou opérations
+      (/^(\*\*|\^|\^\^|\/\/|==|!=|<=|>=|is|is not|in|not in|\+=|-=|\*=|\/=|%=|&=|\|=|\^=|>>|<<|&|\||~|\/\*)$/.test(text)) ||
+      // Syntaxe de commentaires
+      (/^(\/\/|#|\/\*|<!--|--)\s*.+$/.test(text)) ||
+      // Appels de fonctions ou méthodes (ex: len(obj), enumerate(it), print(x), range(4))
+      (/^[a-zA-Z_][a-zA-Z0-9_.]*\s*\([^\)]*\)$/.test(text))
+    );
+
+    if (isCodeExpr) {
+      return `<code class="option-code-expr">${this._escapeHtml(text)}</code>`;
+    }
+
+    // 3. Formatage typographique Markdown standard (Gras **...** et Italique *...*)
+    let formatted = this._escapeHtml(text);
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    return formatted;
+  }
+
   _formatMarkdown(text) {
     if (!text) return '';
-    // 1. Extraire temporairement les blocs de code préformatés
+    let processed = String(text);
+
+    // 0. Nettoyage initial : suppression du texte d'instruction redondant
+    processed = processed
+      .replace(/\*?Écrivez votre fonction\/script Python ci-dessous et testez son exécution locale\s*:?\*?/gi, '')
+      .replace(/\*?Write your Python function\/script below and test its local execution\s*:?\*?/gi, '')
+      .trim();
+
+    // 1. Extraire et protéger les formules mathématiques KaTeX ($$...$$ et $...$)
+    // Empêche le traitement markdown (gras, italique, etc.) d'altérer la syntaxe LaTeX
+    const mathBlocks = [];
+    // Formules en bloc : $$ ... $$
+    processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+      const id = `___MATHBLOCK_${mathBlocks.length}___`;
+      mathBlocks.push(this._escapeHtml(match));
+      return id;
+    });
+    // Formules en ligne : $...$
+    processed = processed.replace(/(^|[^\\])\$([^\$\r\n]+?)\$/g, (match, prefix, formula) => {
+      // Ignorer si c'est simplement un montant numérique (ex: $100 ou $5)
+      if (/^\s*\d+([.,]\d+)?\s*$/.test(formula)) return match;
+      const id = `___MATHINLINE_${mathBlocks.length}___`;
+      mathBlocks.push(this._escapeHtml(`$${formula}$`));
+      return prefix + id;
+    });
+
+    // 2. Extraire et protéger les blocs de code explicites (```lang ... ```)
+    // Supporte CRLF (\r\n), LF (\n), espaces et langages variés
     const codeBlocks = [];
-    let processed = String(text).replace(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/g, (match, code) => {
+    processed = processed.replace(/```([a-zA-Z0-9_\-+#.]*)[ \t]*[\r\n]+([\s\S]*?)[\r\n]*```/g, (match, lang, code) => {
       const id = `___CODEBLOCK_${codeBlocks.length}___`;
-      const escapedCode = this._escapeHtml(code);
-      codeBlocks.push(`<pre class="code-block"><code>${escapedCode}</code></pre>`);
-      return id;
+      const cleanLang = (lang || '').trim().toLowerCase();
+      const displayLang = cleanLang ? (cleanLang === 'py' ? 'python' : cleanLang) : 'code';
+      const cleanCode = code.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
+      const escapedCode = this._escapeHtml(cleanCode);
+      
+      const blockHtml = `
+        <div class="formatted-code-container">
+          <div class="formatted-code-header">
+            <span class="code-lang-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> ${this._escapeHtml(displayLang)}</span>
+            <button type="button" class="btn-copy-code" data-code="${escapedCode}" title="Copier le code">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copier</span>
+            </button>
+          </div>
+          <pre class="code-block"><code class="language-${displayLang}">${escapedCode}</code></pre>
+        </div>
+      `.trim();
+      codeBlocks.push(blockHtml);
+      return `\n\n${id}\n\n`;
     });
 
-    // 2. Extraire les segments de code inline
+    // 3. Extraire et protéger les segments de code inline (`...`)
     const inlineCodes = [];
-    processed = processed.replace(/`([^`]+)`/g, (match, code) => {
+    processed = processed.replace(/`([^`\r\n]+)`/g, (match, code) => {
       const id = `___INLINECODE_${inlineCodes.length}___`;
-      inlineCodes.push(`<code>${this._escapeHtml(code)}</code>`);
+      inlineCodes.push(`<code class="md-inline-code">${this._escapeHtml(code)}</code>`);
       return id;
     });
 
-    // 3. Échappement HTML sécurisé du texte courant
-    processed = this._escapeHtml(processed);
+    // 4. Détecter et formater les blocs de code bruts non entourés de backticks (ex: def f(): ...)
+    const rawParagraphs = processed.split(/\r?\n\s*\r?\n/);
+    processed = rawParagraphs.map(p => {
+      const trimmed = p.trim();
+      if (!trimmed || trimmed.startsWith('___') || trimmed.startsWith('#')) return p;
+      const lines = trimmed.split(/\r?\n/).map(l => l.trimEnd());
+      
+      const isPythonCodeBlock = (
+        lines.length >= 2 &&
+        (
+          /^(def |class |import |from |for |while |if |try:|with )/.test(lines[0].trim()) ||
+          lines.every(l => {
+            const t = l.trim();
+            return !t || /^(def |class |import |from |return |pass|yield|break|continue|print\(|[a-zA-Z_][a-zA-Z0-9_]*\s*=[^=]|if |elif |else:|for |while |#|\/\/)/.test(t) || /^\s{2,}/.test(l);
+          })
+        )
+      );
 
-    // 4. Titres et en-têtes Markdown (###, ##, #)
-    processed = processed.replace(/^### (.*$)/gim, '<h4 class="md-heading-3" style="color:#93c5fd; margin:10px 0 6px 0; font-size:1.05rem;">$1</h4>');
-    processed = processed.replace(/^## (.*$)/gim, '<h3 class="md-heading-2" style="color:#60a5fa; margin:12px 0 8px 0; font-size:1.15rem;">$1</h3>');
-    processed = processed.replace(/^# (.*$)/gim, '<h2 class="md-heading-1" style="color:#3b82f6; margin:14px 0 10px 0; font-size:1.25rem;">$1</h2>');
+      if (isPythonCodeBlock) {
+        const id = `___CODEBLOCK_${codeBlocks.length}___`;
+        const cleanCode = lines.join('\n');
+        const escapedCode = this._escapeHtml(cleanCode);
+        const blockHtml = `
+          <div class="formatted-code-container">
+            <div class="formatted-code-header">
+              <span class="code-lang-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> python</span>
+              <button type="button" class="btn-copy-code" data-code="${escapedCode}" title="Copier le code">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copier</span>
+              </button>
+            </div>
+            <pre class="code-block"><code class="language-python">${escapedCode}</code></pre>
+          </div>
+        `.trim();
+        codeBlocks.push(blockHtml);
+        return `\n\n${id}\n\n`;
+      }
+      return p;
+    }).join('\n\n');
 
-    // 5. Mise en valeur typographique (Gras et Italique)
-    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);">$1</strong>');
-    processed = processed.replace(/\*(.*?)\*/g, '<em style="color:#cbd5e1;">$1</em>');
+    // 5. Tableaux Markdown (| col1 | col2 |)
+    processed = processed.replace(/(?:^|\n)((?:\|[^\n]+\|\r?\n?){2,})/g, (match, tableText) => {
+      const rows = tableText.trim().split(/\r?\n/).filter(r => r.trim().startsWith('|'));
+      if (rows.length < 2) return match;
+      
+      const parseRow = (row) => row.split('|').slice(1, -1).map(c => c.trim());
+      const headerCols = parseRow(rows[0]);
+      let startIndex = 1;
+      
+      if (rows.length > 1 && /^[|\s\-:]+$/.test(rows[1])) {
+        startIndex = 2;
+      }
+      
+      let html = '<div class="table-responsive"><table class="md-table"><thead><tr>';
+      headerCols.forEach(col => {
+        html += `<th>${this._escapeHtml(col)}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      
+      for (let i = startIndex; i < rows.length; i++) {
+        const cols = parseRow(rows[i]);
+        html += '<tr>';
+        cols.forEach(col => {
+          html += `<td>${this._escapeHtml(col)}</td>`;
+        });
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
+      return '\n\n' + html + '\n\n';
+    });
 
-    // 6. Gestion fluide des paragraphes et retours à la ligne
-    const paragraphs = processed.split(/\n\s*\n/);
+    // 6. Échappement HTML sécurisé du texte libre
+    const segments = processed.split(/(<div class="table-responsive">[\s\S]*?<\/div>|___[A-Z0-9_]+___)/g);
+    processed = segments.map(seg => {
+      if (seg.startsWith('<div class="table-responsive">') || seg.startsWith('___')) {
+        return seg;
+      }
+      return this._escapeHtml(seg);
+    }).join('');
+
+    // 7. Titres Markdown (####, ###, ##, #)
+    processed = processed.replace(/^#### (.*$)/gim, '\n\n<h5 class="md-heading-4" style="color:#bfdbfe; margin:10px 0 6px 0; font-size:1.0rem; font-weight:700;">$1</h5>\n\n');
+    processed = processed.replace(/^### (.*$)/gim, '\n\n<h4 class="md-heading-3" style="color:#93c5fd; margin:12px 0 6px 0; font-size:1.08rem; font-weight:700;">$1</h4>\n\n');
+    processed = processed.replace(/^## (.*$)/gim, '\n\n<h3 class="md-heading-2" style="color:#60a5fa; margin:14px 0 8px 0; font-size:1.18rem; font-weight:700;">$1</h3>\n\n');
+    processed = processed.replace(/^# (.*$)/gim, '\n\n<h2 class="md-heading-1" style="color:#3b82f6; margin:16px 0 10px 0; font-size:1.28rem; font-weight:700;">$1</h2>\n\n');
+
+    // 8. Typographie (Gras et Italique)
+    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary); font-weight:700;">$1</strong>');
+    processed = processed.replace(/\*(.*?)\*/g, '<em style="color:#cbd5e1; font-style:italic;">$1</em>');
+
+    // 9. Listes ordonnées et non-ordonnées
+    processed = processed.replace(/(?:^|\n)((?:[ \t]*[-*]\s+[^\n]+(?:\r?\n|$))+)/g, (match, listBlock) => {
+      const items = listBlock.trim().split(/\r?\n/).map(l => l.replace(/^[ \t]*[-*]\s+/, '').trim()).filter(Boolean);
+      return '\n\n<ul class="md-list">' + items.map(it => `<li>${it}</li>`).join('') + '</ul>\n\n';
+    });
+    processed = processed.replace(/(?:^|\n)((?:[ \t]*\d+\.\s+[^\n]+(?:\r?\n|$))+)/g, (match, listBlock) => {
+      const items = listBlock.trim().split(/\r?\n/).map(l => l.replace(/^[ \t]*\d+\.\s+/, '').trim()).filter(Boolean);
+      return '\n\n<ol class="md-list-ordered">' + items.map(it => `<li>${it}</li>`).join('') + '</ol>\n\n';
+    });
+
+    // 10. Restitution des paragraphes
+    const paragraphs = processed.split(/\r?\n\s*\r?\n/);
     processed = paragraphs.map(p => {
       const trimmed = p.trim();
       if (!trimmed) return '';
-      if (trimmed.startsWith('<h') || trimmed.startsWith('___CODEBLOCK_')) {
+      if (
+        trimmed.startsWith('<h') ||
+        trimmed.startsWith('<ul') ||
+        trimmed.startsWith('<ol') ||
+        trimmed.startsWith('<div class="table-responsive"') ||
+        trimmed.startsWith('___CODEBLOCK_')
+      ) {
         return trimmed;
       }
-      return `<p class="md-paragraph" style="margin-bottom:8px; line-height:1.55;">${trimmed.replace(/\n/g, '<br>')}</p>`;
+      return `<p class="md-paragraph" style="margin-bottom:10px; line-height:1.6;">${trimmed.replace(/\r?\n/g, '<br>')}</p>`;
     }).filter(Boolean).join('');
 
-    // 7. Restitution des blocs de code
+    // 11. Restitution sécurisée des éléments protégés
     codeBlocks.forEach((block, idx) => {
-      processed = processed.replace(`___CODEBLOCK_${idx}___`, block);
+      processed = processed.split(`___CODEBLOCK_${idx}___`).join(block);
     });
     inlineCodes.forEach((code, idx) => {
-      processed = processed.replace(`___INLINECODE_${idx}___`, code);
+      processed = processed.split(`___INLINECODE_${idx}___`).join(code);
+    });
+    mathBlocks.forEach((math, idx) => {
+      processed = processed.split(`___MATHBLOCK_${idx}___`).join(math);
+      processed = processed.split(`___MATHINLINE_${idx}___`).join(math);
     });
 
     return processed;
