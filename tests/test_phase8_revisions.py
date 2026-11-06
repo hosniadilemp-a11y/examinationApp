@@ -599,6 +599,11 @@ def test_official_exams_view_and_post_exam_review(client, admin_headers, student
     res_start = client.post(f"/api/student/exams/{exam_id}/start", headers=student_headers)
     assert res_start.status_code == 200
     start_data = res_start.json()
+    if start_data.get("status") == "waiting":
+        session_id = start_data["session_id"]
+        client.post(f"/api/proctor/sessions/{session_id}/launch", headers=admin_headers)
+        res_start = client.post(f"/api/student/exams/{exam_id}/start", headers=student_headers)
+        start_data = res_start.json()
     attempt_id = start_data["attempt_id"]
     q_id = start_data["questions"][0]["id"]
 

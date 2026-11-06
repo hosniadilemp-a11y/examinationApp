@@ -1,9 +1,7 @@
 import json
-
 import uuid
-
 import random
-
+import re
 from datetime import datetime, timezone, timedelta
 
 from typing import Dict, Any, List, Optional
@@ -147,22 +145,17 @@ def get_available_exams(
             q_count = 20
 
         elif getattr(ex, "exam_type", "") == "practical" and q_count > 5:
-
             q_count = 5
 
-
+        clean_instr = re.sub(r'\[CONFIG_RANDOM_STUDENT_QUESTIONS=\d+\]', '', instr).strip()
+        clean_title = re.sub(r'^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*', '', ex.title, flags=re.IGNORECASE).strip()
 
         results.append({
-
             "exam_id": ex.id,
-
-            "title": ex.title,
-
+            "title": clean_title,
             "exam_type": getattr(ex, "exam_type", "theoretical") or "theoretical",
-
             "module_code": ex.module_code,
-
-            "instructions": ex.instructions,
+            "instructions": clean_instr,
 
             "duration_minutes": ex.duration_minutes,
 
@@ -278,47 +271,27 @@ def start_or_resume_exam(
 
 
 
-    # Si aucune session n'est encore créée, en générer une automatique pour la salle locale
-
+    # Si aucune session n'est encore créée, en générer une automatique pour la salle en attente
     if not session:
-
         session = ExamSession(
-
             id=f"SESS-{uuid.uuid4().hex[:8].upper()}",
-
             exam_id=exam.id,
-
-            room_id="SALLE-LOCALE",
-
-            status="in_progress",
-
-            started_at=datetime.now(timezone.utc)
-
+            room_id="SALLE-ATTENTE",
+            status="waiting",
+            started_at=None
         )
-
         db.add(session)
-
         db.commit()
-
         db.refresh(session)
 
-
-
     # Recherche d'une tentative existante (reprise après crash / rafraîchissement)
-
     attempt = db.query(StudentAttempt).filter(
-
         StudentAttempt.session_id == session.id,
-
         StudentAttempt.student_id == current_user.id
-
     ).first()
 
-
-
     now = datetime.now(timezone.utc)
-
-
+    clean_title = re.sub(r'^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*', '', exam.title, flags=re.IGNORECASE).strip()
 
     if session.status == "waiting":
         if not attempt:
@@ -338,7 +311,9 @@ def start_or_resume_exam(
             "attempt_id": attempt.id,
             "attempt_status": "waiting",
             "room_id": session.room_id,
-            "exam_title": exam.title,
+            "exam_title": clean_title,
+            "duration_minutes": exam.duration_minutes,
+            "server_time_hms": datetime.now(timezone.utc).strftime("%H:%M:%S"),
             "message": "En attente du lancement par le surveillant."
         }
 
@@ -611,9 +586,7 @@ def start_or_resume_exam(
         "attempt_status": attempt.status,
 
         "suspension_reason": attempt.suspension_reason,
-
-        "exam_title": exam.title,
-
+        "exam_title": clean_title,
         "module_code": exam.module_code,
 
         "duration_minutes": exam.duration_minutes,
@@ -1824,13 +1797,11 @@ def get_student_exam_review(
 
 
 
+    clean_rev_title = re.sub(r'^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*', '', exam.title, flags=re.IGNORECASE).strip()
     return {
-
         "attempt_id": attempt.id,
-
         "exam_id": exam.id,
-
-        "exam_title": exam.title,
+        "exam_title": clean_rev_title,
 
         "exam_type": getattr(exam, "exam_type", "theoretical"),
 
@@ -2193,9 +2164,8 @@ def get_student_statistics(
     for a in official_attempts:
 
         if a.final_mark is not None:
-
-            ex_title = a.session.exam.title if (a.session and a.session.exam) else "Épreuve Officielle"
-
+            raw_title = a.session.exam.title if (a.session and a.session.exam) else "Épreuve Officielle"
+            ex_title = re.sub(r'^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*', '', raw_title, flags=re.IGNORECASE).strip()
             official_exams_list.append({
 
                 "attempt_id": a.id,

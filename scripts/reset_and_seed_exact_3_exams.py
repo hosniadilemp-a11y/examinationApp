@@ -67,6 +67,242 @@ def _load_extra_35_python_mcqs():
     return extracted[:35]
 
 
+def _load_40_crypto_questions():
+    """Charge 40 questions théoriques de Cryptographie & Sécurité avec barème unitaire (1.0 pt)."""
+    questions = []
+    seen = set()
+    base_5 = [
+        {
+            "type": "single_choice",
+            "prompt_markdown": "Quelle est la taille du condensat (hash) produit par l'algorithme **SHA-256** ?",
+            "points": 1.0,
+            "options": ["128 bits", "160 bits", "256 bits (32 octets)", "512 bits"],
+            "correct_answers": 2
+        },
+        {
+            "type": "multi_choice",
+            "prompt_markdown": "Parmi les algorithmes suivants, lesquels sont des algorithmes de chiffrement **asymétrique** ? *(Plusieurs réponses)*",
+            "points": 1.0,
+            "options": ["RSA", "AES-GCM", "ECC (Courbes Elliptiques)", "ChaCha20", "ElGamal"],
+            "correct_answers": [0, 2, 4]
+        },
+        {
+            "type": "boolean",
+            "prompt_markdown": "En cryptographie asymétrique, la signature numérique d'un message est générée à l'aide de la **clé privée** de l'expéditeur et vérifiée avec sa **clé publique**.",
+            "points": 1.0,
+            "options": [],
+            "correct_answers": True
+        },
+        {
+            "type": "fill_blank",
+            "prompt_markdown": "Quel standard de chiffrement symétrique par blocs (successeur de DES, blocs de 128 bits) est aujourd'hui le standard mondial du NIST ? `_____`",
+            "points": 1.0,
+            "options": [],
+            "correct_answers": ["AES", "Rijndael"]
+        },
+        {
+            "type": "matching",
+            "prompt_markdown": "Associez chaque concept cryptographique à la propriété de sécurité qu'il garantit principalement :",
+            "points": 1.0,
+            "options": [
+                {"left": "Chiffrement AES-256", "right": "Confidentialité des données"},
+                {"left": "Fonction de hachage SHA-256", "right": "Intégrité des données"},
+                {"left": "Signature numérique RSA / ECDSA", "right": "Authenticité et non-répudiation"}
+            ],
+            "correct_answers": {
+                "Chiffrement AES-256": "Confidentialité des données",
+                "Fonction de hachage SHA-256": "Intégrité des données",
+                "Signature numérique RSA / ECDSA": "Authenticité et non-répudiation"
+            }
+        }
+    ]
+    for q in base_5:
+        seen.add(q["prompt_markdown"].strip())
+        questions.append(q)
+
+    seeds_path = os.path.join(os.path.dirname(__file__), "..", "backend", "app", "seeds", "seed_crypto_30.json")
+    if os.path.exists(seeds_path):
+        with open(seeds_path, "r", encoding="utf-8") as f:
+            data_30 = json.load(f)
+        for item in data_30:
+            prompt = item.get("prompt_markdown", "").strip()
+            if prompt and prompt not in seen:
+                seen.add(prompt)
+                opts = item.get("options_json", [])
+                if isinstance(opts, str):
+                    try: opts = json.loads(opts)
+                    except Exception: pass
+                corr = item.get("correct_answers_json", None)
+                if isinstance(corr, str):
+                    try: corr = json.loads(corr)
+                    except Exception: pass
+                questions.append({
+                    "type": item.get("type", "single_choice"),
+                    "prompt_markdown": prompt,
+                    "points": 1.0,
+                    "options": opts,
+                    "correct_answers": corr
+                })
+
+    tpl_path = os.path.join(os.path.dirname(__file__), "..", "backend", "app", "seeds", "templates", "template_exam_crypto.json")
+    if os.path.exists(tpl_path) and len(questions) < 40:
+        with open(tpl_path, "r", encoding="utf-8") as f:
+            tpl_data = json.load(f)
+        for item in tpl_data.get("questions", []):
+            prompt = item.get("prompt_markdown", "").strip()
+            if prompt and prompt not in seen:
+                seen.add(prompt)
+                opts = item.get("options_json", [])
+                if isinstance(opts, str):
+                    try: opts = json.loads(opts)
+                    except Exception: pass
+                corr = item.get("correct_answers_json", None)
+                if isinstance(corr, str):
+                    try: corr = json.loads(corr)
+                    except Exception: pass
+                questions.append({
+                    "type": item.get("type", "single_choice"),
+                    "prompt_markdown": prompt,
+                    "points": 1.0,
+                    "options": opts,
+                    "correct_answers": corr
+                })
+
+    extra_questions = [
+        {
+            "type": "single_choice",
+            "prompt_markdown": "Quel mode d'opération d'un chiffrement par blocs permet de transformer un algorithme comme AES en chiffrement par flux avec authentification intégrée (AEAD) ?",
+            "points": 1.0,
+            "options": ["ECB (Electronic Codebook)", "CBC (Cipher Block Chaining)", "GCM (Galois/Counter Mode)", "OFB (Output Feedback)"],
+            "correct_answers": 2
+        },
+        {
+            "type": "boolean",
+            "prompt_markdown": "L'attaque par Rainbow Tables repose sur un compromis temps-mémoire (time-memory trade-off) visant à inverser des fonctions de hachage dépourvues de sel cryptographique.",
+            "points": 1.0,
+            "options": [],
+            "correct_answers": True
+        },
+        {
+            "type": "single_choice",
+            "prompt_markdown": "Quelle fonction de dérivation de clé (KDF) résistante aux attaques matérielles par GPU/ASIC utilise un coût mémoire intensif (memory-hard) ?",
+            "points": 1.0,
+            "options": ["MD5", "Argon2", "SHA-1", "CRC32"],
+            "correct_answers": 1
+        },
+        {
+            "type": "fill_blank",
+            "prompt_markdown": "Quel protocole cryptographique permet à deux interlocuteurs d'établir une clé secrète partagée sur un canal de communication non sécurisé sans transmettre la clé elle-même ? `_____`",
+            "points": 1.0,
+            "options": [],
+            "correct_answers": ["Diffie-Hellman", "ECDH", "DH"]
+        },
+        {
+            "type": "multi_choice",
+            "prompt_markdown": "Quelles propriétés caractérisent une fonction de hachage cryptographique robuste ? *(Plusieurs réponses)*",
+            "points": 1.0,
+            "options": ["Résistance aux collisions", "Réversibilité mathématique simple", "Résistance à la seconde préimage", "Effet avalanche (avalanche effect)"],
+            "correct_answers": [0, 2, 3]
+        }
+    ]
+    for q in extra_questions:
+        if len(questions) >= 40:
+            break
+        prompt = q["prompt_markdown"].strip()
+        if prompt not in seen:
+            seen.add(prompt)
+            questions.append(q)
+
+    return questions[:40]
+
+
+def _load_40_linux_questions():
+    """Charge 40 questions théoriques variées pour EXAM-THEO-LINUX à partir du curriculum Linux officiel."""
+    questions = []
+    seen = set()
+    base_5 = [
+        {
+            "type": "single_choice",
+            "prompt_markdown": "Sous Linux, quelle valeur octale passée à la commande `chmod` accorde les droits `rwxr-x---` (Propriétaire : lecture/écriture/exécution, Groupe : lecture/exécution, Autres : aucun droit) ?",
+            "points": 1.0,
+            "options": ["750", "755", "640", "700"],
+            "correct_answers": 0
+        },
+        {
+            "type": "multi_choice",
+            "prompt_markdown": "Quels répertoires de la norme **FHS (Filesystem Hierarchy Standard)** contiennent des fichiers de configuration système ou des journaux (logs) ? *(Plusieurs réponses)*",
+            "points": 1.0,
+            "options": ["/etc", "/var/log", "/bin", "/home"],
+            "correct_answers": [0, 1]
+        },
+        {
+            "type": "boolean",
+            "prompt_markdown": "Sous Linux/POSIX, l'utilisateur super-administrateur `root` possède toujours l'identifiant numérique **UID 0**.",
+            "points": 1.0,
+            "options": [],
+            "correct_answers": True
+        },
+        {
+            "type": "fill_blank",
+            "prompt_markdown": "Quelle commande POSIX permet de modifier le propriétaire (utilisateur et/ou groupe) d'un fichier ou répertoire sous Linux ? `_____`",
+            "points": 1.0,
+            "options": [],
+            "correct_answers": ["chown"]
+        },
+        {
+            "type": "matching",
+            "prompt_markdown": "Associez chaque commande d'administration Linux à sa fonction exacte :",
+            "points": 1.0,
+            "options": [
+                {"left": "ps aux / top", "right": "Inspecter les processus actifs en mémoire"},
+                {"left": "df -h", "right": "Afficher l'espace disque disponible sur les systèmes de fichiers montés"},
+                {"left": "systemctl status", "right": "Vérifier l'état d'un démon ou service géré par systemd"}
+            ],
+            "correct_answers": {
+                "ps aux / top": "Inspecter les processus actifs en mémoire",
+                "df -h": "Afficher l'espace disque disponible sur les systèmes de fichiers montés",
+                "systemctl status": "Vérifier l'état d'un démon ou service géré par systemd"
+            }
+        }
+    ]
+    for q in base_5:
+        seen.add(q["prompt_markdown"].strip())
+        questions.append(q)
+
+    curr_path = os.path.join(os.path.dirname(__file__), "..", "backend", "app", "data", "linux_training", "curriculum.json")
+    if os.path.exists(curr_path):
+        with open(curr_path, "r", encoding="utf-8") as f:
+            curr = json.load(f)
+        for ch in curr.get("chapters", []):
+            for q in ch.get("mcq_questions", []):
+                prompt = (q.get("prompt") or q.get("prompt_markdown", "")).strip()
+                if prompt and prompt not in seen:
+                    seen.add(prompt)
+                    raw_opts = q.get("options", [])
+                    norm_opts = []
+                    if isinstance(raw_opts, list):
+                        for o in raw_opts:
+                            if isinstance(o, dict) and "text" in o:
+                                norm_opts.append(o["text"])
+                            else:
+                                norm_opts.append(str(o))
+                    else:
+                        norm_opts = raw_opts
+                    questions.append({
+                        "type": q.get("type", "single_choice"),
+                        "prompt_markdown": prompt,
+                        "points": 1.0,
+                        "options": norm_opts,
+                        "correct_answers": q.get("correct", 0)
+                    })
+                if len(questions) >= 40:
+                    break
+            if len(questions) >= 40:
+                break
+
+    return questions[:40]
+
+
 def reset_and_seed_3_exams(db=None, clear_practice=False):
     close_db = False
     if db is None:
@@ -265,7 +501,7 @@ def reset_and_seed_3_exams(db=None, clear_practice=False):
         exam_theo_py = Exam(
             id="EXAM-THEO-PYTHON",
             module_code="PYTHON_INIT",
-            title="Épreuve Officielle : Théorie Python",
+            title="Théorie Python",
             exam_type="theoretical",
             instructions="Épreuve officielle théorique de programmation Python (Banque de 40 questions : tirage aléatoire de 20 questions par étudiant, ordre des questions et des choix mélangés). [CONFIG_RANDOM_STUDENT_QUESTIONS=20]",
             duration_minutes=45,
@@ -344,7 +580,7 @@ def reset_and_seed_3_exams(db=None, clear_practice=False):
         exam_prac_py = Exam(
             id="EXAM-PRAC-PYTHON",
             module_code="PYTHON_INIT",
-            title="Épreuve Officielle : Pratique Python",
+            title="Pratique Python",
             exam_type="practical",
             instructions="Épreuve officielle pratique sur machine : 5 défis algorithmiques Python évalués sur jeux de tests publics et cachés.",
             duration_minutes=60,
@@ -393,13 +629,13 @@ def reset_and_seed_3_exams(db=None, clear_practice=False):
                 })
             ))
 
-        # --- MODULE 2 : CRYPTO (Épreuve Modèle Cryptographie & Sécurité) ---
+        # --- MODULE 2 : CRYPTO (Épreuve Modèle Cryptographie & Sécurité : 40 questions -> 20 aléatoires/étudiant) ---
         exam_theo_crypto = Exam(
             id="EXAM-THEO-CRYPTO",
             module_code="CRYPTO",
-            title="Épreuve Officielle : Théorie Cryptographie",
+            title="Cryptographie & Sécurité",
             exam_type="theoretical",
-            instructions="Épreuve officielle théorique de Cryptographie & Sécurité de l'Information (questions et choix mélangés).",
+            instructions="Épreuve officielle théorique de Cryptographie & Sécurité de l'Information (Banque de 40 questions : tirage aléatoire de 20 questions par étudiant, ordre des questions et des choix mélangés). [CONFIG_RANDOM_STUDENT_QUESTIONS=20]",
             duration_minutes=45,
             global_points=20.0,
             shuffle_questions=True,
@@ -410,61 +646,27 @@ def reset_and_seed_3_exams(db=None, clear_practice=False):
         db.add(exam_theo_crypto)
         db.flush()
 
-        q_theo_crypto = [
-            Question(
-                id="Q-TCRY-1", exam_id=exam_theo_crypto.id, ordering=1, type="single_choice",
-                prompt_markdown="Quelle est la taille du condensat (hash) produit par l'algorithme **SHA-256** ?",
-                points=4.0,
-                options_json=json.dumps(["128 bits", "160 bits", "256 bits (32 octets)", "512 bits"]),
-                correct_answers_json=json.dumps(2)
-            ),
-            Question(
-                id="Q-TCRY-2", exam_id=exam_theo_crypto.id, ordering=2, type="multi_choice",
-                prompt_markdown="Parmi les algorithmes suivants, lesquels sont des algorithmes de chiffrement **asymétrique** ? *(Plusieurs réponses)*",
-                points=4.0,
-                options_json=json.dumps(["RSA", "AES-GCM", "ECC (Courbes Elliptiques)", "ChaCha20", "ElGamal"]),
-                correct_answers_json=json.dumps([0, 2, 4])
-            ),
-            Question(
-                id="Q-TCRY-3", exam_id=exam_theo_crypto.id, ordering=3, type="boolean",
-                prompt_markdown="En cryptographie asymétrique, la signature numérique d'un message est générée à l'aide de la **clé privée** de l'expéditeur et vérifiée avec sa **clé publique**.",
-                points=4.0,
-                options_json=json.dumps([]),
-                correct_answers_json=json.dumps(True)
-            ),
-            Question(
-                id="Q-TCRY-4", exam_id=exam_theo_crypto.id, ordering=4, type="fill_blank",
-                prompt_markdown="Quel standard de chiffrement symétrique par blocs (successeur de DES, blocs de 128 bits) est aujourd'hui le standard mondial du NIST ? `_____`",
-                points=4.0,
-                options_json=json.dumps([]),
-                correct_answers_json=json.dumps(["AES", "Rijndael"])
-            ),
-            Question(
-                id="Q-TCRY-5", exam_id=exam_theo_crypto.id, ordering=5, type="matching",
-                prompt_markdown="Associez chaque concept cryptographique à la propriété de sécurité qu'il garantit principalement :",
-                points=4.0,
-                options_json=json.dumps([
-                    {"left": "Chiffrement AES-256", "right": "Confidentialité des données"},
-                    {"left": "Fonction de hachage SHA-256", "right": "Intégrité des données"},
-                    {"left": "Signature numérique RSA / ECDSA", "right": "Authenticité et non-répudiation"}
-                ]),
-                correct_answers_json=json.dumps({
-                    "Chiffrement AES-256": "Confidentialité des données",
-                    "Fonction de hachage SHA-256": "Intégrité des données",
-                    "Signature numérique RSA / ECDSA": "Authenticité et non-répudiation"
-                })
-            ),
-        ]
-        for q in q_theo_crypto:
-            db.add(q)
+        crypto_40 = _load_40_crypto_questions()
+        for idx, q_data in enumerate(crypto_40, start=1):
+            db.add(Question(
+                id=f"Q-TCRY-{idx}",
+                exam_id=exam_theo_crypto.id,
+                ordering=idx,
+                type=q_data.get("type", "single_choice"),
+                prompt_markdown=q_data["prompt_markdown"],
+                points=1.0,
+                negative_penalty=q_data.get("negative_penalty", 0.0),
+                options_json=json.dumps(q_data["options"], ensure_ascii=False),
+                correct_answers_json=json.dumps(q_data["correct_answers"], ensure_ascii=False)
+            ))
 
-        # --- MODULE 3 : LINUX_ADMIN (Épreuve Modèle Administration Système Linux) ---
+        # --- MODULE 3 : LINUX_ADMIN (Épreuve Modèle Administration Système Linux : 40 questions -> 20 aléatoires/étudiant) ---
         exam_theo_linux = Exam(
             id="EXAM-THEO-LINUX",
             module_code="LINUX_ADMIN",
-            title="Épreuve Officielle : Administration Système Linux",
+            title="Administration Système Linux",
             exam_type="theoretical",
-            instructions="Épreuve officielle théorique d'Administration Système Linux (norme POSIX/FHS, permissions, processus et services).",
+            instructions="Épreuve officielle théorique d'Administration Système Linux (Banque de 40 questions : tirage aléatoire de 20 questions par étudiant, ordre des questions et des choix mélangés). [CONFIG_RANDOM_STUDENT_QUESTIONS=20]",
             duration_minutes=45,
             global_points=20.0,
             shuffle_questions=True,
@@ -475,60 +677,30 @@ def reset_and_seed_3_exams(db=None, clear_practice=False):
         db.add(exam_theo_linux)
         db.flush()
 
-        q_theo_linux = [
-            Question(
-                id="Q-TLNX-1", exam_id=exam_theo_linux.id, ordering=1, type="single_choice",
-                prompt_markdown="Sous Linux, quelle valeur octale passée à la commande `chmod` accorde les droits `rwxr-x---` (Propriétaire : lecture/écriture/exécution, Groupe : lecture/exécution, Autres : aucun droit) ?",
-                points=4.0,
-                options_json=json.dumps(["750", "755", "640", "700"]),
-                correct_answers_json=json.dumps(0)
-            ),
-            Question(
-                id="Q-TLNX-2", exam_id=exam_theo_linux.id, ordering=2, type="multi_choice",
-                prompt_markdown="Quels répertoires de la norme **FHS (Filesystem Hierarchy Standard)** contiennent des fichiers de configuration système ou des journaux (logs) ? *(Plusieurs réponses)*",
-                points=4.0,
-                options_json=json.dumps(["/etc", "/var/log", "/bin", "/home"]),
-                correct_answers_json=json.dumps([0, 1])
-            ),
-            Question(
-                id="Q-TLNX-3", exam_id=exam_theo_linux.id, ordering=3, type="boolean",
-                prompt_markdown="Sous Linux/POSIX, l'utilisateur super-administrateur `root` possède toujours l'identifiant numérique **UID 0**.",
-                points=4.0,
-                options_json=json.dumps([]),
-                correct_answers_json=json.dumps(True)
-            ),
-            Question(
-                id="Q-TLNX-4", exam_id=exam_theo_linux.id, ordering=4, type="fill_blank",
-                prompt_markdown="Quelle commande POSIX permet de modifier le propriétaire (utilisateur et/ou groupe) d'un fichier ou répertoire sous Linux ? `_____`",
-                points=4.0,
-                options_json=json.dumps([]),
-                correct_answers_json=json.dumps(["chown"])
-            ),
-            Question(
-                id="Q-TLNX-5", exam_id=exam_theo_linux.id, ordering=5, type="matching",
-                prompt_markdown="Associez chaque commande d'administration Linux à sa fonction exacte :",
-                points=4.0,
-                options_json=json.dumps([
-                    {"left": "ps aux / top", "right": "Inspecter les processus actifs en mémoire"},
-                    {"left": "df -h", "right": "Afficher l'espace disque disponible sur les systèmes de fichiers montés"},
-                    {"left": "systemctl status", "right": "Vérifier l'état d'un démon ou service géré par systemd"}
-                ]),
-                correct_answers_json=json.dumps({
-                    "ps aux / top": "Inspecter les processus actifs en mémoire",
-                    "df -h": "Afficher l'espace disque disponible sur les systèmes de fichiers montés",
-                    "systemctl status": "Vérifier l'état d'un démon ou service géré par systemd"
-                })
-            ),
-        ]
-        for q in q_theo_linux:
-            db.add(q)
+        linux_40 = _load_40_linux_questions()
+        for idx, q_data in enumerate(linux_40, start=1):
+            db.add(Question(
+                id=f"Q-TLNX-{idx}",
+                exam_id=exam_theo_linux.id,
+                ordering=idx,
+                type=q_data.get("type", "single_choice"),
+                prompt_markdown=q_data["prompt_markdown"],
+                points=1.0,
+                negative_penalty=q_data.get("negative_penalty", 0.0),
+                options_json=json.dumps(q_data["options"], ensure_ascii=False),
+                correct_answers_json=json.dumps(q_data["correct_answers"], ensure_ascii=False)
+            ))
 
         db.commit()
         print("Base de donnees initialisee avec succes :")
         print("  - 1 Administrateur (admin)")
         print("  - 4 Enseignants assignes aux 3 modules (prof_python, prof_crypto, prof_linux, prof_martin)")
         print("  - 4 Specialites x 4 Etudiants = 16 Etudiants complets (DEV-IA, SYS-ADMIN, CYBER-SEC, GRP-1)")
-        print("  - Examens modeles crees pour PYTHON_INIT (40Q -> 20Q/etu), CRYPTO et LINUX_ADMIN")
+        print("  - 4 Examens officiels modeles crees :")
+        print("      * Theorie Python (40Q banque -> 20 selectionnees)")
+        print("      * Pratique Python (5 defis)")
+        print("      * Cryptographie & Securite (40Q banque -> 20 selectionnees)")
+        print("      * Administration Systeme Linux (40Q banque -> 20 selectionnees)")
     finally:
         if close_db:
             db.close()

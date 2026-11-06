@@ -4101,3 +4101,614 @@ pre.code-block {
   border-radius: var(--radius-lg) !important;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 35px rgba(14, 165, 233, 0.15) !important;
 }
+
+/* ==========================================================================
+   SUPPORT LIGHT MODE EXCELLENCE (OVERRIDE HAUTE SPÉCIFICITÉ)
+   ========================================================================== */
+
+[data-theme="light"] body {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-header {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .role-nav-bar {
+  background: #ffffff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .role-nav-btn {
+  color: #475569 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+[data-theme="light"] .role-nav-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .role-nav-btn.active {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border-color: rgba(37, 99, 235, 0.4) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .card,
+[data-theme="light"] .login-card,
+[data-theme="light"] .exam-list-item,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .kpi-card,
+[data-theme="light"] .question-card,
+[data-theme="light"] .review-question-card,
+[data-theme="light"] .type-selection-card,
+[data-theme="light"] .chapter-item-card,
+[data-theme="light"] .challenge-item-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.09) !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .card:hover,
+[data-theme="light"] .exam-list-item:hover,
+[data-theme="light"] .stat-card:hover,
+[data-theme="light"] .kpi-card:hover {
+  border-color: rgba(37, 99, 235, 0.35) !important;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08), 0 0 12px rgba(37, 99, 235, 0.1) !important;
+}
+
+[data-theme="light"] .option-item {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .option-item:hover {
+  background: #f8fafc !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .option-item.selected {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #1e40af !important;
+  box-shadow: 0 0 0 1px #2563eb, 0 4px 14px rgba(37, 99, 235, 0.15) !important;
+}
+
+[data-theme="light"] .option-item .option-indicator {
+  border-color: #94a3b8 !important;
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .option-item.selected .option-indicator {
+  border-color: #2563eb !important;
+  background: #2563eb !important;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4) !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: #f1f5f9 !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="light"] .modal-overlay {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+[data-theme="light"] .modal-box {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16) !important;
+}
+
+[data-theme="light"] .modal-box h2,
+[data-theme="light"] .modal-box h3,
+[data-theme="light"] .modal-box h4 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .student-hero-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%) !important;
+  border: 1px solid rgba(37, 99, 235, 0.15) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] #dash-student-welcome {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .stats-table th,
+[data-theme="light"] .table th,
+[data-theme="light"] .proctor-table th {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .stats-table td,
+[data-theme="light"] .table td,
+[data-theme="light"] .proctor-table td {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+[data-theme="light"] .stats-table tr:hover td,
+[data-theme="light"] .table tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .form-control,
+[data-theme="light"] input[type="text"],
+[data-theme="light"] input[type="password"],
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .user-tag {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(2, 132, 199, 0.25) !important;
+}
+
+/* ==========================================================================
+   EXTENSION THÈME CLAIR (MODERN HIGH-CONTRAST LIGHT THEME)
+   Couvre toutes les vues : Dashboard, Piliers, Statistiques, Épreuves, 
+   Centres d'entraînement Python/Linux, Exam Runner & Challenge Workspace
+   ========================================================================== */
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6 {
+  color: #0f172a;
+}
+
+/* --- Cartes & Conteneurs Généraux --- */
+[data-theme="light"] .card,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .kpi-card,
+[data-theme="light"] .practice-compact-card,
+[data-theme="light"] .exam-list-item,
+[data-theme="light"] .review-question-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .stat-label,
+[data-theme="light"] .kpi-label {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .stat-value,
+[data-theme="light"] .kpi-value {
+  color: #0f172a !important;
+}
+
+/* --- Bannières d'entraînement (Training Hub & Hero) --- */
+[data-theme="light"] .training-hub-banner,
+[data-theme="light"] .python-hub-banner {
+  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%) !important;
+  border: 1px solid rgba(37, 99, 235, 0.2) !important;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06) !important;
+}
+
+[data-theme="light"] .linux-hub-banner {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.22) !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.06) !important;
+}
+
+[data-theme="light"] .python-hero-banner {
+  background: linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.08) !important;
+}
+
+[data-theme="light"] .python-hero-banner h2,
+[data-theme="light"] .python-hero-banner h3 {
+  color: #0f172a !important;
+}
+
+/* --- Piliers Fondamentaux & Mini Cards --- */
+[data-theme="light"] .pillar-mini-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .pillar-mini-header {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .pillar-mini-level {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .fundamental-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .fundamental-card:hover {
+  border-color: #2563eb !important;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12) !important;
+}
+
+[data-theme="light"] .fundamental-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .fundamental-mark-total {
+  color: #94a3b8 !important;
+}
+
+/* --- Échelle des Niveaux (Level Ladder) --- */
+[data-theme="light"] .level-ladder-item {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .level-ladder-item.active-level {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.18) !important;
+}
+
+[data-theme="light"] .level-number-badge {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .level-ladder-item.active-level .level-number-badge {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* --- Score Pills --- */
+[data-theme="light"] .score-pill {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .score-pill.good {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+
+[data-theme="light"] .score-pill.average {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+
+[data-theme="light"] .score-pill.low {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #fecaca !important;
+}
+
+/* --- Chapitres d'Entraînement --- */
+[data-theme="light"] .chapter-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .chapter-card:hover {
+  border-color: #7c3aed !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12) !important;
+}
+
+[data-theme="light"] .chapter-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .chapter-desc {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .chapter-number-pill {
+  background: #f5f3ff !important;
+  color: #7c3aed !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+[data-theme="light"] .chapter-metrics {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .curriculum-topic-row {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .badge-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* --- Coding Challenge Workspace & Exam Runner --- */
+[data-theme="light"] .challenge-layout,
+[data-theme="light"] .challenge-layout.fused-workspace {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .problem-pane,
+[data-theme="light"] .challenge-layout.fused-workspace .problem-pane {
+  background: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .problem-header {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .problem-header h2,
+[data-theme="light"] .problem-pane h2,
+[data-theme="light"] .problem-pane h3,
+[data-theme="light"] .problem-pane h4 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .problem-description.markdown-body,
+[data-theme="light"] .problem-description.markdown-body p,
+[data-theme="light"] .problem-pane .markdown-body,
+[data-theme="light"] .problem-pane .markdown-body p,
+[data-theme="light"] .problem-pane .markdown-body li {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .problem-description.markdown-body pre,
+[data-theme="light"] .problem-pane .markdown-body pre {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .problem-description.markdown-body code,
+[data-theme="light"] .problem-pane .markdown-body code {
+  background: #f1f5f9 !important;
+  color: #be123c !important;
+  border: 1px solid #fecdd3 !important;
+}
+
+[data-theme="light"] .sample-test-card {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sample-io-subbox {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .editor-pane,
+[data-theme="light"] .challenge-layout.fused-workspace .editor-pane {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .editor-toolbar {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .toolbar-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .toolbar-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] .toolbar-separator {
+  background: #cbd5e1 !important;
+}
+
+[data-theme="light"] .editor-wrapper {
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .editor-status-bar {
+  background: #f1f5f9 !important;
+  border-top: 1px solid #cbd5e1 !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .status-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .status-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .split-pane-divider,
+[data-theme="light"] .h-splitter {
+  background-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .split-pane-divider:hover,
+[data-theme="light"] .h-splitter:hover {
+  background-color: #2563eb !important;
+}
+
+[data-theme="light"] .bottom-pane {
+  background: #f8fafc !important;
+  border-top: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .tabs-header {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .tab-btn {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .tab-btn:hover {
+  color: #0f172a !important;
+  background: #e2e8f0 !important;
+}
+
+[data-theme="light"] .tab-btn.active {
+  color: #2563eb !important;
+  background: #ffffff !important;
+  border-bottom: 2px solid #2563eb !important;
+}
+
+[data-theme="light"] .tab-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .console-textarea,
+[data-theme="light"] #custom-input {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .output-logs,
+[data-theme="light"] #console-logs,
+[data-theme="light"] .code-terminal-output,
+[data-theme="light"] #code-output-box,
+[data-theme="light"] .code-output-terminal {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .code-editor-area {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .io-block {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .test-case-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .coding-navigator-bar {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* --- CodeMirror Light Theme Overrides --- */
+[data-theme="light"] .CodeMirror {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .CodeMirror-gutters {
+  background: #f8fafc !important;
+  border-right: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .CodeMirror-linenumber {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .CodeMirror-cursor {
+  border-left-color: #0f172a !important;
+}
+
+[data-theme="light"] .CodeMirror-selected {
+  background: #dbeafe !important;
+}
+
+[data-theme="light"] .CodeMirror-line::selection,
+[data-theme="light"] .CodeMirror-line > span::selection,
+[data-theme="light"] .CodeMirror-line > span > span::selection {
+  background: #dbeafe !important;
+}
+
+/* --- Linux Terminal & POSIX Console in Light Mode --- */
+[data-theme="light"] #linux-term-output {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #linux-cli-input {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #linux-script-editor {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* --- Badges & Tags --- */
+[data-theme="light"] .badge-practical {
+  background: #f5f3ff !important;
+  color: #7c3aed !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+[data-theme="light"] .badge-theoretical {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+}

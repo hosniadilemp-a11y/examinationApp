@@ -825,25 +825,25 @@ export class ExamRunner {
                     <span>📋 Exemples de Validation (E/S)</span>
                   </div>
                   ${validPublicTests.map((t, idx) => `
-                    <div class="sample-test-card" style="background:#090e1a; border:1px solid rgba(59,130,246,0.22); border-radius:8px; padding:14px; margin-bottom:12px;">
+                    <div class="sample-test-card" style="border:1px solid rgba(59,130,246,0.22); border-radius:8px; padding:14px; margin-bottom:12px;">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-weight:700; font-size:0.88rem; color:#60a5fa;">Exemple #${idx + 1}${t.name ? ` : ${this._escapeHtml(t.name)}` : ''}</span>
+                        <span style="font-weight:700; font-size:0.88rem; color:#2563eb;">Exemple #${idx + 1}${t.name ? ` : ${this._escapeHtml(t.name)}` : ''}</span>
                         ${t.description ? `<span style="font-size:0.78rem; color:var(--text-muted);">${this._escapeHtml(t.description)}</span>` : ''}
                       </div>
                       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:10px 12px;">
-                          <div style="font-size:0.72rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                        <div class="sample-io-subbox" style="border:1px solid var(--card-border); border-radius:6px; padding:10px 12px;">
+                          <div style="font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
                             <span>Entrée (stdin)</span>
-                            <button type="button" class="btn-copy-io" data-copy="${this._escapeHtml(t.input !== undefined ? String(t.input) : '')}" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:0.75rem; padding:0;">📋 Copier</button>
+                            <button type="button" class="btn-copy-io" data-copy="${this._escapeHtml(t.input !== undefined ? String(t.input) : '')}" style="background:none; border:none; color:#2563eb; cursor:pointer; font-size:0.75rem; padding:0;">📋 Copier</button>
                           </div>
-                          <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:#cbd5e1; white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.input !== undefined && t.input !== '' ? String(t.input) : '(Aucune entrée)')}</pre>
+                          <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:var(--text-primary); white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.input !== undefined && t.input !== '' ? String(t.input) : '(Aucune entrée)')}</pre>
                           ${this._formatInputBreakdown(t.input)}
                         </div>
-                        <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:10px 12px;">
-                          <div style="font-size:0.72rem; text-transform:uppercase; color:#34d399; font-weight:700; margin-bottom:4px;">
+                        <div class="sample-io-subbox" style="border:1px solid var(--card-border); border-radius:6px; padding:10px 12px;">
+                          <div style="font-size:0.72rem; text-transform:uppercase; color:#059669; font-weight:700; margin-bottom:4px;">
                             <span>Sortie Attendue (stdout)</span>
                           </div>
-                          <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:#a7f3d0; white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.expected_output !== undefined ? String(t.expected_output) : '')}</pre>
+                          <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:var(--text-primary); font-weight:600; white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.expected_output !== undefined ? String(t.expected_output) : '')}</pre>
                         </div>
                       </div>
                     </div>
@@ -869,16 +869,16 @@ export class ExamRunner {
           <div class="split-pane-divider" id="vertical-splitter"></div>
 
           <!-- RIGHT PANE: Code Editor & Bottom Console/Tests -->
-          <div class="editor-pane" style="width:calc(56% - 5px); flex:1; display:flex; flex-direction:column; background:#0a0f1d; overflow:hidden;">
+          <div class="editor-pane" style="width:calc(56% - 5px); flex:1; display:flex; flex-direction:column; overflow:hidden;">
             <!-- Top Toolbar -->
-            <div class="editor-toolbar" style="padding:10px 16px; background:#070b14; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div class="editor-toolbar" style="padding:10px 16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <button id="undo-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Annuler (Ctrl+Z)">↩️</button>
               <button id="redo-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Refaire (Ctrl+Y)">↪️</button>
-              <div class="toolbar-separator" style="width:1px; height:20px; background:rgba(255,255,255,0.15); margin:0 4px;"></div>
+              <div class="toolbar-separator" style="width:1px; height:20px; background:var(--card-border); margin:0 4px;"></div>
               <button id="comment-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Commenter (Ctrl+/)">💬</button>
               <button id="reset-template-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Réinitialiser le code">🔄</button>
-              <div class="toolbar-separator" style="width:1px; height:20px; background:rgba(255,255,255,0.15); margin:0 4px;"></div>
-              <button id="btn-toggle-intellisense" class="toolbar-btn" style="padding:5px 12px; font-size:0.85rem; font-weight:600; border-radius:6px; background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); cursor:pointer;" title="Activer / Désactiver les suggestions automatiques (Ctrl+Space reste disponible)">💡 Suggestions : ON</button>
+              <div class="toolbar-separator" style="width:1px; height:20px; background:var(--card-border); margin:0 4px;"></div>
+              <button id="btn-toggle-intellisense" class="toolbar-btn" style="padding:5px 12px; font-size:0.85rem; font-weight:600; border-radius:6px; background:rgba(59,130,246,0.12); color:#2563eb; border:1px solid rgba(59,130,246,0.3); cursor:pointer;" title="Activer / Désactiver les suggestions automatiques (Ctrl+Space reste disponible)">💡 Suggestions : ON</button>
               <span style="font-size:0.95rem; font-weight:600; color:var(--text-secondary);">🐍 Python 3</span>
               <div id="coding-status-indicator" style="margin-left:auto; font-size:0.92rem; color:#10b981; font-weight:600; display:flex; align-items:center; gap:6px;">
                 <span class="status-pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span> Prêt
@@ -891,7 +891,7 @@ export class ExamRunner {
           </div>
 
           <!-- Status Bar -->
-          <div id="editor-status-bar" class="editor-status-bar" style="display:flex; justify-content:space-between; align-items:center; padding:6px 16px; font-size:0.88rem; height:34px; background:#070b14; border-top:1px solid rgba(255,255,255,0.06); color:var(--text-muted); font-family:var(--font-mono);">
+          <div id="editor-status-bar" class="editor-status-bar" style="display:flex; justify-content:space-between; align-items:center; padding:6px 16px; font-size:0.88rem; height:34px; color:var(--text-muted); font-family:var(--font-mono);">
             <div class="status-left" style="display:flex; gap:10px; align-items:center;">
               <span id="status-cursor">Ln 1, Col 1</span>
               <span class="status-sep">|</span>
@@ -902,9 +902,9 @@ export class ExamRunner {
             <div class="status-right" style="display:flex; gap:8px; align-items:center;">
               <button id="wordwrap-btn" class="status-btn" style="background:none; border:none; color:inherit; cursor:pointer; font-size:0.88rem; font-weight:600; padding:2px 6px;">Wrap</button>
               <span class="status-sep">|</span>
-              <button id="font-decrease-btn" class="status-btn" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:inherit; cursor:pointer; font-size:0.88rem; font-weight:700; padding:2px 8px; border-radius:4px;">A-</button>
-              <span id="status-fontsize" style="font-weight:700; font-size:0.88rem; color:#f8fafc; min-width:36px; text-align:center;">16px</span>
-              <button id="font-increase-btn" class="status-btn" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:inherit; cursor:pointer; font-size:0.88rem; font-weight:700; padding:2px 8px; border-radius:4px;">A+</button>
+              <button id="font-decrease-btn" class="status-btn" style="background:var(--bg-secondary); border:1px solid var(--card-border); color:inherit; cursor:pointer; font-size:0.88rem; font-weight:700; padding:2px 8px; border-radius:4px;">A-</button>
+              <span id="status-fontsize" style="font-weight:700; font-size:0.88rem; color:var(--text-primary); min-width:36px; text-align:center;">16px</span>
+              <button id="font-increase-btn" class="status-btn" style="background:var(--bg-secondary); border:1px solid var(--card-border); color:inherit; cursor:pointer; font-size:0.88rem; font-weight:700; padding:2px 8px; border-radius:4px;">A+</button>
             </div>
           </div>
 
@@ -912,8 +912,8 @@ export class ExamRunner {
           <div class="h-splitter" id="horizontal-splitter"></div>
 
           <!-- Bottom Pane -->
-          <div class="bottom-pane" id="bottom-pane" style="height:45%; min-height:180px; display:flex; flex-direction:column; background:#060a12; border-top:1px solid rgba(255,255,255,0.08);">
-            <div class="tabs-header" style="display:flex; align-items:center; padding:8px 16px; background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); gap:10px;">
+          <div class="bottom-pane" id="bottom-pane" style="height:45%; min-height:180px; display:flex; flex-direction:column;">
+            <div class="tabs-header" style="display:flex; align-items:center; padding:8px 16px; gap:10px;">
               <button class="tab-btn active" id="tab-btn-console" data-target="tab-console" style="padding:8px 16px; font-size:0.95rem; border-radius:6px; cursor:pointer; font-weight:600;">
                 🖥️ Console E/S
               </button>
@@ -925,7 +925,7 @@ export class ExamRunner {
               <button class="btn btn-secondary" id="run-stdin-btn" style="padding:8px 16px; font-size:0.95rem; font-weight:600; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
                 ▶️ Exécuter (stdin)
               </button>
-              <button class="btn btn-primary" id="run-tests-btn" style="padding:9px 20px; font-size:1rem; font-weight:700; background:#2563eb; border-radius:6px; box-shadow:0 3px 12px rgba(37,99,235,0.45); display:inline-flex; align-items:center; gap:6px;">
+              <button class="btn btn-primary" id="run-tests-btn" style="padding:9px 20px; font-size:1rem; font-weight:700; background:#2563eb; border-radius:6px; box-shadow:0 3px 12px rgba(37,99,235,0.35); display:inline-flex; align-items:center; gap:6px;">
                 ⚡ Tester ma Solution
               </button>
               <button class="btn btn-success" id="btn-save-coding" style="padding:9px 18px; font-size:0.95rem; font-weight:600; background:#10b981; border:none; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
@@ -937,42 +937,42 @@ export class ExamRunner {
             <div class="tab-content" id="tab-console" style="display:flex; flex:1; padding:12px 16px; gap:14px; overflow:hidden;">
               <div class="console-input-section" style="flex:1; display:flex; flex-direction:column;">
                 <span style="font-size:0.88rem; color:var(--text-muted); font-weight:600; margin-bottom:6px;">Entrée standard (stdin) — Variables distinctes (ex: taille puis tableau) :</span>
-                <textarea id="custom-input" placeholder="Saisissez vos données d'entrée..." style="flex:1; width:100%; font-family:var(--font-mono); font-size:0.95rem; padding:10px 14px; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background:#0b1120; color:#e2e8f0; resize:none; line-height:1.5;">${this._escapeHtml(sampleInput)}</textarea>
+                <textarea id="custom-input" class="console-textarea" placeholder="Saisissez vos données d'entrée..." style="flex:1; width:100%; font-family:var(--font-mono); font-size:0.95rem; padding:10px 14px; border-radius:6px; resize:none; line-height:1.5;">${this._escapeHtml(sampleInput)}</textarea>
               </div>
               <div class="console-output-section" style="flex:1.2; display:flex; flex-direction:column;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                   <span style="font-size:0.88rem; color:var(--text-muted); font-weight:600;">Sortie console (stdout) :</span>
                   <button id="clear-console-btn" class="btn btn-secondary" style="padding:3px 10px; font-size:0.82rem; font-weight:600; border-radius:4px;">Effacer</button>
                 </div>
-                <pre id="console-logs" class="output-logs" style="flex:1; margin:0; padding:12px 14px; background:#04070e; color:#a7f3d0; border-radius:6px; border:1px solid rgba(255,255,255,0.08); overflow-y:auto; font-size:0.95rem; font-family:var(--font-mono); white-space:pre-wrap; line-height:1.6;">(En attente d'exécution)</pre>
+                <pre id="console-logs" class="output-logs" style="flex:1; margin:0; padding:12px 14px; border-radius:6px; overflow-y:auto; font-size:0.95rem; font-family:var(--font-mono); white-space:pre-wrap; line-height:1.6;">(En attente d'exécution)</pre>
                 <div id="console-figures" style="display:none; margin-top:10px; overflow-y:auto; max-height:240px; flex-direction:column; gap:10px;"></div>
               </div>
             </div>
 
             <!-- Tab Tests -->
             <div class="tab-content" id="tab-tests" style="display:none; flex:1; padding:14px 18px; overflow-y:auto;">
-              <div id="test-cases-summary" style="margin-bottom:12px; font-size:1.02rem; font-weight:700; color:#93c5fd;"></div>
+              <div id="test-cases-summary" style="margin-bottom:12px; font-size:1.02rem; font-weight:700; color:#2563eb;"></div>
               <div id="test-cases-list" style="display:flex; flex-direction:column; gap:12px;">
                 ${validPublicTests.map((tc, idx) => `
-                  <div class="test-case-card" id="test-case-card-${idx}" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px;">
+                  <div class="test-case-card" id="test-case-card-${idx}" style="border:1px solid var(--card-border); border-radius:8px; padding:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <span style="font-weight:700; font-size:0.95rem; color:#60a5fa;">Cas de test #${idx + 1} (Public)</span>
-                      <span class="test-status-pill" id="test-status-${idx}" style="font-size:0.85rem; padding:4px 12px; border-radius:12px; background:rgba(255,255,255,0.08); color:var(--text-muted); font-weight:600;">Non exécuté</span>
+                      <span style="font-weight:700; font-size:0.95rem; color:#2563eb;">Cas de test #${idx + 1} (Public)</span>
+                      <span class="test-status-pill" id="test-status-${idx}" style="font-size:0.85rem; padding:4px 12px; border-radius:12px; background:var(--bg-secondary); color:var(--text-muted); font-weight:600;">Non exécuté</span>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.92rem; font-family:var(--font-mono);">
                       <div>
                         <div style="color:var(--text-muted); font-size:0.82rem; font-weight:600; margin-bottom:4px;">Entrée :</div>
-                        <div class="io-block" style="background:#070b14; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); white-space:pre-wrap; line-height:1.5;">${this._escapeHtml(tc.input || '(Vide)')}</div>
+                        <div class="io-block" style="padding:10px 12px; border-radius:6px; border:1px solid var(--card-border); white-space:pre-wrap; line-height:1.5;">${this._escapeHtml(tc.input || '(Vide)')}</div>
                         ${this._formatInputBreakdown(tc.input)}
                       </div>
                       <div>
                         <div style="color:var(--text-muted); font-size:0.82rem; font-weight:600; margin-bottom:4px;">Sortie attendue :</div>
-                        <div class="io-block" style="background:#070b14; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); white-space:pre-wrap; line-height:1.5;">${this._escapeHtml(tc.expected_output || tc.output || '(Vide)')}</div>
+                        <div class="io-block" style="padding:10px 12px; border-radius:6px; border:1px solid var(--card-border); white-space:pre-wrap; line-height:1.5;">${this._escapeHtml(tc.expected_output || tc.output || '(Vide)')}</div>
                       </div>
                     </div>
                     <div id="test-actual-row-${idx}" style="display:none; margin-top:10px; font-size:0.92rem; font-family:var(--font-mono);">
                       <div style="color:var(--text-muted); font-size:0.82rem; font-weight:600; margin-bottom:4px;">Votre sortie :</div>
-                      <div id="test-actual-out-${idx}" class="io-block" style="background:#070b14; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); white-space:pre-wrap; line-height:1.5;"></div>
+                      <div id="test-actual-out-${idx}" class="io-block" style="padding:10px 12px; border-radius:6px; border:1px solid var(--card-border); white-space:pre-wrap; line-height:1.5;"></div>
                     </div>
                   </div>
                 `).join('')}
@@ -1169,9 +1169,10 @@ export class ExamRunner {
       if (editorEl._cmInstance) {
         try { editorEl._cmInstance.toTextArea(); } catch (_) {}
       }
+      const isLightMode = (document.documentElement.getAttribute('data-theme') === 'light');
       cmInstance = window.CodeMirror.fromTextArea(editorEl, {
         mode: 'python',
-        theme: 'dracula',
+        theme: isLightMode ? 'default' : 'dracula',
         lineNumbers: true,
         indentUnit: 4,
         tabSize: 4,

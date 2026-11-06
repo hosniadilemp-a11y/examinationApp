@@ -149,19 +149,25 @@ class AppController {
 
 
   setTheme(theme) {
-
     document.documentElement.setAttribute('data-theme', theme);
-
     localStorage.setItem('exam_theme', theme);
-
     const icon = document.getElementById('theme-icon');
-
     const label = document.getElementById('theme-label');
-
     if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
-
     if (label) label.textContent = theme === 'dark' ? 'Mode Sombre' : 'Mode Clair';
 
+    // Synchroniser CodeMirror si une session est active
+    try {
+      const cmTheme = theme === 'light' ? 'default' : 'dracula';
+      if (window.examRunner && window.examRunner._cmInstance) {
+        window.examRunner._cmInstance.setOption('theme', cmTheme);
+      }
+      document.querySelectorAll('.CodeMirror').forEach(el => {
+        if (el.CodeMirror) {
+          el.CodeMirror.setOption('theme', cmTheme);
+        }
+      });
+    } catch (_) {}
   }
 
 
@@ -1549,17 +1555,10 @@ class AppController {
 
 
     if (user.role === 'student') {
-
       const links = [
-
         { id: 'nav-dash', label: '🏠 Tableau de Bord', action: () => this.renderDashboard(user) },
-
         { id: 'nav-official-exams', label: '📝 Épreuves Officielles', action: () => this.renderOfficialExamsView() },
-
-        { id: 'nav-training-hub', label: '🎓 Centres d\'Entraînement', action: () => this.renderTrainingHubView() },
-
-        { id: 'nav-bulletin', label: '📑 Bulletin Académique', action: () => this.openStudentBulletinModal(user.id) }
-
+        { id: 'nav-training-hub', label: '🎓 Centres d\'Entraînement', action: () => this.renderTrainingHubView() }
       ];
 
 
@@ -2065,63 +2064,37 @@ class AppController {
 
 
         const typeBadge = ex.exam_type === 'practical'
-
           ? `<span class="badge badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">💻 Pratique</span>`
-
           : `<span class="badge badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:11px; font-weight:600;">📖 Théorique</span>`;
 
-
+        const cleanTitle = (ex.title || '').replace(/^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*/i, '').trim();
+        const cleanInstructions = (ex.instructions || '').replace(/\[CONFIG_RANDOM_STUDENT_QUESTIONS=\d+\]/gi, '').trim();
 
         row.innerHTML = `
-
           <div style="display:flex; align-items:flex-start; gap:16px; flex:1; min-width:280px;">
-
             <div style="font-size:1.7rem; line-height:1; padding:8px; background:rgba(255,255,255,0.04); border-radius:8px; border:1px solid var(--card-border);">
-
               ${ex.exam_type === 'practical' ? '💻' : '📖'}
-
             </div>
-
             <div style="flex:1;">
-
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; flex-wrap:wrap;">
-
                 <span class="user-tag" style="font-size:11px; padding:2px 8px; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
-
                 ${typeBadge}
-
                 ${statusBadgeHtml}
-
               </div>
-
-              <h4 style="margin:0 0 4px 0; font-size:1.1rem; color:var(--text-primary); font-weight:600;">${this._escapeHtml(ex.title)}</h4>
-
-              <p style="margin:0; font-size:0.86rem; color:var(--text-secondary); line-height:1.4;">${this._escapeHtml(ex.instructions || 'Aucune consigne particulière.')}</p>
-
+              <h4 style="margin:0 0 4px 0; font-size:1.1rem; color:var(--text-primary); font-weight:600;">${this._escapeHtml(cleanTitle)}</h4>
+              <p style="margin:0; font-size:0.86rem; color:var(--text-secondary); line-height:1.4;">${this._escapeHtml(cleanInstructions || 'Épreuve officielle certifiante.')}</p>
             </div>
-
           </div>
-
           <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; justify-content:flex-end;">
-
             <div class="exam-meta" style="margin:0; display:flex; gap:14px; font-size:0.86rem; color:var(--text-secondary); white-space:nowrap;">
-
               <span>⏱️ <strong>${ex.duration_minutes}</strong> min</span>
-
               <span>📝 <strong>${ex.question_count}</strong> questions</span>
-
               <span>🎯 Barème <strong>/${ex.global_points}</strong></span>
-
             </div>
-
             <div style="text-align:right;">
-
               ${actionAreaHtml}
-
             </div>
-
           </div>
-
         `;
 
 
@@ -2309,14 +2282,10 @@ class AppController {
               </span>
 
               <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Tentatives : ${m.attempts_count}</span>
-
             </div>
-
-            <h4 style="font-size:1.15rem; margin:0 0 10px 0; color:#fff;">${this._escapeHtml(m.title)}</h4>
-
+            <h4 style="font-size:1.15rem; margin:0 0 10px 0; color:var(--text-primary); font-weight:700;">${this._escapeHtml(m.title)}</h4>
             
-
-            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px;">
+            <div style="background:var(--bg-secondary); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px;">
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
 
@@ -2497,37 +2466,22 @@ class AppController {
             const tr = document.createElement('tr');
 
             const isPass = ex.mark >= 10.0;
-
             const markColor = isPass ? 'var(--success)' : 'var(--danger)';
-
+            const cleanExTitle = (ex.exam_title || '').replace(/^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*/i, '').trim();
             tr.innerHTML = `
-
               <td style="font-family:var(--font-mono); font-size:0.85rem;">${this._escapeHtml(ex.submitted_at || 'Terminé')}</td>
-
-              <td style="font-weight:600; color:#fff;">${this._escapeHtml(ex.exam_title)}</td>
-
+              <td style="font-weight:600; color:var(--text-primary);">${this._escapeHtml(cleanExTitle)}</td>
               <td><strong style="font-family:var(--font-mono); font-size:1.05rem; color:${markColor};">${ex.mark.toFixed(2)} / 20</strong></td>
-
               <td>
-
-                <span class="badge" style="${isPass ? 'background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3);' : 'background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3);'}">
-
+                <span class="badge" style="${isPass ? 'background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);' : 'background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);'}">
                   ${isPass ? '✓ Validé' : '✗ Insuffisant'}
-
                 </span>
-
               </td>
-
               <td style="text-align: right;">
-
                 <button class="btn btn-secondary btn-sm" id="btn-review-stat-${ex.attempt_id}" style="padding: 4px 10px; font-size: 0.8rem;">
-
                   🔍 Voir Corrigé
-
                 </button>
-
               </td>
-
             `;
 
             tbodyOff.appendChild(tr);
@@ -2610,7 +2564,7 @@ class AppController {
 
               </div>
 
-              <h4 class="fundamental-title" style="margin:0 0 10px 0; font-size:1.05rem; color:#fff;">${this._escapeHtml(m.title)}</h4>
+              <h4 class="fundamental-title" style="margin:0 0 10px 0; font-size:1.05rem; color:var(--text-primary); font-weight:700;">${this._escapeHtml(m.title)}</h4>
 
               <div class="fundamental-mark-box">
 
@@ -2816,7 +2770,7 @@ class AppController {
 
               </td>
 
-              <td style="font-weight:600; color:#fff;">${this._escapeHtml(ev.title)}</td>
+              <td style="font-weight:600; color:var(--text-primary);">${this._escapeHtml(ev.title)}</td>
 
               <td><strong style="font-family:var(--font-mono); font-size:1.05rem; color:${markColor};">${ev.mark.toFixed(2)} / 20</strong></td>
 
@@ -3037,17 +2991,11 @@ class AppController {
         qCard.className = 'card review-question-card';
 
         qCard.style.cssText = `
-
           padding: 18px 22px;
-
           border-radius: 10px;
-
-          background: rgba(15, 23, 42, 0.65);
-
+          background: var(--bg-surface);
           border: 1px solid ${q.is_correct ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.45)'};
-
           margin-bottom: 14px;
-
         `;
 
 
@@ -3108,108 +3056,57 @@ class AppController {
 
 
 
-                let optStyle = 'background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); color:var(--text-primary);';
-
+                let optStyle = 'background:var(--bg-secondary); border:1px solid var(--card-border); color:var(--text-primary);';
                 let tag = '';
 
-
-
                 if (isCorrectOption && isUserPick) {
-
-                  optStyle = 'background:rgba(16,185,129,0.18); border:1px solid #10b981; color:#a7f3d0; font-weight:600;';
-
-                  tag = '<span style="color:#34d399; font-size:0.82rem; font-weight:700; margin-left:auto;">✓ Votre choix (Correct)</span>';
-
+                  optStyle = 'background:rgba(16,185,129,0.15); border:1px solid #10b981; color:var(--text-primary); font-weight:600;';
+                  tag = '<span style="color:#059669; font-size:0.82rem; font-weight:700; margin-left:auto;">✓ Votre choix (Correct)</span>';
                 } else if (isCorrectOption && !isUserPick) {
-
-                  optStyle = 'background:rgba(16,185,129,0.12); border:1px dashed #10b981; color:#6ee7b7; font-weight:600;';
-
-                  tag = '<span style="color:#10b981; font-size:0.82rem; font-weight:700; margin-left:auto;">★ Bonne réponse attendue</span>';
-
+                  optStyle = 'background:rgba(16,185,129,0.1); border:1px dashed #10b981; color:var(--text-primary); font-weight:600;';
+                  tag = '<span style="color:#059669; font-size:0.82rem; font-weight:700; margin-left:auto;">★ Bonne réponse attendue</span>';
                 } else if (!isCorrectOption && isUserPick) {
-
-                  optStyle = 'background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#fca5a5; font-weight:600;';
-
-                  tag = '<span style="color:#f87171; font-size:0.82rem; font-weight:700; margin-left:auto;">✗ Votre choix (Incorrect)</span>';
-
+                  optStyle = 'background:rgba(239,68,68,0.12); border:1px solid #ef4444; color:var(--text-primary); font-weight:600;';
+                  tag = '<span style="color:#dc2626; font-size:0.82rem; font-weight:700; margin-left:auto;">✗ Votre choix (Incorrect)</span>';
                 }
 
-
-
                 return `
-
                   <div style="display:flex; align-items:center; padding:9px 14px; border-radius:7px; font-size:0.92rem; ${optStyle}">
-
                     <span>${this._escapeHtml(optText)}</span>
-
                     ${tag}
-
                   </div>
-
                 `;
-
               }).join('')}
-
             </div>
-
           `;
-
         } else {
-
           const userStr = typeof q.user_answer === 'object' ? JSON.stringify(q.user_answer, null, 2) : String(q.user_answer ?? '(Aucune réponse fournie)');
-
           const corrStr = typeof q.correct_answer === 'object' ? JSON.stringify(q.correct_answer, null, 2) : String(q.correct_answer ?? '');
-
           bodyHtml = `
-
             <div style="display:flex; flex-direction:column; gap:10px; margin: 12px 0;">
-
               <div style="background: ${isOk ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border: 1px solid ${isOk ? '#10b981' : '#ef4444'}; padding: 10px 14px; border-radius: 7px;">
-
-                <div style="font-size:0.8rem; font-weight:700; color: ${isOk ? '#34d399' : '#f87171'}; margin-bottom:4px;">
-
+                <div style="font-size:0.8rem; font-weight:700; color: ${isOk ? '#059669' : '#dc2626'}; margin-bottom:4px;">
                   ${isOk ? '✓ Votre Réponse (Validée)' : '✗ Votre Réponse'}
-
                 </div>
-
-                <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:#f1f5f9;">${this._escapeHtml(userStr)}</pre>
-
+                <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary);">${this._escapeHtml(userStr)}</pre>
               </div>
-
               ${!isOk && corrStr ? `
-
                 <div style="background: rgba(16,185,129,0.1); border: 1px dashed #10b981; padding: 10px 14px; border-radius: 7px;">
-
-                  <div style="font-size:0.8rem; font-weight:700; color:#34d399; margin-bottom:4px;">★ Réponse attendue :</div>
-
-                  <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:#a7f3d0;">${this._escapeHtml(corrStr)}</pre>
-
+                  <div style="font-size:0.8rem; font-weight:700; color:#059669; margin-bottom:4px;">★ Réponse attendue :</div>
+                  <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary); font-weight:600;">${this._escapeHtml(corrStr)}</pre>
                 </div>
-
               ` : ''}
-
             </div>
-
           `;
-
         }
 
-
-
         let explHtml = '';
-
         if (q.explanation && String(q.explanation).trim()) {
-
           explHtml = `
-
-            <div style="margin-top:12px; padding:10px 14px; background:rgba(59,130,246,0.1); border-left:3px solid #3b82f6; border-radius:4px; font-size:0.88rem; color:#bfdbfe;">
-
-              <strong>💡 Explication :</strong> ${this._escapeHtml(q.explanation)}
-
+            <div style="margin-top:12px; padding:10px 14px; background:rgba(37,99,235,0.08); border-left:3px solid #2563eb; border-radius:4px; font-size:0.88rem; color:var(--text-primary);">
+              <strong style="color:#2563eb;">💡 Explication :</strong> ${this._escapeHtml(q.explanation)}
             </div>
-
           `;
-
         }
 
 
@@ -5248,7 +5145,7 @@ class AppController {
 
           <td>
 
-            <span style="font-weight:600; color:#fff;">${this._escapeHtml(a.module_title)}</span>
+            <span style="font-weight:600; color:var(--text-primary);">${this._escapeHtml(a.module_title)}</span>
 
           </td>
 
@@ -5494,14 +5391,15 @@ class AppController {
 
 
 
-  // --- Fermeture Générique de Modal ---
+  // --- Gestion Générique des Modals ---
+  openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add('active');
+  }
 
   closeModal(modalId) {
-
     const modal = document.getElementById(modalId);
-
     if (modal) modal.classList.remove('active');
-
   }
 
 

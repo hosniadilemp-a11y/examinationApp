@@ -109,7 +109,7 @@
             <span style="font-family:var(--font-heading); font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">CYBER<span class="text-gradient">EXAM</span></span>
           </div>
           <h2>Espace d'Authentification</h2>
-          <p>Plateforme certifiante haute sécurité, algorithmique &amp; cyberdéfense.</p>
+          <p>Plateforme certifiante cybersécurité & programmation.</p>
 
           <div id="login-error" style="display:none; color:var(--danger); background:rgba(239,68,68,0.1); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:0.85rem;"></div>
 
@@ -218,11 +218,11 @@
           <div>
             <h3 style="margin: 0;">🎯 Tests de Niveau & Positionnement</h3>
             <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">
-              Tests d'évaluation de niveau autonomes accessibles à tout moment. <strong>Non comptabilisés dans les moyennes d'examen officielles</strong>.
+              Évaluation autonome continue 24h/24 hors moyennes officielles.
             </p>
           </div>
           <button id="btn-open-practice-history" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
-            <span>📜</span> Historique de Tous les Tests de Niveau
+            <span>📜</span> Historique des Tests de Niveau
           </button>
         </div>
         <div class="card-grid" id="practice-modules-grid">
@@ -230,14 +230,14 @@
         </div>
 
         <!-- Section Centre d'Entraînement Python (Bouton d'accès unique au Centre dédié) -->
-        <div style="margin-top: 36px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: var(--radius-lg); padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+        <div class="card training-hub-banner python-hub-banner" style="margin-top: 36px; padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
           <div style="max-width: 680px;">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
               <span style="font-size:1.6rem;">🐍</span>
-              <h3 style="font-size:1.25rem; margin:0; color:#fff;">Centre d'Entraînement Python (Théorique & Pratique)</h3>
+              <h3 style="font-size:1.25rem; margin:0; color:var(--text-primary);">Centre d'Entraînement Python (Théorique & Pratique)</h3>
             </div>
             <p style="color:var(--text-secondary); margin:0; font-size:0.92rem; line-height:1.5;">
-              Développez vos compétences étape par étape à travers 10 chapitres pédagogiques, débloquez les 4 niveaux de difficulté (note de passage ≥ 14/20), gagnez des points d'expérience (XP) et montez de niveau et exécutez votre code dans un terminal interactif sécurisé.
+              10 chapitres progressifs, 4 paliers de difficulté et exécution en direct du code.
             </p>
           </div>
           <button id="btn-open-dedicated-python-training" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700; font-size: 0.95rem; white-space: nowrap;">
@@ -246,14 +246,14 @@
         </div>
 
         <!-- Section Centre d'Entraînement Linux (Accès au Centre dédié) -->
-        <div style="margin-top: 24px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.98)); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-lg); padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+        <div class="card training-hub-banner linux-hub-banner" style="margin-top: 24px; padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
           <div style="max-width: 680px;">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
               <span style="font-size:1.6rem;">🐧</span>
-              <h3 style="font-size:1.25rem; margin:0; color:#fff;">Centre d'Entraînement Linux (Terminal POSIX & VFS)</h3>
+              <h3 style="font-size:1.25rem; margin:0; color:var(--text-primary);">Centre d'Entraînement Linux (Terminal POSIX & VFS)</h3>
             </div>
             <p style="color:var(--text-secondary); margin:0; font-size:0.92rem; line-height:1.5;">
-              Maîtrisez la ligne de commande Unix, l'arborescence FHS, les droits POSIX, les processus et le scripting Bash dans un terminal 100% exécuté dans le navigateur avec évaluation automatisée.
+              Commandes Unix, droits POSIX, processus et scripts Bash avec évaluation intégrée.
             </p>
           </div>
           <button id="btn-open-dedicated-linux-training" class="btn btn-primary" style="padding: 12px 24px; font-weight: 700; font-size: 0.95rem; white-space: nowrap; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none;">
@@ -270,9 +270,9 @@
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
           <div>
-            <h2>📝 Épreuves & Examens Officiels</h2>
+            <h2>📝 Épreuves Officielles</h2>
             <p style="color: var(--text-secondary); font-size: 0.95rem;">
-              Épreuves certifiantes programmées, suivi de validation des modules et consultation des corrigés après clôture.
+              Épreuves certifiantes programmées, suivi de validation et consultation des corrigés.
             </p>
           </div>
           <button id="btn-exams-back-dash" class="btn btn-secondary">
@@ -318,7 +318,7 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
           <div>
-            <h2 style="font-size: 1.55rem; color: #fff; margin: 0 0 6px 0;">📊 Statistiques & Performance Académique</h2>
+            <h2 style="font-size: 1.55rem; color: var(--text-primary); margin: 0 0 6px 0;">📊 Statistiques & Performance Académique</h2>
             <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">
               Bilan certifiant de vos épreuves officielles, de votre niveau de positionnement et de vos entraînements Python &amp; Linux.
             </p>
@@ -329,11 +329,11 @@
         </div>
 
         <!-- SECTION 1 : ÉPREUVES OFFICIELLES CERTIFIANTES -->
-        <div class="card" style="padding: 24px; margin-bottom: 28px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 14px;">
+        <div class="card" style="padding: 24px; margin-bottom: 28px; border-radius: 14px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
             <div>
-              <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px;">VOLET OFFICIEL CERTIFIANT</span>
-              <h3 style="margin: 8px 0 0 0; font-size: 1.25rem; color: #fff;">🎓 Bilan des Épreuves &amp; Examens Officiels</h3>
+              <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700;">VOLET OFFICIEL CERTIFIANT</span>
+              <h3 style="margin: 8px 0 0 0; font-size: 1.25rem; color: var(--text-primary);">🎓 Bilan des Épreuves &amp; Examens Officiels</h3>
             </div>
             <button class="btn btn-primary btn-sm" id="btn-stats-go-official-exams">
               Accéder aux Épreuves Officielles →
@@ -342,21 +342,21 @@
 
           <!-- KPI Cards Officielles -->
           <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
-            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px;">
               <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Épreuves Passées</div>
-              <div class="stat-value" id="stats-off-total" style="font-size: 1.6rem; font-weight: 800; color: #fff;">0</div>
+              <div class="stat-value" id="stats-off-total" style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary);">0</div>
             </div>
-            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px;">
               <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Moyenne Officielle</div>
-              <div class="stat-value" id="stats-off-avg" style="font-size: 1.6rem; font-weight: 800; color: #60a5fa;">-- / 20</div>
+              <div class="stat-value" id="stats-off-avg" style="font-size: 1.6rem; font-weight: 800; color: #2563eb;">-- / 20</div>
             </div>
-            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px;">
               <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Épreuves Validées</div>
-              <div class="stat-value" id="stats-off-passed" style="font-size: 1.6rem; font-weight: 800; color: #34d399;">0 / 4</div>
+              <div class="stat-value" id="stats-off-passed" style="font-size: 1.6rem; font-weight: 800; color: #059669;">0 / 4</div>
             </div>
-            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="stat-card" style="padding: 14px 18px; border-radius: 10px;">
               <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Taux d'Admissibilité</div>
-              <div class="stat-value" id="stats-off-rate" style="font-size: 1.6rem; font-weight: 800; color: #a78bfa;">0 %</div>
+              <div class="stat-value" id="stats-off-rate" style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;">0 %</div>
             </div>
           </div>
 
@@ -380,10 +380,10 @@
         </div>
 
         <!-- SECTION 2 : TESTS DE NIVEAU & POSITIONNEMENT CONTINU (4 PILIERS) -->
-        <div class="card" style="padding: 24px; margin-bottom: 28px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px;">
+        <div class="card" style="padding: 24px; margin-bottom: 28px; border-radius: 14px;">
           <div style="margin-bottom: 18px;">
-            <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px;">ÉVALUATION CONTINUE EN LIGNE (24H/24)</span>
-            <h3 style="margin: 8px 0 4px 0; font-size: 1.25rem; color: #fff;">📈 Tests de Niveau &amp; Positionnement (4 Piliers)</h3>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700;">ÉVALUATION CONTINUE EN LIGNE (24H/24)</span>
+            <h3 style="margin: 8px 0 4px 0; font-size: 1.25rem; color: var(--text-primary);">📈 Tests de Niveau &amp; Positionnement (4 Piliers)</h3>
             <p style="color: var(--text-secondary); margin: 0; font-size: 0.88rem;">
               Votre niveau académique (Échelle 1 à 6) est établi à partir de la moyenne glissante de vos 4 dernières tentatives sur chaque pilier.
             </p>
@@ -395,7 +395,7 @@
 
           <!-- Échelle de Progression des Niveaux (1 à 6) -->
           <div class="section-header" style="margin-bottom: 12px;">
-            <h4 style="margin: 0; font-size: 1rem; color: #e2e8f0;">Échelle Officielle des Niveaux de Compétences</h4>
+            <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary);">Échelle Officielle des Niveaux de Compétences</h4>
           </div>
           <div class="level-ladder-grid" id="stats-level-ladder" style="margin-bottom: 16px;">
             <!-- Injecté dynamiquement avec Insuffisant en Rouge -->
@@ -406,77 +406,77 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 28px;">
 
           <!-- Synthèse Spécialisée : Centre Python -->
-          <div class="card" style="padding: 22px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 14px;">
+          <div class="card" style="padding: 22px; border-radius: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
-                <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px;">PROGRAMMATION</span>
-                <h3 style="margin: 6px 0 0 0; font-size: 1.15rem; color: #fff;">🐍 Centre d'Entraînement Python</h3>
+                <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #7c3aed; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700;">PROGRAMMATION</span>
+                <h3 style="margin: 6px 0 0 0; font-size: 1.15rem; color: var(--text-primary);">🐍 Centre d'Entraînement Python</h3>
               </div>
               <button class="btn btn-secondary btn-sm" id="btn-stats-go-python">Accéder →</button>
             </div>
 
             <!-- Jauge XP & Rang -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+            <div style="background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
                 <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Rang Joueur &amp; Expérience</span>
-                <span id="stats-py-level-chip" style="font-size: 0.75rem; font-weight: 700; color: #c084fc; background: rgba(168,85,247,0.15); padding: 2px 8px; border-radius: 4px;">Niveau Débutant</span>
+                <span id="stats-py-level-chip" style="font-size: 0.75rem; font-weight: 700; color: #7c3aed; background: rgba(168,85,247,0.12); padding: 2px 8px; border-radius: 4px;">Niveau Débutant</span>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                <span id="stats-py-xp" style="font-size: 1.4rem; font-weight: 800; color: #f59e0b;">0 XP</span>
+                <span id="stats-py-xp" style="font-size: 1.4rem; font-weight: 800; color: #d97706;">0 XP</span>
                 <span id="stats-py-next-xp" style="font-size: 0.78rem; color: var(--text-muted);">/ 100 XP</span>
               </div>
-              <div style="background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; width: 100%; margin-top: 6px; overflow: hidden;">
-                <div id="stats-py-xp-bar" style="background: linear-gradient(90deg, #f59e0b, #c084fc); height: 100%; width: 0%; border-radius: 6px; transition: width 0.3s ease;"></div>
+              <div style="background: rgba(0,0,0,0.06); border-radius: 6px; height: 6px; width: 100%; margin-top: 6px; overflow: hidden;">
+                <div id="stats-py-xp-bar" style="background: linear-gradient(90deg, #d97706, #7c3aed); height: 100%; width: 0%; border-radius: 6px; transition: width 0.3s ease;"></div>
               </div>
             </div>
 
             <!-- 2 KPI Mini -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div style="padding: 10px 14px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-card" style="padding: 10px 14px; border-radius: 8px;">
                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Séances Réalisées</div>
-                <div id="stats-py-sessions" style="font-size: 1.3rem; font-weight: 800; color: #fff;">0</div>
+                <div id="stats-py-sessions" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">0</div>
               </div>
-              <div style="padding: 10px 14px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-card" style="padding: 10px 14px; border-radius: 8px;">
                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Moyenne Python</div>
-                <div id="stats-py-avg" style="font-size: 1.3rem; font-weight: 800; color: #60a5fa;">-- / 20</div>
+                <div id="stats-py-avg" style="font-size: 1.3rem; font-weight: 800; color: #2563eb;">-- / 20</div>
               </div>
             </div>
           </div>
 
           <!-- Synthèse Spécialisée : Centre Linux -->
-          <div class="card" style="padding: 22px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px;">
+          <div class="card" style="padding: 22px; border-radius: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
-                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px;">SYSTÈMES &amp; RÉSEAUX</span>
-                <h3 style="margin: 6px 0 0 0; font-size: 1.15rem; color: #fff;">🐧 Centre d'Entraînement Linux</h3>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700;">SYSTÈMES &amp; RÉSEAUX</span>
+                <h3 style="margin: 6px 0 0 0; font-size: 1.15rem; color: var(--text-primary);">🐧 Centre d'Entraînement Linux</h3>
               </div>
               <button class="btn btn-secondary btn-sm" id="btn-stats-go-linux">Accéder →</button>
             </div>
 
             <!-- Mini statut POSIX -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+            <div style="background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
                 <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Environnement Shell POSIX</span>
-                <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; background: rgba(16,185,129,0.15); padding: 2px 8px; border-radius: 4px;">VFS Actif</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #059669; background: rgba(16,185,129,0.15); padding: 2px 8px; border-radius: 4px;">VFS Actif</span>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                <span style="font-size: 1.1rem; font-weight: 700; color: #e2e8f0;">Cursus 6 Chapitres</span>
-                <span style="font-size: 0.78rem; color: #34d399;">120 Questions &amp; Défis VFS</span>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Cursus 6 Chapitres</span>
+                <span style="font-size: 0.78rem; color: #059669; font-weight: 600;">120 Questions &amp; Défis VFS</span>
               </div>
-              <div style="background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; width: 100%; margin-top: 6px; overflow: hidden;">
+              <div style="background: rgba(0,0,0,0.06); border-radius: 6px; height: 6px; width: 100%; margin-top: 6px; overflow: hidden;">
                 <div style="background: linear-gradient(90deg, #10b981, #3b82f6); height: 100%; width: 100%; border-radius: 6px;"></div>
               </div>
             </div>
 
             <!-- 2 KPI Mini Linux -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div style="padding: 10px 14px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-card" style="padding: 10px 14px; border-radius: 8px;">
                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Séances Linux</div>
-                <div id="stats-lx-sessions" style="font-size: 1.3rem; font-weight: 800; color: #fff;">0</div>
+                <div id="stats-lx-sessions" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">0</div>
               </div>
-              <div style="padding: 10px 14px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-card" style="padding: 10px 14px; border-radius: 8px;">
                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Meilleure Note</div>
-                <div id="stats-lx-best" style="font-size: 1.3rem; font-weight: 800; color: #34d399;">-- / 20</div>
+                <div id="stats-lx-best" style="font-size: 1.3rem; font-weight: 800; color: #059669;">-- / 20</div>
               </div>
             </div>
           </div>
@@ -484,9 +484,9 @@
         </div>
 
         <!-- SECTION 4 : HISTORIQUE CHRONOLOGIQUE GLOBAL DES ÉVALUATIONS -->
-        <div class="card" style="padding: 24px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px;">
+        <div class="card" style="padding: 24px; border-radius: 14px;">
           <div class="section-header" style="margin-bottom: 16px;">
-            <h3 style="margin: 0; font-size: 1.2rem; color: #fff;">📜 Historique Chronologique de Vos Évaluations</h3>
+            <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">📜 Historique Chronologique de Vos Évaluations</h3>
           </div>
           <div class="stats-table-wrapper">
             <table class="stats-table">
@@ -2693,7 +2693,7 @@
 
   <!-- OVERLAY PLEIN ÉCRAN REQUIS (REV-27) -->
   <div id="overlay-fullscreen-required" class="modal-overlay">
-    <div class="modal-box" style="text-align: center; max-width: 520px; border: 2px solid #ef4444; box-shadow: 0 0 35px rgba(239, 68, 68, 0.45); background: #0f172a;">
+    <div class="modal-box" style="text-align: center; max-width: 520px; border: 2px solid #ef4444; box-shadow: 0 0 35px rgba(239, 68, 68, 0.25); background: var(--bg-surface);">
       <div style="font-size: 3.5rem; margin-bottom: 12px;">⚠️</div>
       <h2 style="color: #ef4444; margin-bottom: 12px; font-size: 1.5rem;">Mode Plein Écran Requis</h2>
       <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6; margin-bottom: 24px;">
