@@ -57,7 +57,7 @@
       "title": "Arborescence FHS & Navigation",
       "order": 1,
       "description": "Structure standard Linux (FHS), chemins relatifs et absolus, commandes pwd, cd, ls et tree",
-      "mcq_questions_count": 8,
+      "mcq_questions_count": 20,
       "coding_exercises_count": 4,
       "mcq_questions": [
         {
@@ -248,6 +248,323 @@
           ],
           "correct": 0,
           "explanation": "Les systèmes de fichiers Linux (ext4, etc.) sont sensibles à la casse (case-sensitive)."
+        },
+        {
+          "id": "LIN-FHS-01",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Dans la norme FHS, quel répertoire contient les fichiers de configuration globaux du système ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "/etc"
+            },
+            {
+              "id": 1,
+              "text": "/var"
+            },
+            {
+              "id": 2,
+              "text": "/bin"
+            },
+            {
+              "id": 3,
+              "text": "/dev"
+            }
+          ],
+          "correct": 0,
+          "explanation": "/etc héberge tous les fichiers de configuration système modifiables par l'administrateur."
+        },
+        {
+          "id": "LIN-FHS-02",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet d'afficher le chemin absolu du répertoire courant ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "pwd"
+            },
+            {
+              "id": 1,
+              "text": "cd"
+            },
+            {
+              "id": 2,
+              "text": "whereami"
+            },
+            {
+              "id": 3,
+              "text": "path"
+            }
+          ],
+          "correct": 0,
+          "explanation": "pwd (print working directory) affiche le chemin absolu du dossier de travail."
+        },
+        {
+          "id": "LIN-FHS-03",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Quel symbole représente le répertoire personnel (home) de l'utilisateur courant sous Bash ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "~"
+            },
+            {
+              "id": 1,
+              "text": "/"
+            },
+            {
+              "id": 2,
+              "text": "."
+            },
+            {
+              "id": 3,
+              "text": ".."
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le tilde (~) est le raccourci standard pour le répertoire personnel de l'utilisateur courant."
+        },
+        {
+          "id": "LIN-FHS-04",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Dans la norme FHS, quel répertoire contient les fichiers journaux (logs) du système ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "/var/log"
+            },
+            {
+              "id": 1,
+              "text": "/etc/log"
+            },
+            {
+              "id": 2,
+              "text": "/tmp/log"
+            },
+            {
+              "id": 3,
+              "text": "/usr/log"
+            }
+          ],
+          "correct": 0,
+          "explanation": "/var/log rassemble les fichiers de traces et journaux d'événements système."
+        },
+        {
+          "id": "LIN-FHS-05",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quel pseudo-système de fichiers virtuel expose les informations relatives aux processus et au noyau Linux ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "/proc"
+            },
+            {
+              "id": 1,
+              "text": "/dev"
+            },
+            {
+              "id": 2,
+              "text": "/mnt"
+            },
+            {
+              "id": 3,
+              "text": "/run"
+            }
+          ],
+          "correct": 0,
+          "explanation": "/proc est un système de fichiers virtuel généré en mémoire vive par le noyau Linux."
+        },
+        {
+          "id": "LIN-FHS-06",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quel répertoire FHS contient les fichiers d'amorçage indispensables au démarrage de la machine (noyau vmlinuz, initrd) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "/boot"
+            },
+            {
+              "id": 1,
+              "text": "/root"
+            },
+            {
+              "id": 2,
+              "text": "/sys"
+            },
+            {
+              "id": 3,
+              "text": "/sbin"
+            }
+          ],
+          "correct": 0,
+          "explanation": "/boot contient les images du noyau Linux et les configurations du bootloader (GRUB)."
+        },
+        {
+          "id": "LIN-FHS-07",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Que représente le caractère point unique `.` dans un chemin sous Linux ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Le répertoire courant"
+            },
+            {
+              "id": 1,
+              "text": "Le répertoire parent"
+            },
+            {
+              "id": 2,
+              "text": "Le répertoire racine"
+            },
+            {
+              "id": 3,
+              "text": "Le répertoire temporaire"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le point simple `.` désigne le répertoire de travail actuel, tandis que `..` désigne son parent direct."
+        },
+        {
+          "id": "LIN-FHS-08",
+          "type": "single_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quel répertoire FHS héberge les nœuds de périphériques matériels et virtuels (disques, terminaux, /dev/null) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "/dev"
+            },
+            {
+              "id": 1,
+              "text": "/sys"
+            },
+            {
+              "id": 2,
+              "text": "/opt"
+            },
+            {
+              "id": 3,
+              "text": "/media"
+            }
+          ],
+          "correct": 0,
+          "explanation": "/dev contient les fichiers spéciaux représentant les périphériques sous Unix ('tout est fichier')."
+        },
+        {
+          "id": "LIN-FHS-09",
+          "type": "multi_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quels répertoires de la norme FHS sont conçus pour héberger des binaires exécutables par tous les utilisateurs ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "/bin"
+            },
+            {
+              "id": 1,
+              "text": "/usr/bin"
+            },
+            {
+              "id": 2,
+              "text": "/sbin"
+            },
+            {
+              "id": 3,
+              "text": "/etc"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "/bin et /usr/bin contiennent les binaires utilisateurs fondamentaux. /sbin est réservé à l'administration système."
+        },
+        {
+          "id": "LIN-FHS-10",
+          "type": "multi_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "medium",
+          "prompt": "Quels répertoires sont destinés au montage de systèmes de fichiers temporaires ou amovibles ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "/mnt"
+            },
+            {
+              "id": 1,
+              "text": "/media"
+            },
+            {
+              "id": 2,
+              "text": "/boot"
+            },
+            {
+              "id": 3,
+              "text": "/usr"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "/mnt sert aux points de montage manuels temporaires et /media aux supports amovibles (clés USB, CD-ROM)."
+        },
+        {
+          "id": "LIN-FHS-11",
+          "type": "multi_choice",
+          "topic": "FHS Navigation",
+          "difficulty": "hard",
+          "prompt": "Quelles caractéristiques s'appliquent au répertoire `/tmp` sous Linux ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "Accessible en écriture par tous les utilisateurs"
+            },
+            {
+              "id": 1,
+              "text": "Possède souvent le Sticky bit d'activation"
+            },
+            {
+              "id": 2,
+              "text": "Conservé indéfiniment lors d'un redémarrage système"
+            },
+            {
+              "id": 3,
+              "text": "Purgeable au démarrage"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            3
+          ],
+          "explanation": "/tmp est accessible par tous, protégé par le sticky bit contre la suppression arbitraire, et vidé au reboot."
+        },
+        {
+          "id": "LIN-FHS-12",
+          "type": "boolean",
+          "topic": "FHS Navigation",
+          "difficulty": "easy",
+          "prompt": "Un chemin débutant par une barre oblique `/` est toujours un chemin absolu sous Linux.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Tout chemin commençant par `/` s'évalue à partir de la racine globale du système de fichiers."
         }
       ],
       "coding_exercises": [
@@ -406,7 +723,7 @@
       "title": "Manipulation de Fichiers & Répertoires",
       "order": 2,
       "description": "Création, copie, déplacement, suppression et archivage avec touch, mkdir, cp, mv, rm et tar",
-      "mcq_questions_count": 6,
+      "mcq_questions_count": 20,
       "coding_exercises_count": 4,
       "mcq_questions": [
         {
@@ -566,6 +883,326 @@
             "rm -f temp.log": "Supprime un fichier sans invite même s'il est protégé"
           },
           "explanation": "Commandes fondamentales de manipulation du filesystem."
+        },
+        {
+          "id": "LIN-FIL-01",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Quelle commande crée un fichier vide ou met à jour sa date de dernier accès sans altérer son contenu ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "touch"
+            },
+            {
+              "id": 1,
+              "text": "new"
+            },
+            {
+              "id": 2,
+              "text": "create"
+            },
+            {
+              "id": 3,
+              "text": "make"
+            }
+          ],
+          "correct": 0,
+          "explanation": "touch crée un fichier vide s'il n'existe pas ou rafraîchit ses horodatages d'accès et modification."
+        },
+        {
+          "id": "LIN-FIL-02",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet de créer un nouveau répertoire dans l'arborescence ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "mkdir"
+            },
+            {
+              "id": 1,
+              "text": "rmdir"
+            },
+            {
+              "id": 2,
+              "text": "createdir"
+            },
+            {
+              "id": 3,
+              "text": "md"
+            }
+          ],
+          "correct": 0,
+          "explanation": "mkdir (make directory) crée des répertoires."
+        },
+        {
+          "id": "LIN-FIL-03",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Quelle option de `mkdir` permet de créer automatiquement les répertoires parents manquants dans un chemin ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-p"
+            },
+            {
+              "id": 1,
+              "text": "-r"
+            },
+            {
+              "id": 2,
+              "text": "-a"
+            },
+            {
+              "id": 3,
+              "text": "-f"
+            }
+          ],
+          "correct": 0,
+          "explanation": "L'option `-p` (parents) crée l'ensemble de l'arborescence parente sans lever d'erreur si elle existe déjà."
+        },
+        {
+          "id": "LIN-FIL-04",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet de supprimer un répertoire non vide de façon récursive ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "rm -r dossier"
+            },
+            {
+              "id": 1,
+              "text": "rmdir dossier"
+            },
+            {
+              "id": 2,
+              "text": "del -s dossier"
+            },
+            {
+              "id": 3,
+              "text": "erase dossier"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`rm -r` (ou `rm -rf`) supprime récursivement les dossiers et tous leurs fichiers enfants."
+        },
+        {
+          "id": "LIN-FIL-05",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet de copier un fichier d'une source vers une destination ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "cp"
+            },
+            {
+              "id": 1,
+              "text": "mv"
+            },
+            {
+              "id": 2,
+              "text": "copy"
+            },
+            {
+              "id": 3,
+              "text": "dup"
+            }
+          ],
+          "correct": 0,
+          "explanation": "cp (copy) duplique des fichiers ou répertoires (avec l'option `-r`)."
+        },
+        {
+          "id": "LIN-FIL-06",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet à la fois de déplacer un fichier ou de le renommer ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "mv"
+            },
+            {
+              "id": 1,
+              "text": "rename"
+            },
+            {
+              "id": 2,
+              "text": "cp"
+            },
+            {
+              "id": 3,
+              "text": "move"
+            }
+          ],
+          "correct": 0,
+          "explanation": "mv (move) déplace des fichiers et sert également à les renommer s'il reste dans le même dossier."
+        },
+        {
+          "id": "LIN-FIL-07",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "medium",
+          "prompt": "Quelle commande crée un lien symbolique (soft link) nommé `lien.txt` pointant vers `cible.txt` ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "ln -s cible.txt lien.txt"
+            },
+            {
+              "id": 1,
+              "text": "ln cible.txt lien.txt"
+            },
+            {
+              "id": 2,
+              "text": "link -s lien.txt cible.txt"
+            },
+            {
+              "id": 3,
+              "text": "symlink cible.txt lien.txt"
+            }
+          ],
+          "correct": 0,
+          "explanation": "La syntaxe est `ln -s <cible> <nom_du_lien>`."
+        },
+        {
+          "id": "LIN-FIL-08",
+          "type": "single_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "hard",
+          "prompt": "Quelle est la principale différence entre un lien physique (hard link) et un lien symbolique (soft link) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Le hard link partage le même numéro d'inode que la cible"
+            },
+            {
+              "id": 1,
+              "text": "Le soft link partage le même numéro d'inode"
+            },
+            {
+              "id": 2,
+              "text": "Un hard link peut pointer vers un répertoire sans restriction"
+            },
+            {
+              "id": 3,
+              "text": "Un hard link peut franchir différents disques"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Un hard link est une nouvelle entrée de répertoire qui référence exactement le même inode sur le disque."
+        },
+        {
+          "id": "LIN-FIL-09",
+          "type": "multi_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "medium",
+          "prompt": "Quelles options de `cp` sont couramment combinées pour préserver les permissions, les horodatages et copier récursivement ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "-a (archive)"
+            },
+            {
+              "id": 1,
+              "text": "-r (recursive)"
+            },
+            {
+              "id": 2,
+              "text": "-p (preserve)"
+            },
+            {
+              "id": 3,
+              "text": "-x (exclude)"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "`-a` équivaut à `-dpR` et conserve l'intégralité des attributs d'origine."
+        },
+        {
+          "id": "LIN-FIL-10",
+          "type": "multi_choice",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "medium",
+          "prompt": "Quelles commandes permettent d'archiver ou de compresser des ensembles de fichiers sous Linux ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "tar"
+            },
+            {
+              "id": 1,
+              "text": "gzip"
+            },
+            {
+              "id": 2,
+              "text": "zip"
+            },
+            {
+              "id": 3,
+              "text": "touch"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "tar, gzip et zip sont les outils traditionnels de gestion d'archives."
+        },
+        {
+          "id": "LIN-FIL-11",
+          "type": "boolean",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Sous Linux, les fichiers dont le nom commence par un point `.` sont des fichiers cachés par défaut.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Les fichiers préfixés par `.` ne sont visibles qu'avec l'option `-a` de `ls`."
+        },
+        {
+          "id": "LIN-FIL-12",
+          "type": "boolean",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "medium",
+          "prompt": "Supprimer le fichier cible original casse immédiatement un lien symbolique qui pointait vers lui.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Le lien symbolique devient orphelin (broken link) et pointe vers une cible inexistante."
+        },
+        {
+          "id": "LIN-FIL-13",
+          "type": "boolean",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "hard",
+          "prompt": "Supprimer le fichier d'origine entraîne la perte définitive des données d'un lien physique (hard link) associé.",
+          "options": [],
+          "correct": false,
+          "explanation": "Faux. Les données persistent tant que le compteur de hard links vers l'inode reste supérieur à zéro."
+        },
+        {
+          "id": "LIN-FIL-14",
+          "type": "fill_blank",
+          "topic": "Manipulation de Fichiers",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet de lister le contenu d'un répertoire ? `_____`",
+          "options": [],
+          "correct": [
+            "ls"
+          ],
+          "explanation": "ls (list) liste les fichiers et sous-répertoires."
         }
       ],
       "coding_exercises": [
@@ -701,7 +1338,7 @@
       "title": "Permissions & Droits d'Accès",
       "order": 3,
       "description": "Gestion des droits de lecture, écriture et exécution (chmod rwx, notation octale 755, chown)",
-      "mcq_questions_count": 6,
+      "mcq_questions_count": 20,
       "coding_exercises_count": 3,
       "mcq_questions": [
         {
@@ -847,6 +1484,325 @@
             "444": "r--r--r-- (Lecture seule absolue pour tous)"
           },
           "explanation": "Correspondances exactes de la notation octale POSIX."
+        },
+        {
+          "id": "LIN-PERM-01",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "easy",
+          "prompt": "Quelle valeur octale accorde les droits complets `rwx` à une classe d'utilisateurs ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "7"
+            },
+            {
+              "id": 1,
+              "text": "6"
+            },
+            {
+              "id": 2,
+              "text": "5"
+            },
+            {
+              "id": 3,
+              "text": "4"
+            }
+          ],
+          "correct": 0,
+          "explanation": "r=4, w=2, x=1. La somme 4+2+1 = 7 représente rwx."
+        },
+        {
+          "id": "LIN-PERM-02",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "easy",
+          "prompt": "Quelle valeur octale correspond aux droits `rw-` (lecture et écriture sans exécution) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "6"
+            },
+            {
+              "id": 1,
+              "text": "7"
+            },
+            {
+              "id": 2,
+              "text": "5"
+            },
+            {
+              "id": 3,
+              "text": "4"
+            }
+          ],
+          "correct": 0,
+          "explanation": "r=4, w=2, -=0. La somme 4+2 = 6."
+        },
+        {
+          "id": "LIN-PERM-03",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet de modifier le propriétaire et le groupe d'un fichier en une seule instruction ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "chown user:group fichier"
+            },
+            {
+              "id": 1,
+              "text": "chmod user:group fichier"
+            },
+            {
+              "id": 2,
+              "text": "chgrp user:group fichier"
+            },
+            {
+              "id": 3,
+              "text": "setperm user:group fichier"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`chown <user>:<group> <fichier>` change simultanément l'utilisateur et le groupe propriétaire."
+        },
+        {
+          "id": "LIN-PERM-04",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "medium",
+          "prompt": "Que signifie la présence du bit spécial **SetUID (SUID)** sur un fichier exécutable ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "L'exécutable tourne avec les droits de son propriétaire et non de l'utilisateur qui le lance"
+            },
+            {
+              "id": 1,
+              "text": "Le fichier ne peut être exécuté que par root"
+            },
+            {
+              "id": 2,
+              "text": "Le fichier est protégé contre la lecture"
+            },
+            {
+              "id": 3,
+              "text": "Le fichier tourne dans un conteneur sandbox"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le SUID (ex: /usr/bin/passwd) élève temporairement l'exécution aux droits du propriétaire du binaire."
+        },
+        {
+          "id": "LIN-PERM-05",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "hard",
+          "prompt": "À quoi sert le **Sticky bit** lorsqu'il est positionné sur un répertoire public comme `/tmp` ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Seul le propriétaire d'un fichier peut le supprimer ou le renommer"
+            },
+            {
+              "id": 1,
+              "text": "Les fichiers deviennent invisibles pour les autres"
+            },
+            {
+              "id": 2,
+              "text": "Les fichiers sont automatiquement archivés"
+            },
+            {
+              "id": 3,
+              "text": "La mémoire vive est allouée de façon permanente"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le Sticky bit (noté `t` à la fin des droits) empêche les utilisateurs de supprimer les fichiers d'autrui dans un dossier partagé."
+        },
+        {
+          "id": "LIN-PERM-06",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "medium",
+          "prompt": "Si le masque `umask` est configuré à `022`, quelles seront les permissions par défaut d'un nouveau fichier ordinaire créé ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "644 (rw-r--r--)"
+            },
+            {
+              "id": 1,
+              "text": "755 (rwxr-xr-x)"
+            },
+            {
+              "id": 2,
+              "text": "666 (rw-rw-rw-)"
+            },
+            {
+              "id": 3,
+              "text": "700 (rwx------)"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Pour un fichier, la base est 666. Avec un umask 022, 666 - 022 = 644."
+        },
+        {
+          "id": "LIN-PERM-07",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "easy",
+          "prompt": "Que permet la permission d'exécution `x` sur un **répertoire** sous Linux ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "Traverser le répertoire (y accéder avec cd et ouvrir ses fichiers)"
+            },
+            {
+              "id": 1,
+              "text": "Exécuter un script situé dans le dossier sans droits de lecture"
+            },
+            {
+              "id": 2,
+              "text": "Lister le nom des fichiers avec ls"
+            },
+            {
+              "id": 3,
+              "text": "Créer de nouveaux fichiers"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Sur un répertoire, le droit `x` (traversal) est requis pour entrer dans le dossier et accéder à son contenu."
+        },
+        {
+          "id": "LIN-PERM-08",
+          "type": "single_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "medium",
+          "prompt": "Quelle commande symbolique permet d'ajouter le droit d'exécution à tous les utilisateurs sur `script.sh` ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "chmod a+x script.sh"
+            },
+            {
+              "id": 1,
+              "text": "chmod +e script.sh"
+            },
+            {
+              "id": 2,
+              "text": "chmod u+x script.sh"
+            },
+            {
+              "id": 3,
+              "text": "chmod o-x script.sh"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`a+x` (all + execute) ajoute le droit d'exécution à l'utilisateur, au groupe et aux autres."
+        },
+        {
+          "id": "LIN-PERM-09",
+          "type": "multi_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "medium",
+          "prompt": "Quelles classes d'utilisateurs composent la matrice des permissions POSIX d'un fichier ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "Propriétaire utilisateur (user - u)"
+            },
+            {
+              "id": 1,
+              "text": "Groupe propriétaire (group - g)"
+            },
+            {
+              "id": 2,
+              "text": "Autres utilisateurs (others - o)"
+            },
+            {
+              "id": 3,
+              "text": "Processus démons (daemons - d)"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "Les droits standards s'organisent en triplets U, G et O."
+        },
+        {
+          "id": "LIN-PERM-10",
+          "type": "multi_choice",
+          "topic": "Permissions & Droits",
+          "difficulty": "hard",
+          "prompt": "Quels fichiers critiques sous `/etc` nécessitent des restrictions d'accès strictes (lisible uniquement par root) ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "/etc/shadow"
+            },
+            {
+              "id": 1,
+              "text": "/etc/sudoers"
+            },
+            {
+              "id": 2,
+              "text": "/etc/passwd"
+            },
+            {
+              "id": 3,
+              "text": "/etc/hostname"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "/etc/shadow (empreintes de mots de passe) et /etc/sudoers (privilèges) sont strictement réservés à root."
+        },
+        {
+          "id": "LIN-PERM-11",
+          "type": "boolean",
+          "topic": "Permissions & Droits",
+          "difficulty": "easy",
+          "prompt": "L'utilisateur root est dispensé de la plupart des restrictions de permissions de lecture et écriture sous Linux.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Le super-administrateur possède les privilèges universels de contournement des contrôles DAC."
+        },
+        {
+          "id": "LIN-PERM-12",
+          "type": "boolean",
+          "topic": "Permissions & Droits",
+          "difficulty": "medium",
+          "prompt": "Pour supprimer un fichier dans un répertoire, il faut impérativement posséder les droits d'écriture sur le fichier lui-même.",
+          "options": [],
+          "correct": false,
+          "explanation": "Faux. La suppression d'un fichier dépend des droits d'écriture `w` sur le répertoire parent qui le contient !"
+        },
+        {
+          "id": "LIN-PERM-13",
+          "type": "boolean",
+          "topic": "Permissions & Droits",
+          "difficulty": "hard",
+          "prompt": "Le bit SGID appliqué à un répertoire force les nouveaux fichiers créés à l'intérieur à hériter du groupe propriétaire du dossier.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Le SGID sur un dossier facilite le travail collaboratif en forçant l'héritage du groupe."
+        },
+        {
+          "id": "LIN-PERM-14",
+          "type": "fill_blank",
+          "topic": "Permissions & Droits",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet de modifier les droits d'accès d'un fichier ? `_____`",
+          "options": [],
+          "correct": [
+            "chmod"
+          ],
+          "explanation": "chmod (change mode) modifie les bits de permissions."
         }
       ],
       "coding_exercises": [
@@ -923,7 +1879,7 @@
       "title": "Filtres, Tubes & Redirections",
       "order": 4,
       "description": "Enchaînement de commandes avec tubes (|), redirections (>, >>, <), recherche avec grep et analyse avec wc, sort, uniq, head et tail",
-      "mcq_questions_count": 6,
+      "mcq_questions_count": 20,
       "coding_exercises_count": 3,
       "mcq_questions": [
         {
@@ -1069,6 +2025,325 @@
             "grep -c": "Renvoie le nombre de lignes correspondant au motif"
           },
           "explanation": "Rôles des filtres standards POSIX."
+        },
+        {
+          "id": "LIN-TXT-01",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "easy",
+          "prompt": "Quel caractère est utilisé pour créer un tube (pipe) reliant la sortie d'une commande à l'entrée de la suivante ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "|"
+            },
+            {
+              "id": 1,
+              "text": ">"
+            },
+            {
+              "id": 2,
+              "text": "&"
+            },
+            {
+              "id": 3,
+              "text": ";"
+            }
+          ],
+          "correct": 0,
+          "explanation": "La barre verticale `|` connecte le stdout du processus amont au stdin du processus aval."
+        },
+        {
+          "id": "LIN-TXT-02",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "easy",
+          "prompt": "Quelle commande permet de rechercher des lignes contenant un motif textuel spécifique dans un fichier ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "grep"
+            },
+            {
+              "id": 1,
+              "text": "find"
+            },
+            {
+              "id": 2,
+              "text": "locate"
+            },
+            {
+              "id": 3,
+              "text": "which"
+            }
+          ],
+          "correct": 0,
+          "explanation": "grep (Global Regular Expression Print) filtre les lignes selon un motif."
+        },
+        {
+          "id": "LIN-TXT-03",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "Quelle option de `grep` permet de rendre la recherche insensible à la casse (minuscules/majuscules) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-i"
+            },
+            {
+              "id": 1,
+              "text": "-v"
+            },
+            {
+              "id": 2,
+              "text": "-r"
+            },
+            {
+              "id": 3,
+              "text": "-c"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`-i` (ignore-case) ignore la distinction majuscule/minuscule."
+        },
+        {
+          "id": "LIN-TXT-04",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "Quelle option de `grep` permet d'inverser le filtre (afficher uniquement les lignes qui NE correspondent PAS au motif) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-v"
+            },
+            {
+              "id": 1,
+              "text": "-i"
+            },
+            {
+              "id": 2,
+              "text": "-n"
+            },
+            {
+              "id": 3,
+              "text": "-l"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`-v` (invert-match) sélectionne les lignes non concordantes."
+        },
+        {
+          "id": "LIN-TXT-05",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "easy",
+          "prompt": "Quel opérateur de redirection remplace entièrement le contenu du fichier cible par la sortie standard ?",
+          "options": [
+            {
+              "id": 0,
+              "text": ">"
+            },
+            {
+              "id": 1,
+              "text": ">>"
+            },
+            {
+              "id": 2,
+              "text": "<"
+            },
+            {
+              "id": 3,
+              "text": "2>"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`>` écrase le fichier cible avec la sortie standard de la commande."
+        },
+        {
+          "id": "LIN-TXT-06",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "easy",
+          "prompt": "Quelle commande compte le nombre de lignes, mots et octets d'un flux textuel ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "wc"
+            },
+            {
+              "id": 1,
+              "text": "count"
+            },
+            {
+              "id": 2,
+              "text": "len"
+            },
+            {
+              "id": 3,
+              "text": "stat"
+            }
+          ],
+          "correct": 0,
+          "explanation": "wc (word count) compte les éléments textuels (`-l` pour le nombre de lignes)."
+        },
+        {
+          "id": "LIN-TXT-07",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet d'afficher à la fois la sortie à l'écran tout en l'enregistrant simultanément dans un fichier ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "tee"
+            },
+            {
+              "id": 1,
+              "text": "split"
+            },
+            {
+              "id": 2,
+              "text": "fork"
+            },
+            {
+              "id": 3,
+              "text": "echo"
+            }
+          ],
+          "correct": 0,
+          "explanation": "tee duplique le flux standard vers un ou plusieurs fichiers et la console."
+        },
+        {
+          "id": "LIN-TXT-08",
+          "type": "single_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet d'éliminer les lignes dupliquées consécutives dans un flux préalablement trié ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "uniq"
+            },
+            {
+              "id": 1,
+              "text": "sort"
+            },
+            {
+              "id": 2,
+              "text": "distinct"
+            },
+            {
+              "id": 3,
+              "text": "filter"
+            }
+          ],
+          "correct": 0,
+          "explanation": "uniq requiert un flux trié pour fusionner ou filtrer les lignes identiques consécutives."
+        },
+        {
+          "id": "LIN-TXT-09",
+          "type": "multi_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "Quelles syntaxes redirigent spécifiquement le flux d'erreur standard (stderr) ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "2> fichier.log"
+            },
+            {
+              "id": 1,
+              "text": "2>> fichier.log"
+            },
+            {
+              "id": 2,
+              "text": "> fichier.log"
+            },
+            {
+              "id": 3,
+              "text": "< fichier.log"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "Le préfixe `2>` ou `2>>` cible expressément le descripteur 2 (stderr)."
+        },
+        {
+          "id": "LIN-TXT-10",
+          "type": "multi_choice",
+          "topic": "Tubes & Filtres",
+          "difficulty": "hard",
+          "prompt": "Quels outils textuels sous Linux prennent en charge les expressions régulières complexes pour la transformation ou l'extraction ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "sed"
+            },
+            {
+              "id": 1,
+              "text": "awk"
+            },
+            {
+              "id": 2,
+              "text": "grep -E"
+            },
+            {
+              "id": 3,
+              "text": "touch"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "sed, awk et grep -E (egrep) sont les outils majeurs de traitement par expressions régulières."
+        },
+        {
+          "id": "LIN-TXT-11",
+          "type": "boolean",
+          "topic": "Tubes & Filtres",
+          "difficulty": "easy",
+          "prompt": "La redirection `2>&1` envoie les messages d'erreur standard vers le même flux que la sortie standard.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. `2>&1` duplique le flux 2 vers le flux 1 pour capturer stdout et stderr ensemble."
+        },
+        {
+          "id": "LIN-TXT-12",
+          "type": "boolean",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "La commande `sort -n` effectue un tri alphabétique lexicographique standard.",
+          "options": [],
+          "correct": false,
+          "explanation": "Faux. L'option `-n` (numeric) effectue un tri basé sur la valeur numérique arithmétique."
+        },
+        {
+          "id": "LIN-TXT-13",
+          "type": "boolean",
+          "topic": "Tubes & Filtres",
+          "difficulty": "medium",
+          "prompt": "Rediriger une sortie vers le fichier spécial `/dev/null` a pour effet de supprimer silencieusement toutes les données écrites.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. /dev/null est le 'trou noir' du système qui absorbe et élimine les données sans retour."
+        },
+        {
+          "id": "LIN-TXT-14",
+          "type": "fill_blank",
+          "topic": "Tubes & Filtres",
+          "difficulty": "easy",
+          "prompt": "Quelle commande affiche les 10 premières lignes d'un fichier par défaut ? `_____`",
+          "options": [],
+          "correct": [
+            "head"
+          ],
+          "explanation": "head affiche le début d'un flux ou fichier."
         }
       ],
       "coding_exercises": [
@@ -1144,7 +2419,7 @@
       "title": "Gestion des Processus & Système",
       "order": 5,
       "description": "Surveillance des processus (ps, top), arrêt et signaux (kill -9, SIGTERM), utilisateurs et variables d'environnement",
-      "mcq_questions_count": 5,
+      "mcq_questions_count": 20,
       "coding_exercises_count": 2,
       "mcq_questions": [
         {
@@ -1259,6 +2534,337 @@
             "env": "Liste de toutes les variables d'environnement actives"
           },
           "explanation": "Outils de base de diagnostic système."
+        },
+        {
+          "id": "LIN-PRC-01",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "easy",
+          "prompt": "Quelle commande liste les processus actifs associés à la session de terminal courante ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "ps"
+            },
+            {
+              "id": 1,
+              "text": "proc"
+            },
+            {
+              "id": 2,
+              "text": "list"
+            },
+            {
+              "id": 3,
+              "text": "jobs -p"
+            }
+          ],
+          "correct": 0,
+          "explanation": "ps (process status) affiche l'état des processus."
+        },
+        {
+          "id": "LIN-PRC-02",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quelles options de `ps` affichent l'ensemble des processus de tous les utilisateurs au format détaillé BSD ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "ps aux"
+            },
+            {
+              "id": 1,
+              "text": "ps -all"
+            },
+            {
+              "id": 2,
+              "text": "ps -full"
+            },
+            {
+              "id": 3,
+              "text": "ps tree"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`ps aux` (a=tous, u=utilisateur format, x=processus sans tty) est le format canonique BSD."
+        },
+        {
+          "id": "LIN-PRC-03",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "easy",
+          "prompt": "Quel numéro identifie le signal `SIGKILL` imposant un arrêt forcé et immédiat du processus ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "9"
+            },
+            {
+              "id": 1,
+              "text": "15"
+            },
+            {
+              "id": 2,
+              "text": "1"
+            },
+            {
+              "id": 3,
+              "text": "2"
+            }
+          ],
+          "correct": 0,
+          "explanation": "`kill -9` envoie SIGKILL qui ne peut être ni capturé ni ignoré par le processus."
+        },
+        {
+          "id": "LIN-PRC-04",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quel signal est émis par le terminal lorsque l'utilisateur appuie sur la combinaison de touches `Ctrl + C` ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "SIGINT (2)"
+            },
+            {
+              "id": 1,
+              "text": "SIGKILL (9)"
+            },
+            {
+              "id": 2,
+              "text": "SIGTSTP (20)"
+            },
+            {
+              "id": 3,
+              "text": "SIGQUIT (3)"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Ctrl + C génère le signal SIGINT (signal d'interruption interactive numéro 2)."
+        },
+        {
+          "id": "LIN-PRC-05",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quel signal est émis lorsque l'utilisateur appuie sur `Ctrl + Z` pour suspendre un processus au premier plan ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "SIGTSTP (20)"
+            },
+            {
+              "id": 1,
+              "text": "SIGINT (2)"
+            },
+            {
+              "id": 2,
+              "text": "SIGTERM (15)"
+            },
+            {
+              "id": 3,
+              "text": "SIGKILL (9)"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Ctrl + Z émet SIGTSTP qui suspend le processus et le place en tâche de fond (background)."
+        },
+        {
+          "id": "LIN-PRC-06",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet de reprendre en tâche de fond (background) un processus suspendu ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "bg"
+            },
+            {
+              "id": 1,
+              "text": "fg"
+            },
+            {
+              "id": 2,
+              "text": "resume"
+            },
+            {
+              "id": 3,
+              "text": "start"
+            }
+          ],
+          "correct": 0,
+          "explanation": "bg (background) relance l'exécution d'un travail suspendu sans bloquer le terminal."
+        },
+        {
+          "id": "LIN-PRC-07",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet de ramener au premier plan (foreground) un travail qui tournait en arrière-plan ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "fg"
+            },
+            {
+              "id": 1,
+              "text": "bg"
+            },
+            {
+              "id": 2,
+              "text": "top"
+            },
+            {
+              "id": 3,
+              "text": "bring"
+            }
+          ],
+          "correct": 0,
+          "explanation": "fg (foreground) redonne le contrôle du terminal à un travail en tâche de fond."
+        },
+        {
+          "id": "LIN-PRC-08",
+          "type": "single_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "hard",
+          "prompt": "Quel est le PID du premier processus initial lancé par le noyau au démarrage (systemd sous Linux moderne) ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "1"
+            },
+            {
+              "id": 1,
+              "text": "0"
+            },
+            {
+              "id": 2,
+              "text": "100"
+            },
+            {
+              "id": 3,
+              "text": "-1"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le processus init (systemd) possède immuablement le PID 1 et est le parent de tous les autres processus."
+        },
+        {
+          "id": "LIN-PRC-09",
+          "type": "multi_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quelles commandes permettent d'arrêter des processus par leur nom plutôt que par leur PID ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "pkill"
+            },
+            {
+              "id": 1,
+              "text": "killall"
+            },
+            {
+              "id": 2,
+              "text": "pskill"
+            },
+            {
+              "id": 3,
+              "text": "rmproc"
+            }
+          ],
+          "correct": [
+            0,
+            1
+          ],
+          "explanation": "pkill et killall résolvent les processus cibles d'après leur nom d'exécutable."
+        },
+        {
+          "id": "LIN-PRC-10",
+          "type": "multi_choice",
+          "topic": "Processus & Signaux",
+          "difficulty": "hard",
+          "prompt": "Quelles informations contient le répertoire d'un processus `/proc/[PID]` ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "cmdline (ligne de commande lancée)"
+            },
+            {
+              "id": 1,
+              "text": "status (état mémoire et identifiants)"
+            },
+            {
+              "id": 2,
+              "text": "fd (descripteurs de fichiers ouverts)"
+            },
+            {
+              "id": 3,
+              "text": "Le mot de passe de l'utilisateur en clair"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "/proc/[PID] expose dynamiquement les structures du processus (cmdline, fd, status, environ)."
+        },
+        {
+          "id": "LIN-PRC-11",
+          "type": "boolean",
+          "topic": "Processus & Signaux",
+          "difficulty": "easy",
+          "prompt": "Ajouter le caractère esperluette `&` à la fin d'une commande la lance directement en arrière-plan sans bloquer le shell.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Le symbole `&` en fin de commande détache l'exécution interactive du shell."
+        },
+        {
+          "id": "LIN-PRC-12",
+          "type": "boolean",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Un processus ayant une valeur `nice` de -20 possède une priorité d'ordonnancement plus basse qu'un processus à +19.",
+          "options": [],
+          "correct": false,
+          "explanation": "Faux. Plus la valeur 'nice' est basse (jusqu'à -20), plus la priorité CPU est élevée ('moins il est sympa')."
+        },
+        {
+          "id": "LIN-PRC-13",
+          "type": "boolean",
+          "topic": "Processus & Signaux",
+          "difficulty": "hard",
+          "prompt": "Un processus orphelin (dont le parent est mort) est automatiquement adopté par le processus PID 1 (systemd/init).",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Le noyau réassigne les orphelins à PID 1 qui se charge de collecter leur code de sortie."
+        },
+        {
+          "id": "LIN-PRC-14",
+          "type": "fill_blank",
+          "topic": "Processus & Signaux",
+          "difficulty": "easy",
+          "prompt": "Quelle commande affiche la liste des travaux (jobs) actifs dans la session de shell courante ? `_____`",
+          "options": [],
+          "correct": [
+            "jobs"
+          ],
+          "explanation": "jobs affiche les processus lancés en arrière-plan dans le shell."
+        },
+        {
+          "id": "LIN-PRC-15",
+          "type": "fill_blank",
+          "topic": "Processus & Signaux",
+          "difficulty": "medium",
+          "prompt": "Quelle commande permet de modifier la priorité d'ordonnancement d'un processus déjà en cours d'exécution ? `_____`",
+          "options": [],
+          "correct": [
+            "renice"
+          ],
+          "explanation": "renice ajuste la politesse (nice value) d'un processus en cours."
         }
       ],
       "coding_exercises": [
@@ -1329,7 +2935,7 @@
       "title": "Scripting Bash & Automatisation",
       "order": 6,
       "description": "Variables, conditions if, boucles for/while, codes de sortie ($?) et enchaînement logique (&&, ||)",
-      "mcq_questions_count": 5,
+      "mcq_questions_count": 20,
       "coding_exercises_count": 2,
       "mcq_questions": [
         {
@@ -1446,6 +3052,338 @@
           ],
           "correct": "fi",
           "explanation": "En bash, un bloc 'if ... then ... else ...' se termine par 'fi' (l'inverse de if)."
+        },
+        {
+          "id": "LIN-BSH-01",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "easy",
+          "prompt": "Quelle directive (shebang) placée sur la première ligne d'un script garantit son exécution par l'interpréteur Bash ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "#!/bin/bash"
+            },
+            {
+              "id": 1,
+              "text": "#/bin/bash"
+            },
+            {
+              "id": 2,
+              "text": "//bin/bash"
+            },
+            {
+              "id": 3,
+              "text": "<!-- bash -->"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le shebang `#!/bin/bash` indique au noyau le chemin vers l'interpréteur à charger."
+        },
+        {
+          "id": "LIN-BSH-02",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "easy",
+          "prompt": "Comment accède-t-on à la valeur de la variable `NOM` sous Bash ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "$NOM"
+            },
+            {
+              "id": 1,
+              "text": "%NOM%"
+            },
+            {
+              "id": 2,
+              "text": "@NOM"
+            },
+            {
+              "id": 3,
+              "text": "&NOM"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le préfixe `$` extrait la valeur d'une variable en syntaxe shell POSIX."
+        },
+        {
+          "id": "LIN-BSH-03",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "easy",
+          "prompt": "Quelle variable spéciale contient le code de retour (statut d'erreur) de la commande précédente ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "$?"
+            },
+            {
+              "id": 1,
+              "text": "$#"
+            },
+            {
+              "id": 2,
+              "text": "$0"
+            },
+            {
+              "id": 3,
+              "text": "$*"
+            }
+          ],
+          "correct": 0,
+          "explanation": "$? stocke le code de retour numérique (0 pour succès, non-nul pour erreur)."
+        },
+        {
+          "id": "LIN-BSH-04",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Quelle variable spéciale indique le nombre total d'arguments passés à un script Bash lors de son appel ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "$#"
+            },
+            {
+              "id": 1,
+              "text": "$@"
+            },
+            {
+              "id": 2,
+              "text": "$1"
+            },
+            {
+              "id": 3,
+              "text": "$$"
+            }
+          ],
+          "correct": 0,
+          "explanation": "$# contient le nombre d'arguments fournis en ligne de commande."
+        },
+        {
+          "id": "LIN-BSH-05",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Quel mot-clé clôture un bloc conditionnel `if` sous Bash ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "fi"
+            },
+            {
+              "id": 1,
+              "text": "endif"
+            },
+            {
+              "id": 2,
+              "text": "done"
+            },
+            {
+              "id": 3,
+              "text": "esac"
+            }
+          ],
+          "correct": 0,
+          "explanation": "La structure conditionnelle est `if [ condition ]; then ... fi`."
+        },
+        {
+          "id": "LIN-BSH-06",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Quel mot-clé clôture une structure de choix multiple `case` sous Bash ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "esac"
+            },
+            {
+              "id": 1,
+              "text": "endcase"
+            },
+            {
+              "id": 2,
+              "text": "fi"
+            },
+            {
+              "id": 3,
+              "text": "break"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Le bloc `case $VAR in ... esac` utilise l'anagramme inverse 'esac'."
+        },
+        {
+          "id": "LIN-BSH-07",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "easy",
+          "prompt": "Quel mot-clé clôture une boucle `for` ou `while` sous Bash ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "done"
+            },
+            {
+              "id": 1,
+              "text": "fi"
+            },
+            {
+              "id": 2,
+              "text": "endfor"
+            },
+            {
+              "id": 3,
+              "text": "stop"
+            }
+          ],
+          "correct": 0,
+          "explanation": "Les boucles sont délimitées par `do` et `done`."
+        },
+        {
+          "id": "LIN-BSH-08",
+          "type": "single_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Quel opérateur de comparaison teste si deux entiers sont égaux dans un test Bash `[ $a ... $b ]` ?",
+          "options": [
+            {
+              "id": 0,
+              "text": "-eq"
+            },
+            {
+              "id": 1,
+              "text": "=="
+            },
+            {
+              "id": 2,
+              "text": "-same"
+            },
+            {
+              "id": 3,
+              "text": "="
+            }
+          ],
+          "correct": 0,
+          "explanation": "Pour les entiers dans test/[, les comparateurs sont -eq, -ne, -lt, -le, -gt, -ge."
+        },
+        {
+          "id": "LIN-BSH-09",
+          "type": "multi_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Quelles variables permettent d'accéder aux arguments passés à un script ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "$1 (premier argument)"
+            },
+            {
+              "id": 1,
+              "text": "$@ (tous les arguments comme mots distincts)"
+            },
+            {
+              "id": 2,
+              "text": "$0 (nom du script lui-même)"
+            },
+            {
+              "id": 3,
+              "text": "$$ (le PID du script)"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "$0, $1..$n et $@ représentent les composantes de la ligne de commande."
+        },
+        {
+          "id": "LIN-BSH-10",
+          "type": "multi_choice",
+          "topic": "Scripting Bash",
+          "difficulty": "hard",
+          "prompt": "Quelles syntaxes permettent d'évaluer une opération arithmétique entière sous Bash moderne ? *(Plusieurs réponses)*",
+          "options": [
+            {
+              "id": 0,
+              "text": "$(( a + b ))"
+            },
+            {
+              "id": 1,
+              "text": "let c=a+b"
+            },
+            {
+              "id": 2,
+              "text": "expr $a + $b"
+            },
+            {
+              "id": 3,
+              "text": "[ a + b ]"
+            }
+          ],
+          "correct": [
+            0,
+            1,
+            2
+          ],
+          "explanation": "$(( ... )), let et expr calculent des expressions arithmétiques entières."
+        },
+        {
+          "id": "LIN-BSH-11",
+          "type": "boolean",
+          "topic": "Scripting Bash",
+          "difficulty": "easy",
+          "prompt": "En syntaxe Bash, les affectations de variables comme `VAR=valeur` NE DOIVENT PAS comporter d'espaces autour du signe égal.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Écrire `VAR = valeur` génère une erreur car le shell interprète VAR comme une commande."
+        },
+        {
+          "id": "LIN-BSH-12",
+          "type": "boolean",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Entourer une chaîne avec des guillemets simples `'chaine'` empêche toute substitution de variable ($VAR est affiché tel quel).",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. Les apostrophes fortes (single quotes) neutralisent tous les métacaractères."
+        },
+        {
+          "id": "LIN-BSH-13",
+          "type": "boolean",
+          "topic": "Scripting Bash",
+          "difficulty": "hard",
+          "prompt": "L'option `set -e` ordonne au script de s'arrêter immédiatement dès qu'une commande renvoie un code d'erreur non nul.",
+          "options": [],
+          "correct": true,
+          "explanation": "Vrai. `set -e` (errexit) est une bonne pratique pour éviter l'exécution en cascade après un échec."
+        },
+        {
+          "id": "LIN-BSH-14",
+          "type": "fill_blank",
+          "topic": "Scripting Bash",
+          "difficulty": "easy",
+          "prompt": "Quelle commande shell permet d'exporter une variable pour qu'elle soit transmise aux processus fils ? `_____`",
+          "options": [],
+          "correct": [
+            "export"
+          ],
+          "explanation": "export élève une variable shell locale en variable d'environnement."
+        },
+        {
+          "id": "LIN-BSH-15",
+          "type": "fill_blank",
+          "topic": "Scripting Bash",
+          "difficulty": "medium",
+          "prompt": "Quelle commande lit une saisie de l'utilisateur depuis le clavier et l'enregistre dans une variable ? `_____`",
+          "options": [],
+          "correct": [
+            "read"
+          ],
+          "explanation": "read capture une ligne depuis stdin."
         }
       ],
       "coding_exercises": [

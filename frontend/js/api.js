@@ -131,6 +131,10 @@ class ApiClient {
     return await this.request(`/student/attempts/${attemptId}/status`);
   }
 
+  async getExamReview(attemptId) {
+    return await this.request('/student/attempts/' + attemptId + '/review');
+  }
+
   async submitOfficialExam(attemptId) {
     // Vider d'abord la file d'attente hors-ligne si le réseau est revenu
     await this.flushOfflineQueue();

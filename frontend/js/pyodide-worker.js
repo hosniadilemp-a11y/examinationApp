@@ -99,7 +99,7 @@ try:
     exec(_compiled, _user_globals)
 except SyntaxError as se:
     _student_error = f"SyntaxError: {se.msg} (à la ligne {se.lineno})"
-except Exception:
+except BaseException:
     _raw_tb = traceback.format_exc()
     _student_error = _raw_tb.strip()
 `;
@@ -122,7 +122,7 @@ error_val = _student_error
     const pyError = pyodide.globals.get("error_val");
     const executionTimeMs = Math.round(performance.now() - startTime);
 
-    let finalError = pyError || jsError || null;
+    let finalError = pyError || (stderr && stderr.trim()) || jsError || null;
     if (finalError && typeof finalError === "string" && finalError.startsWith("PythonError: ")) {
         finalError = finalError.substring("PythonError: ".length);
     }

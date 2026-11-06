@@ -155,10 +155,15 @@ def execute_user_code_with_input(python_code: str, custom_input: str, timeout_se
     try:
         run_res = run_python_script(script_path, custom_input, timeout_seconds)
         clean_out, figs = extract_figures_and_clean_stdout(run_res["stdout"])
+        stderr_text = (run_res["stderr"] or "").strip()
+        has_error = run_res["timed_out"] or run_res["returncode"] != 0 or bool(stderr_text)
+        err_msg = stderr_text if stderr_text else ("Délai d'exécution dépassé" if run_res["timed_out"] else None)
+        
         return {
-            "success": not run_res["timed_out"] and run_res["returncode"] == 0,
+            "success": not run_res["timed_out"] and run_res["returncode"] == 0 and not bool(stderr_text),
             "stdout": clean_out,
             "stderr": run_res["stderr"],
+            "error": err_msg,
             "figures": figs,
             "timed_out": run_res["timed_out"],
             "execution_time_ms": run_res["execution_time_ms"]

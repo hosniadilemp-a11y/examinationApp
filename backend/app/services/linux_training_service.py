@@ -637,6 +637,10 @@ def generate_linux_session(
                 q_copy = dict(q)
                 q_copy.pop("correct", None)
                 q_copy.pop("explanation", None)
+                if q_copy.get("options") and isinstance(q_copy["options"], list) and len(q_copy["options"]) > 1:
+                    shuffled_opts = list(q_copy["options"])
+                    random.shuffle(shuffled_opts)
+                    q_copy["options"] = shuffled_opts
                 pool.append(q_copy)
         if assessment_type in ("all", "practical"):
             for ce in ch.get("coding_exercises", []):

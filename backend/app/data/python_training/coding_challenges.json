@@ -274,7 +274,7 @@
     "title": "Palindrome",
     "topic": "Strings",
     "difficulty": "medium",
-    "description": "### Vérification de palindrome\n\nOn vous donne une chaîne.\n\nDéterminez si elle se lit de la même façon de gauche à droite et de droite à gauche.\n\n#### Format d'entrée\n- Une ligne: la chaîne\n\n#### Format de sortie\n- `Yes` si palindrome\n- `No` sinon\n\n#### Exemple\n**Entrée**\n```\nradar\n```\n**Sortie**\n```\nYes\n```",
+    "description": "### Vérification de palindrome\n\nOn vous donne une chaîne.\n\nDéterminez si elle se lit de la même façon de gauche à droite et de droite à gauche.\n\n#### Format d'entrée\n- Une ligne: la chaîne\n\n#### Format de sortie\n- `Yes` si palindrome\n- `No` sinon\n\n#### Exemple\n**Entrée**\n```\nradar\n```\n**Sortie**\n```\nVrai\n```",
     "starter_code": "# Solution en Python standard (stdin / stdout)\nimport sys\n\ndef solve():\n    tokens = sys.stdin.read().split()\n    if not tokens:\n        return\n\n    # Variable d'entrée distincte :\n    s = tokens[0]  # Mot ou chaîne à tester\n\n    # TODO: Affichez 'Vrai' si c'est un palindrome, sinon 'Faux'\n\nif __name__ == '__main__':\n    solve()\n",
     "public_tests": [
       {

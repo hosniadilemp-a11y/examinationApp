@@ -1404,9 +1404,11 @@ export class ExamRunner {
         try {
           const res = await api.runPythonCode(codeToRun, inputVal);
           if (consoleLogs) {
-            if (res.error) {
+            const hasErr = !res.success || !!res.error || (res.stderr && res.stderr.trim().length > 0);
+            const errDetails = res.error || res.stderr || (res.success ? null : "Erreur d'exécution");
+            if (hasErr && errDetails) {
               consoleLogs.style.color = '#f87171';
-              consoleLogs.textContent = `❌ Erreur d'exécution (${res.execution_time_ms} ms) :\n${res.error}`;
+              consoleLogs.textContent = `❌ Erreur d'exécution (${res.execution_time_ms || 0} ms) :\n${errDetails}`;
             } else {
               consoleLogs.style.color = '#a7f3d0';
               consoleLogs.textContent = res.stdout || `(Exécution terminée avec succès en ${res.execution_time_ms} ms sans affichage standard)`;

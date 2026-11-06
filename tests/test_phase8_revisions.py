@@ -561,6 +561,75 @@ def test_bulletin_and_palmares_pdf_docx_zip_exports(client, admin_headers, stude
     assert len(res_my_docx.content) > 10000
 
 
+def test_official_exams_view_and_post_exam_review(client, admin_headers, student_headers):
+    """
+    Vérifie l'implémentation de la vue dédiée Épreuves Officielles,
+    ainsi que l'accès au corrigé détaillé après soumission de l'épreuve.
+    """
+    # 1. Vérification du frontend JS
+    with open("frontend/js/app.js", "r", encoding="utf-8") as f:
+        js = f.read()
+    assert "renderOfficialExamsView()" in js
+    assert "openExamReviewModal" in js
+    assert "targetContainerId = 'official-exams-grid'" in js
+    assert "dedicated-official-exams-grid" in js
+
+    # 2. Création et soumission d'une épreuve
+    res_exam = client.post(
+        "/api/exams",
+        headers=admin_headers,
+        json={"module_code": "PYTHON_INIT", "title": "Examen Review Corrigé", "duration_minutes": 20, "group_ids": ["GRP-1"]}
+    )
+    exam_id = res_exam.json()["id"]
+
+    client.post(
+        f"/api/exams/{exam_id}/questions",
+        headers=admin_headers,
+        json={
+            "ordering": 1,
+            "type": "single_choice",
+            "prompt_markdown": "Quel mot-clé définit une fonction ?",
+            "points": 20.0,
+            "options_json": json.dumps({"options": ["def", "func", "function"], "explanation": "Le mot-clé 'def' permet de définir une fonction en Python."}),
+            "correct_answers_json": json.dumps("def")
+        }
+    )
+
+    # L'étudiant démarre
+    res_start = client.post(f"/api/student/exams/{exam_id}/start", headers=student_headers)
+    assert res_start.status_code == 200
+    start_data = res_start.json()
+    attempt_id = start_data["attempt_id"]
+    q_id = start_data["questions"][0]["id"]
+
+    # Enregistrement de la bonne réponse
+    res_ans = client.post(
+        f"/api/student/attempts/{attempt_id}/save-answer",
+        headers=student_headers,
+        json={"question_id": q_id, "answer": "def"}
+    )
+    assert res_ans.status_code == 200
+
+    # Soumission finale
+    res_sub = client.post(f"/api/student/attempts/{attempt_id}/submit", headers=student_headers)
+    assert res_sub.status_code == 200
+    sub_data = res_sub.json()
+    assert sub_data["final_mark"] == 20.0
+
+    # Consultation du corrigé
+    res_rev = client.get(f"/api/student/attempts/{attempt_id}/review", headers=student_headers)
+    assert res_rev.status_code == 200
+    rev_data = res_rev.json()
+    assert rev_data["attempt_id"] == attempt_id
+    assert rev_data["exam_title"] == "Examen Review Corrigé"
+    assert rev_data["final_mark"] == 20.0
+    assert rev_data["correct_count"] == 1
+    assert len(rev_data["questions"]) == 1
+    assert rev_data["questions"][0]["is_correct"] is True
+    assert rev_data["questions"][0]["explanation"] == "Le mot-clé 'def' permet de définir une fonction en Python."
+
+
+
 
 
 
