@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plateforme d'Examen et Tests de Niveau LAN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/vendor/codemirror/codemirror.min.css" />
   <link rel="stylesheet" href="/vendor/codemirror/theme/dracula.min.css" />
@@ -59,8 +62,9 @@
     <!-- En-tête Global -->
     <header class="app-header">
       <div class="brand-badge">
-        <div class="brand-icon">Q</div>
-        <span>Exam<span class="text-gradient">Platform</span></span>
+        <div class="brand-icon" style="background: linear-gradient(135deg, #0ea5e9, #8b5cf6); box-shadow: 0 0 16px rgba(14,165,233,0.4); border-radius: 8px;">🛡️</div>
+        <span style="font-family: var(--font-heading); font-weight: 800; letter-spacing: -0.02em;">CYBER<span class="text-gradient">EXAM</span></span>
+        <span class="cyber-tag" style="font-size: 0.65rem; background: rgba(14,165,233,0.12); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); padding: 2px 7px; border-radius: 9999px; font-weight: 800; letter-spacing: 0.5px;">ACADEMY</span>
       </div>
 
       <div style="display: flex; align-items: center; gap: 12px;">
@@ -100,8 +104,12 @@
     <main id="view-login" class="view active">
       <div class="login-wrapper">
         <div class="login-card">
-          <h2>Connexion</h2>
-          <p>Plateforme d'évaluation continue & d'examen en réseau local.</p>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,#0ea5e9,#8b5cf6); display:grid; place-items:center; font-size:1.1rem; box-shadow:0 0 16px rgba(14,165,233,0.35);">🛡️</div>
+            <span style="font-family:var(--font-heading); font-size:1.15rem; font-weight:800; letter-spacing:-0.01em;">CYBER<span class="text-gradient">EXAM</span></span>
+          </div>
+          <h2>Espace d'Authentification</h2>
+          <p>Plateforme certifiante haute sécurité, algorithmique &amp; cyberdéfense.</p>
 
           <div id="login-error" style="display:none; color:var(--danger); background:rgba(239,68,68,0.1); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:0.85rem;"></div>
 

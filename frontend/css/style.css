@@ -1,28 +1,41 @@
 :root {
-  --bg-primary: #0b1120;
-  --bg-secondary: #1e293b;
-  --bg-surface: #131d31;
-  --bg-surface-hover: #1f2d48;
-  --card-border: rgba(255, 255, 255, 0.08);
-  --card-border-active: rgba(59, 130, 246, 0.5);
+  /* --- PALETTE CYBERSÉCURITÉ & E-LEARNING HAUTE PRÉCISION --- */
+  --bg-primary: #070b14;
+  --bg-secondary: #0d1526;
+  --bg-surface: rgba(15, 23, 42, 0.75);
+  --bg-surface-solid: #0f172a;
+  --bg-surface-hover: rgba(30, 41, 59, 0.85);
+  --card-border: rgba(56, 189, 248, 0.14);
+  --card-border-hover: rgba(56, 189, 248, 0.38);
+  --card-border-active: rgba(14, 165, 233, 0.7);
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --accent-primary: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-glow: rgba(59, 130, 246, 0.25);
+  --accent-primary: #0ea5e9;
+  --accent-hover: #0284c7;
+  --accent-glow: rgba(14, 165, 233, 0.35);
+  --cyber-cyan: #00f0ff;
+  --cyber-glow: 0 0 25px rgba(0, 240, 255, 0.25);
+  --cyber-purple: #8b5cf6;
   --success: #10b981;
-  --success-glow: rgba(16, 185, 129, 0.2);
+  --success-glow: rgba(16, 185, 129, 0.25);
   --warning: #f59e0b;
-  --warning-glow: rgba(245, 158, 11, 0.2);
-  --danger: #ef4444;
-  --danger-glow: rgba(239, 68, 68, 0.3);
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --warning-glow: rgba(245, 158, 11, 0.25);
+  --danger: #f43f5e;
+  --danger-glow: rgba(244, 63, 94, 0.35);
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 45px -8px rgba(0, 0, 0, 0.65), 0 0 20px rgba(14, 165, 233, 0.1);
+  --shadow-cyber: 0 0 30px rgba(14, 165, 233, 0.2);
+  --glass-blur: blur(16px);
 }
 
 /* --- THÈME CLAIR (LIGHT MODE) --- */
@@ -236,18 +249,66 @@
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg-primary);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.09) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+  background-attachment: fixed;
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.55;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Typographie & Titres --- */
-h1, h2, h3, h4 {
+/* Scrollbar Futuriste & Moderne */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(7, 11, 20, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 233, 0.55);
+}
+
+/* --- Typographie & Titres (Cybersécurité & E-Learning Moderne) --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-cyber {
+  background: linear-gradient(135deg, #00f0ff 0%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cyber-code {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
 .text-gradient {
@@ -3844,4 +3905,199 @@ pre.code-block {
 #view-exam .md-list li,
 #view-exam .md-list-ordered li {
   font-size: calc(1.02rem * var(--exam-font-scale, 1)) !important;
+}
+
+
+/* ==========================================================================
+   DIRECTION ARTISTIQUE : CYBERSÉCURITÉ & E-LEARNING ULTRA-MODERNE
+   Polices: Plus Jakarta Sans (Corps UI) + Space Grotesk (Titres) + JetBrains Mono (Code/Sécurité)
+   Surfaces Glassmorphism 16px, Bordures Cyber Cyan, Micro-interactions néon
+   ========================================================================== */
+
+/* Carte Générique Haut de Gamme */
+.card {
+  background: var(--bg-surface) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.card:hover {
+  border-color: var(--card-border-hover) !important;
+  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.6), 0 0 22px rgba(14, 165, 233, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+/* Lignes d'Épreuves Officielles & Entraînements */
+.exam-list-item {
+  background: var(--bg-surface) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.exam-list-item:hover {
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.55), 0 0 20px rgba(14, 165, 233, 0.18) !important;
+}
+
+/* Cartes KPI Statistiques */
+.stat-card, .kpi-card {
+  background: var(--bg-surface) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.2s ease !important;
+}
+
+.stat-card:hover, .kpi-card:hover {
+  border-color: var(--card-border-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.5), 0 0 16px rgba(14, 165, 233, 0.12) !important;
+}
+
+/* Boutons Modernes avec Gradients & Micro-Glow */
+.btn-primary {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #ffffff !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%) !important;
+  box-shadow: 0 6px 22px rgba(14, 165, 233, 0.5), 0 0 16px rgba(0, 240, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+
+.btn-success:hover {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5), 0 0 14px rgba(16, 185, 129, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+/* Options de QCM Modernes */
+.option-item {
+  background: rgba(13, 21, 38, 0.7) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 16px 20px !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none;
+}
+
+.option-item:hover {
+  background: rgba(22, 34, 58, 0.85) !important;
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  transform: translateX(4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+}
+
+.option-item.selected {
+  background: rgba(14, 165, 233, 0.14) !important;
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 0 0 1px #0ea5e9, 0 4px 22px rgba(14, 165, 233, 0.25) !important;
+  transform: translateX(4px);
+}
+
+.option-item.selected .option-indicator {
+  border-color: #0ea5e9 !important;
+  background: #0ea5e9 !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6) !important;
+}
+
+/* Point Indicateur Live Clignotant */
+.live-pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+/* En-tête Sticky Glassmorphism */
+.app-header {
+  background: rgba(7, 11, 20, 0.85) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15) !important;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Onglets de Rôles */
+.role-nav-bar {
+  background: rgba(13, 21, 38, 0.65) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.role-nav-btn {
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.role-nav-btn.active {
+  background: rgba(14, 165, 233, 0.15) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(14, 165, 233, 0.4) !important;
+  box-shadow: 0 0 18px rgba(14, 165, 233, 0.22) !important;
+}
+
+/* Modals Modernes */
+.modal-overlay {
+  background: rgba(7, 11, 20, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.modal-box {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 35px rgba(14, 165, 233, 0.15) !important;
 }
