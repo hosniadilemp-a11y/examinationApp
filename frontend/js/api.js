@@ -63,7 +63,9 @@ class ApiClient {
             errorMsg = errData.message;
           }
         } catch (_) {}
-        throw new Error(errorMsg);
+        const err = new Error(errorMsg);
+        err.status = response.status;
+        throw err;
       }
 
       if (response.status === 204) return null;
@@ -190,6 +192,10 @@ class ApiClient {
 
   async getPythonProgression() {
     return await this.request('/training/python/progression');
+  }
+
+  async getPythonStudentAnalytics() {
+    return await this.request('/training/python/student-analytics');
   }
 
   async getPythonHistory() {

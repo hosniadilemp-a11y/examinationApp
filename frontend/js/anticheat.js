@@ -33,7 +33,16 @@ export class AntiCheatManager {
     this._boundOnVisibility = this._handleVisibilityChange.bind(this);
     this._boundOnFullscreen = this._handleFullscreenChange.bind(this);
     this._boundOnKeyDown = this._handleKeyDown.bind(this);
+    this._boundBeforeUnload = this._handleBeforeUnload.bind(this);
     this._boundBlockEvent = (e) => e.preventDefault();
+  }
+
+  _handleBeforeUnload(e) {
+    if (this.isActive && !this.isSuspended && !this.isPracticeMode) {
+      e.preventDefault();
+      e.returnValue = "Attention : quitter ou actualiser cette page durant l'épreuve risque d'invalider votre tentative.";
+      return e.returnValue;
+    }
   }
 
   start() {
@@ -52,14 +61,17 @@ export class AntiCheatManager {
     document.addEventListener('fullscreenchange', this._boundOnFullscreen);
     document.addEventListener('webkitfullscreenchange', this._boundOnFullscreen);
 
-    // 3. Blocage du Copier/Coller, Clic Droit et Sélections (actif en Examen Officiel)
+    // 3. Blocage du Copier/Coller, Clic Droit, Glisser/Déposer et Raccourcis (Examen Officiel)
     if (!this.isPracticeMode) {
       document.addEventListener('copy', this._boundBlockEvent, true);
       document.addEventListener('cut', this._boundBlockEvent, true);
       document.addEventListener('paste', this._boundBlockEvent, true);
       document.addEventListener('contextmenu', this._boundBlockEvent, true);
       document.addEventListener('selectstart', this._boundBlockEvent, true);
+      document.addEventListener('dragstart', this._boundBlockEvent, true);
+      document.addEventListener('drop', this._boundBlockEvent, true);
       window.addEventListener('keydown', this._boundOnKeyDown, true);
+      window.addEventListener('beforeunload', this._boundBeforeUnload);
     }
 
     // 4. Écouteurs de déconnexion réseau (Tolérance sans suspension)
@@ -88,7 +100,10 @@ export class AntiCheatManager {
     document.removeEventListener('paste', this._boundBlockEvent, true);
     document.removeEventListener('contextmenu', this._boundBlockEvent, true);
     document.removeEventListener('selectstart', this._boundBlockEvent, true);
+    document.removeEventListener('dragstart', this._boundBlockEvent, true);
+    document.removeEventListener('drop', this._boundBlockEvent, true);
     window.removeEventListener('keydown', this._boundOnKeyDown, true);
+    window.removeEventListener('beforeunload', this._boundBeforeUnload);
 
     window.removeEventListener('offline', this._handleOffline);
     window.removeEventListener('online', this._handleOnline);
@@ -369,15 +384,31 @@ export class AntiCheatManager {
   }
 
   _handleKeyDown(e) {
-    // Blocage des touches dangereuses (F12, Ctrl+Shift+I, Ctrl+C, Ctrl+V, etc.)
-    const isCtrl = e.ctrlKey || e.metaKey;
-    const forbiddenKeys = ['c', 'v', 'x', 'a', 'u', 'p', 's'];
+    // 1. Détection de capture d'écran (PrintScreen)
+    if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
+      e.preventDefault();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText("").catch(() => {});
+      }
+      this._registerWarning("Tentative de capture d'écran détectée (Touche Impr. Écran).");
+      return false;
+    }
 
-    if (e.key === 'F12' || (isCtrl && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'J'))) {
+    // 2. Blocage des touches de rafraîchissement et fermeture (F5, Ctrl+R, Ctrl+W)
+    const isCtrl = e.ctrlKey || e.metaKey;
+    if (e.key === 'F5' || (isCtrl && (e.key === 'r' || e.key === 'R' || e.key === 'w' || e.key === 'W'))) {
       e.preventDefault();
       return false;
     }
 
+    // 3. Blocage des outils de développement et inspection (F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J)
+    if (e.key === 'F12' || (isCtrl && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c' || e.key === 'J' || e.key === 'j'))) {
+      e.preventDefault();
+      return false;
+    }
+
+    // 4. Blocage du copier/coller, sélection et sauvegarde
+    const forbiddenKeys = ['c', 'v', 'x', 'a', 'u', 'p', 's'];
     if (isCtrl && forbiddenKeys.includes(e.key.toLowerCase())) {
       e.preventDefault();
       return false;
@@ -387,11 +418,15 @@ export class AntiCheatManager {
   _handleOffline() {
     const banner = document.getElementById('banner-offline');
     if (banner) banner.classList.add('active');
+    const examBanner = document.getElementById('exam-banner-offline');
+    if (examBanner) examBanner.style.display = 'block';
   }
 
   _handleOnline() {
     const banner = document.getElementById('banner-offline');
     if (banner) banner.classList.remove('active');
+    const examBanner = document.getElementById('exam-banner-offline');
+    if (examBanner) examBanner.style.display = 'none';
     api.flushOfflineQueue();
   }
 }

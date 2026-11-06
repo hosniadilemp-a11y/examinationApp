@@ -659,17 +659,28 @@ class AppController {
       btnPythonBack.onclick = () => this.renderDashboard(this.currentUser);
     }
 
-    // Alertes réseau déconnecté / reconnecté
-    window.addEventListener('network:offline', () => {
+    // Initialisation globale du contrôleur de taille de police d'examen
+    this._initGlobalExamFontScale();
+
+    // Alertes réseau déconnecté / reconnecté (avec affichage spécifique plein écran en examen)
+    const showOfflineBanners = () => {
       const banner = document.getElementById('banner-offline');
       if (banner) banner.classList.add('active');
-    });
+      const examBanner = document.getElementById('exam-banner-offline');
+      if (examBanner) examBanner.style.display = 'block';
+    };
 
-    window.addEventListener('online', () => {
+    const hideOfflineBanners = () => {
       const banner = document.getElementById('banner-offline');
       if (banner) banner.classList.remove('active');
+      const examBanner = document.getElementById('exam-banner-offline');
+      if (examBanner) examBanner.style.display = 'none';
       api.flushOfflineQueue();
-    });
+    };
+
+    window.addEventListener('network:offline', showOfflineBanners);
+    window.addEventListener('offline', showOfflineBanners);
+    window.addEventListener('online', hideOfflineBanners);
 
     window.addEventListener('auth:expired', () => {
       if (this.currentView && this.currentView !== 'view-login') {
@@ -1532,6 +1543,9 @@ class AppController {
       // 2. Rendu de la Matrice Pédagogique (10 Chapitres & 4 Difficultés)
       this._renderPythonCurriculumMatrix(prog);
 
+      // 3. Synthèse Statistique & Diagnostic des Faiblesses
+      await this._loadPythonStudentAnalytics();
+
     } catch (err) {
       console.error("Erreur de chargement du centre Python:", err);
       const container = document.getElementById('python-curriculum-container');
@@ -1879,6 +1893,123 @@ class AppController {
       if (summaryText) {
         summaryText.textContent = `${typeLabel} • ${topicTitle} • Palier ${diffLabel} [Mode Personnalisé]`;
       }
+    }
+  }
+
+  // --- Synthèse Statistique Personnalisée & Diagnostic des Faiblesses ---
+  async _loadPythonStudentAnalytics() {
+    try {
+      const data = await api.getPythonStudentAnalytics();
+      if (!data) return;
+
+      const badgeEl = document.getElementById('python-analytics-badge');
+      const sessionsEl = document.getElementById('python-stat-sessions');
+      const avgEl = document.getElementById('python-stat-avg');
+      const rateEl = document.getElementById('python-stat-rate');
+      const badgesEl = document.getElementById('python-stat-badges');
+      const weakList = document.getElementById('python-weaknesses-list');
+      const recList = document.getElementById('python-recommendations-list');
+
+      if (badgeEl) {
+        if (data.total_sessions === 0) {
+          badgeEl.textContent = 'En attente de vos premiers tests';
+          badgeEl.style.background = 'rgba(148, 163, 184, 0.15)';
+          badgeEl.style.color = '#94a3b8';
+        } else {
+          badgeEl.textContent = `${data.total_sessions} session${data.total_sessions > 1 ? 's' : ''} enregistrée${data.total_sessions > 1 ? 's' : ''}`;
+          badgeEl.style.background = 'rgba(59, 130, 246, 0.15)';
+          badgeEl.style.color = '#93c5fd';
+        }
+      }
+
+      if (sessionsEl) sessionsEl.textContent = data.total_sessions;
+      if (avgEl) avgEl.textContent = `${data.average_mark} / 20`;
+      if (rateEl) rateEl.textContent = `${data.success_rate_percent} %`;
+      if (badgesEl) badgesEl.textContent = `${data.badges_count} / ${data.total_badges || 68}`;
+
+      // 1. Liste des faiblesses
+      if (weakList) {
+        if (!data.weaknesses || data.weaknesses.length === 0) {
+          weakList.innerHTML = `<span style="color: #34d399; font-weight: 500;">✓ Excellent ! Aucun point faible sous le seuil de validation (14/20) n'a été identifié.</span>`;
+        } else {
+          weakList.innerHTML = data.weaknesses.map(w => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; gap: 8px;">
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-weight: 600; color: #f87171; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${this._escapeHtml(w.chapter_title)} • <span style="font-size: 0.8rem; font-weight: normal; color: #fca5a5;">${this._escapeHtml(w.difficulty_label)}</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">
+                  Moyenne : <strong style="color: #ef4444;">${w.avg_score}/20</strong> (${w.attempts_count} essai${w.attempts_count > 1 ? 's' : ''})
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-danger btn-weakness-retest" data-topic="${w.chapter_id}" data-diff="${w.difficulty}" style="font-size: 0.78rem; padding: 4px 8px; border-radius: 4px; white-space: nowrap; cursor: pointer;">
+                🔄 Retravailler
+              </button>
+            </div>
+          `).join('');
+
+          weakList.querySelectorAll('.btn-weakness-retest').forEach(btn => {
+            btn.onclick = () => {
+              const ch = btn.getAttribute('data-topic');
+              const diff = btn.getAttribute('data-diff');
+              this._selectCustomChapterAndDiff(ch, diff);
+            };
+          });
+        }
+      }
+
+      // 2. Liste des recommandations prioritaires
+      if (recList) {
+        if (!data.recommendations || data.recommendations.length === 0) {
+          recList.innerHTML = `<span style="color: var(--text-muted);">Poursuivez le parcours guidé pour consolider les chapitres fondamentaux.</span>`;
+        } else {
+          recList.innerHTML = data.recommendations.map(r => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 6px; gap: 8px;">
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-weight: 600; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${this._escapeHtml(r.chapter_title)} • <span style="font-size: 0.8rem; font-weight: normal; color: #6ee7b7;">${this._escapeHtml(r.difficulty_label)}</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">${this._escapeHtml(r.reason)}</div>
+              </div>
+              <button class="btn btn-sm btn-primary btn-rec-launch" data-topic="${r.chapter_id}" data-diff="${r.difficulty}" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 4px; white-space: nowrap; cursor: pointer;">
+                ▶ Lancer
+              </button>
+            </div>
+          `).join('');
+
+          recList.querySelectorAll('.btn-rec-launch').forEach(btn => {
+            btn.onclick = () => {
+              const ch = btn.getAttribute('data-topic');
+              const diff = btn.getAttribute('data-diff');
+              this._selectCustomChapterAndDiff(ch, diff);
+            };
+          });
+        }
+      }
+
+    } catch (err) {
+      console.warn("Impossible de charger les statistiques d'entraînement Python:", err);
+    }
+  }
+
+  _selectCustomChapterAndDiff(topicId, diff) {
+    this.customSelectedTopic = topicId;
+    this.customSelectedDifficulty = diff;
+    const btnCustom = document.getElementById('btn-mode-custom');
+    if (btnCustom) btnCustom.click();
+
+    const selectEl = document.getElementById('select-custom-topic');
+    if (selectEl) selectEl.value = topicId;
+
+    if (this.currentPythonProgression && this.currentPythonProgression.progression) {
+      this._syncCustomDiffButtons(this.currentPythonProgression.progression);
+      this._refreshDifficultyChipsStyle();
+      this._updateLaunchButtonLabel(this.currentPythonProgression.progression);
+    }
+
+    const container = document.getElementById('python-curriculum-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
@@ -3272,6 +3403,27 @@ class AppController {
       this._renderProctorOverviewData(data, sessionId);
     } catch (err) {
       console.error("Échec de rafraîchissement proctor :", err);
+      if (err.status === 404 || (err.message && (err.message.includes('404') || err.message.toLowerCase().includes('introuvable')))) {
+        if (this.proctorPollInterval) {
+          clearInterval(this.proctorPollInterval);
+          this.proctorPollInterval = null;
+        }
+        if (this.proctorTimerInterval) {
+          clearInterval(this.proctorTimerInterval);
+          this.proctorTimerInterval = null;
+        }
+        if (this.proctorWebSocket) {
+          try { this.proctorWebSocket.close(); } catch (_) {}
+          this.proctorWebSocket = null;
+        }
+        this.activeSessionId = null;
+        this.showToast("La session de surveillance n'existe plus ou a été supprimée.", "warning");
+        if (this.currentRole === 'teacher') {
+          this.renderTeacherDashboard();
+        } else if (this.currentRole === 'admin') {
+          this.renderAdminDashboard();
+        }
+      }
     }
   }
 
@@ -4886,6 +5038,50 @@ class AppController {
     if (!btn) return;
     const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
     btn.innerHTML = isFull ? '<span>✖️</span> Quitter Plein Écran' : '<span>⛶</span> Plein Écran';
+  }
+
+  _initGlobalExamFontScale() {
+    const viewExam = document.getElementById('view-exam');
+    const btnDecrease = document.getElementById('btn-exam-font-decrease');
+    const btnIncrease = document.getElementById('btn-exam-font-increase');
+    const btnReset = document.getElementById('btn-exam-font-reset');
+    const labelScale = document.getElementById('label-exam-font-scale');
+
+    if (!viewExam) return;
+
+    let savedScale = parseFloat(localStorage.getItem('exam_font_scale')) || 1.0;
+    if (savedScale < 0.8 || savedScale > 1.6) savedScale = 1.0;
+
+    const applyScale = (s) => {
+      savedScale = Math.round(s * 100) / 100;
+      viewExam.style.setProperty('--exam-font-scale', savedScale);
+      try { localStorage.setItem('exam_font_scale', savedScale); } catch (_) {}
+      if (labelScale) labelScale.textContent = `${Math.round(savedScale * 100)}%`;
+      if (window._activeExamCodeMirror) {
+        try { window._activeExamCodeMirror.refresh(); } catch (_) {}
+      }
+    };
+
+    applyScale(savedScale);
+
+    if (btnDecrease) {
+      btnDecrease.onclick = (e) => {
+        e.preventDefault();
+        if (savedScale > 0.85) applyScale(savedScale - 0.1);
+      };
+    }
+    if (btnIncrease) {
+      btnIncrease.onclick = (e) => {
+        e.preventDefault();
+        if (savedScale < 1.5) applyScale(savedScale + 0.1);
+      };
+    }
+    if (btnReset) {
+      btnReset.onclick = (e) => {
+        e.preventDefault();
+        applyScale(1.0);
+      };
+    }
   }
 
   renderStudentDashboard() {

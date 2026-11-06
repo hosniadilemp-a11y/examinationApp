@@ -3444,31 +3444,84 @@ pre.code-block {
   --exam-font-scale: 1;
 }
 
-#view-exam .question-card {
-  font-size: calc(1.05rem * var(--exam-font-scale, 1));
+#view-exam .network-banner.in-exam-banner {
+  position: sticky;
+  top: 0;
+  bottom: auto;
+  z-index: 99999;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  margin-bottom: 16px;
+  background: #b45309;
+  color: #fef3c7;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+#view-exam #exam-question-container {
+  font-size: calc(1rem * var(--exam-font-scale, 1));
 }
 
 #view-exam .question-prompt {
+  font-size: calc(1.18rem * var(--exam-font-scale, 1)) !important;
+  line-height: 1.6 !important;
+}
+
+#view-exam .question-prompt p,
+#view-exam .question-prompt .md-paragraph {
+  font-size: calc(1.05rem * var(--exam-font-scale, 1)) !important;
+  line-height: 1.6 !important;
+}
+
+#view-exam .question-prompt h2,
+#view-exam .question-prompt .md-heading-1 {
   font-size: calc(1.35rem * var(--exam-font-scale, 1)) !important;
-  line-height: 1.55 !important;
+}
+
+#view-exam .question-prompt h3,
+#view-exam .question-prompt .md-heading-2 {
+  font-size: calc(1.2rem * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam .question-prompt h4,
+#view-exam .question-prompt .md-heading-3 {
+  font-size: calc(1.1rem * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam .problem-body,
+#view-exam .problem-body * {
+  font-size: calc(1.05rem * var(--exam-font-scale, 1)) !important;
+  line-height: 1.65 !important;
 }
 
 #view-exam .option-item {
-  font-size: calc(1.15rem * var(--exam-font-scale, 1)) !important;
-  padding: calc(15px * var(--exam-font-scale, 1)) calc(18px * var(--exam-font-scale, 1)) !important;
+  font-size: calc(1.12rem * var(--exam-font-scale, 1)) !important;
+  padding: calc(14px * var(--exam-font-scale, 1)) calc(18px * var(--exam-font-scale, 1)) !important;
 }
 
+#view-exam .option-item div,
+#view-exam .option-item span,
 #view-exam .option-item label,
 #view-exam .boolean-btn,
-#view-exam .matching-item,
-#view-exam .fill-blank-input {
-  font-size: calc(1.15rem * var(--exam-font-scale, 1)) !important;
+#view-exam .matching-item {
+  font-size: calc(1.1rem * var(--exam-font-scale, 1)) !important;
+}
+
+#view-exam #input-fill-blank,
+#view-exam .fill-blank-input,
+#view-exam .matching-pair,
+#view-exam .matching-pair * {
+  font-size: calc(1.05rem * var(--exam-font-scale, 1)) !important;
 }
 
 #view-exam pre.code-block,
 #view-exam pre code,
-#view-exam .CodeMirror {
-  font-size: calc(1.05rem * var(--exam-font-scale, 1)) !important;
+#view-exam .CodeMirror,
+#view-exam .CodeMirror-line,
+#view-exam .CodeMirror pre {
+  font-size: calc(1.02rem * var(--exam-font-scale, 1)) !important;
   line-height: 1.5 !important;
 }
 

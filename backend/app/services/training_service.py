@@ -353,14 +353,18 @@ def build_progression_state(user_id: str, db: Session) -> Dict[str, Any]:
                 unlocked = (ch_id, prev_diff) in completed_pairs
                 
             is_current = False
-            if unlocked and not completed and active_step is None:
-                is_current = True
-                active_step = {
-                    "chapter_id": ch_id,
-                    "chapter_title": ch["title"],
-                    "difficulty": diff_name,
-                    "difficulty_label": DIFFICULTY_LABELS.get(diff_name, diff_name)
-                }
+            # Progression Guidée : cible exclusivement 'easy' et 'medium' pour avancer de chapitre en chapitre.
+            # Dès que Facile et Intermédiaire sont validés, le chapitre est acquis et le parcours guidé avance.
+            # 'advanced' et 'expert' sont débloqués pour le mode personnalisé dès validation du palier précédent.
+            if topic_unlocked and diff_name in ["easy", "medium"]:
+                if unlocked and not completed and active_step is None:
+                    is_current = True
+                    active_step = {
+                        "chapter_id": ch_id,
+                        "chapter_title": ch["title"],
+                        "difficulty": diff_name,
+                        "difficulty_label": DIFFICULTY_LABELS.get(diff_name, diff_name)
+                    }
                 
             difficulties_state.append({
                 "name": diff_name,
@@ -372,17 +376,35 @@ def build_progression_state(user_id: str, db: Session) -> Dict[str, Any]:
             })
             
         completed_count = sum(1 for d in difficulties_state if d["completed"])
+        guided_completed = (ch_id, "easy") in completed_pairs and (ch_id, "medium") in completed_pairs
         topic_states.append({
             "id": ch_id,
             "title": ch["title"],
             "order": ch["order"],
             "description": ch["description"],
             "unlocked": topic_unlocked,
+            "guided_completed": guided_completed,
             "completed": completed_count == len(DIFFICULTY_ORDER),
             "completed_count": completed_count,
             "total_count": len(DIFFICULTY_ORDER),
             "difficulties": difficulties_state
         })
+
+    # Si tous les paliers Facile et Intermédiaire de tous les chapitres sont validés, cibler le premier Avancé/Expert débloqué
+    if active_step is None:
+        for t in topic_states:
+            for d in t["difficulties"]:
+                if d["unlocked"] and not d["completed"]:
+                    d["current"] = True
+                    active_step = {
+                        "chapter_id": t["id"],
+                        "chapter_title": t["title"],
+                        "difficulty": d["name"],
+                        "difficulty_label": d["label"]
+                    }
+                    break
+            if active_step:
+                break
         
     return {
         "topics": topic_states,

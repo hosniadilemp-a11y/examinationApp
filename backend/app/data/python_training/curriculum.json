@@ -5919,7 +5919,7 @@
           ]
         },
         {
-          "id": 10006,
+          "id": 21006,
           "Exams": false,
           "type": "simple_blank",
           "topic": "Python Data Types",
@@ -5931,7 +5931,7 @@
           "penalty": 0.0
         },
         {
-          "id": 10007,
+          "id": 21007,
           "Exams": false,
           "type": "intruder",
           "topic": "Python Data Types",
@@ -5948,7 +5948,7 @@
           "penalty": 0.25
         },
         {
-          "id": 10008,
+          "id": 21008,
           "Exams": false,
           "type": "matching",
           "topic": "Python Data Types",
@@ -5963,7 +5963,7 @@
           "penalty": 0.0
         },
         {
-          "id": 10009,
+          "id": 21009,
           "Exams": false,
           "type": "simple_blank",
           "topic": "Python Data Types",
@@ -5975,7 +5975,7 @@
           "penalty": 0.0
         },
         {
-          "id": 10010,
+          "id": 21010,
           "Exams": true,
           "type": "intruder",
           "topic": "Python Data Types",

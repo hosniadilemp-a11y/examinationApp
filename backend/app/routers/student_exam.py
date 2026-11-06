@@ -371,6 +371,24 @@ def save_student_answer(
     elapsed_seconds = int((now - start_time).total_seconds())
     remaining_seconds = max(0, total_seconds - elapsed_seconds)
 
+    if remaining_seconds <= 0:
+        attempt.status = "timed_out"
+        if not attempt.submitted_at:
+            attempt.submitted_at = now
+        db.commit()
+        return {
+            "status": "timed_out",
+            "session_status": attempt.session.status if attempt.session else "unknown",
+            "timed_out": True,
+            "message": "Le temps imparti pour cette épreuve est écoulé. Clôture automatique effectuée.",
+            "suspension_remaining_seconds": 0,
+            "remaining_seconds": 0,
+            "server_time_hms": now.strftime("%H:%M:%S"),
+            "server_epoch_ms": int(now.timestamp() * 1000),
+            "final_mark": attempt.final_mark,
+            "raw_score": attempt.raw_score
+        }
+
     return {
         "success": True, 
         "saved_at": now.isoformat(),
@@ -495,6 +513,24 @@ def check_attempt_status(
     total_seconds = exam.duration_minutes * 60 if exam else 3600
     elapsed_seconds = int((now - start_time).total_seconds())
     remaining_seconds = max(0, total_seconds - elapsed_seconds)
+
+    if remaining_seconds <= 0:
+        attempt.status = "timed_out"
+        if not attempt.submitted_at:
+            attempt.submitted_at = now
+        db.commit()
+        return {
+            "status": "timed_out",
+            "session_status": attempt.session.status if attempt.session else "unknown",
+            "timed_out": True,
+            "message": "Le temps imparti pour cette épreuve est écoulé. Clôture automatique effectuée.",
+            "suspension_remaining_seconds": 0,
+            "remaining_seconds": 0,
+            "server_time_hms": now.strftime("%H:%M:%S"),
+            "server_epoch_ms": int(now.timestamp() * 1000),
+            "final_mark": attempt.final_mark,
+            "raw_score": attempt.raw_score
+        }
 
     return {
         "status": attempt.status,

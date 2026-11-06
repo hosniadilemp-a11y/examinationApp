@@ -49,13 +49,16 @@ export class ExamRunner {
     if (!viewExam) return;
 
     let savedScale = parseFloat(localStorage.getItem('exam_font_scale')) || 1.0;
-    if (savedScale < 0.85 || savedScale > 1.45) savedScale = 1.0;
+    if (savedScale < 0.85 || savedScale > 1.5) savedScale = 1.0;
 
     const applyScale = (s) => {
       savedScale = Math.round(s * 100) / 100;
       viewExam.style.setProperty('--exam-font-scale', savedScale);
       try { localStorage.setItem('exam_font_scale', savedScale); } catch (_) {}
       if (labelScale) labelScale.textContent = `${Math.round(savedScale * 100)}%`;
+      if (this.editor && this.editor.refresh) {
+        try { this.editor.refresh(); } catch (_) {}
+      }
     };
 
     applyScale(savedScale);
@@ -67,7 +70,7 @@ export class ExamRunner {
     }
     if (btnIncrease) {
       btnIncrease.onclick = () => {
-        if (savedScale < 1.4) applyScale(savedScale + 0.1);
+        if (savedScale < 1.45) applyScale(savedScale + 0.1);
       };
     }
     if (btnReset) {
@@ -172,10 +175,43 @@ export class ExamRunner {
   }
 
   async _autoSubmitOnTimeout() {
-    if (typeof window.showToast === 'function') {
-      window.showToast("Le temps imparti pour cette épreuve est écoulé. Soumission automatique de vos réponses.", "warning", 5000);
+    this.stop();
+    if (this._isSubmitting) return;
+    this._isSubmitting = true;
+
+    // Verrouillage visuel immédiat complet de l'interface d'examen
+    let overlay = document.getElementById('exam-timeout-lock-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'exam-timeout-lock-overlay';
+      overlay.style.cssText = `
+        position: fixed; inset: 0; background: rgba(10, 15, 29, 0.96);
+        z-index: 100000; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center;
+        padding: 30px; color: #f8fafc; font-family: inherit;
+      `;
+      overlay.innerHTML = `
+        <div style="font-size: 3.5rem; margin-bottom: 16px;">⏱️</div>
+        <h2 style="font-size: 1.85rem; color: #f59e0b; margin-bottom: 12px; font-weight: 800;">Temps Imparti Écoulé</h2>
+        <p style="font-size: 1.1rem; color: #cbd5e1; max-width: 580px; line-height: 1.6; margin-bottom: 24px;">
+          L'épreuve est terminée. Vos réponses ont été scellées et votre copie est clôturée immédiatement.
+        </p>
+        <div style="display: flex; align-items: center; gap: 12px; color: #93c5fd; font-weight: 600;">
+          <div class="spinner" style="border-top-color: #3b82f6; width: 24px; height: 24px;"></div>
+          <span>Transmission finale et notation de votre copie...</span>
+        </div>
+      `;
+      document.body.appendChild(overlay);
     }
-    await this.submit();
+
+    try {
+      await this.submit();
+    } catch (err) {
+      console.error("Erreur lors de la clôture sur expiration:", err);
+    } finally {
+      const el = document.getElementById('exam-timeout-lock-overlay');
+      if (el) el.remove();
+    }
   }
 
   render() {
@@ -1986,6 +2022,8 @@ Tapez vos commandes directement dans l'invite ci-dessous ou cliquez sur ▶️ E
     if (this.antiCheat) {
       this.antiCheat.stop();
     }
+    const overlay = document.getElementById('exam-timeout-lock-overlay');
+    if (overlay) overlay.remove();
 
     if (this.isPracticeMode) {
       if (this.onPracticeSubmit) {

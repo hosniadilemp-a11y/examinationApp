@@ -351,6 +351,61 @@
           </button>
         </div>
 
+        <!-- 0. Synthèse Statistique Personnalisée, Diagnostic des Faiblesses & Tests Recommandés -->
+        <div id="python-analytics-dashboard" class="card" style="margin-bottom: 24px; padding: 20px; background: var(--bg-surface); border: 1px solid var(--card-border); border-radius: var(--radius-md);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+              <span>📊</span> Synthèse Statistique & Diagnostic de Maîtrise Python
+            </h3>
+            <span id="python-analytics-badge" class="badge" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.82rem; padding: 4px 12px; border-radius: 12px;">
+              Chargement des statistiques...
+            </span>
+          </div>
+
+          <!-- 4 Cartes KPI -->
+          <div class="stats-grid" id="python-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            <div class="stat-card" style="padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Sessions Terminées</div>
+              <div class="stat-value" id="python-stat-sessions" style="font-size: 1.6rem; font-weight: 800; color: #38bdf8;">--</div>
+            </div>
+            <div class="stat-card" style="padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Moyenne Générale</div>
+              <div class="stat-value" id="python-stat-avg" style="font-size: 1.6rem; font-weight: 800; color: #34d399;">-- / 20</div>
+            </div>
+            <div class="stat-card" style="padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Taux de Succès (≥ 14)</div>
+              <div class="stat-value" id="python-stat-rate" style="font-size: 1.6rem; font-weight: 800; color: #a78bfa;">-- %</div>
+            </div>
+            <div class="stat-card" style="padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="stat-label" style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Badges XP Conquis</div>
+              <div class="stat-value" id="python-stat-badges" style="font-size: 1.6rem; font-weight: 800; color: #fbbf24;">-- / 68</div>
+            </div>
+          </div>
+
+          <!-- Diagnostic des Faiblesses & Recommandations d'Entraînement -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+            <!-- Colonne 1 : Points Faibles Détectés -->
+            <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 14px 16px;">
+              <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: #fca5a5; display: flex; align-items: center; gap: 6px;">
+                <span>⚠️</span> Points Faibles & Notions à Consolider
+              </h4>
+              <div id="python-weaknesses-list" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+                <span style="color: var(--text-muted);">Aucune faiblesse critique détectée pour le moment.</span>
+              </div>
+            </div>
+
+            <!-- Colonne 2 : Tests à Repasser en Priorité -->
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 14px 16px;">
+              <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: #6ee7b7; display: flex; align-items: center; gap: 6px;">
+                <span>🎯</span> Entraînements Recommandés en Priorité
+              </h4>
+              <div id="python-recommendations-list" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+                <span style="color: var(--text-muted);">Chargement des recommandations...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 1. Deux Grandes Cartes de Sélection : Pratique vs Théorique -->
         <div class="assessment-type-grid">
           <!-- Carte 1 : Laboratoire Pratique -->
@@ -774,6 +829,11 @@
 
     <!-- 5. VUE : TERMINAL D'EXAMEN & TEST DE NIVEAU UNIFIÉ (1 QUESTION / PAGE + CLAVIER) -->
     <main id="view-exam" class="view">
+      <!-- Bannière d'alerte Réseau Spécifique à l'Écran d'Examen (Visible même en Plein Écran HTML5) -->
+      <div id="exam-banner-offline" class="network-banner in-exam-banner" style="display: none;">
+        ⚠️ Connexion au serveur local momentanément interrompue. Vos réponses sont sauvegardées localement. Continuez votre épreuve sans quitter le plein écran.
+      </div>
+
       <div class="exam-layout">
         
         <!-- Colonne Principale : Question Active -->

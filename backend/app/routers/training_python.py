@@ -92,6 +92,145 @@ def get_progression(
         "gamification": gamif
     }
 
+@router.get("/student-analytics")
+def get_student_training_analytics(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Retourne l'analyse statistique complète des entraînements de l'étudiant, ses points faibles et les tests à repasser."""
+    curriculum = load_curriculum()
+    chapters = curriculum.get("chapters", [])
+    ch_dict = {c["id"]: c["title"] for c in chapters}
+    
+    attempts = db.query(TrainingAttempt).filter(
+        TrainingAttempt.user_id == current_user.id
+    ).order_by(TrainingAttempt.created_at.desc()).all()
+    
+    total_sessions = len(attempts)
+    if total_sessions == 0:
+        return {
+            "has_data": False,
+            "total_sessions": 0,
+            "average_mark": 0.0,
+            "success_rate_percent": 0.0,
+            "badges_count": 0,
+            "summary": {
+                "total_sessions": 0,
+                "average_mark": 0.0,
+                "success_rate": 0.0,
+                "best_mark": 0.0,
+                "xp_badges_count": 0,
+                "current_level_title": "Débutant"
+            },
+            "weaknesses": [],
+            "recommendations": [
+                {
+                    "chapter_id": chapters[0]["id"] if chapters else "python_basics",
+                    "chapter_title": chapters[0]["title"] if chapters else "Bases de Python & Syntaxe",
+                    "difficulty": "easy",
+                    "difficulty_label": "Facile",
+                    "reason": "Test de positionnement initial recommandé"
+                }
+            ]
+        }
+        
+    marks = [float(a.final_mark or 0.0) for a in attempts]
+    avg_mark = round(sum(marks) / len(marks), 2)
+    passed_count = sum(1 for a in attempts if float(a.final_mark or 0.0) >= PASSING_MARK)
+    success_rate = round((passed_count / total_sessions) * 100.0, 1)
+    best_mark = round(max(marks), 2) if marks else 0.0
+    
+    gamif = calculate_gamification(current_user.id, db)
+    xp_count = sum(1 for m in gamif.get("all_milestones", []) if m.get("unlocked"))
+    
+    # Agrégation par chapitre
+    chapter_stats = {}
+    for a in attempts:
+        topic = a.target_topic
+        if not topic:
+            try:
+                top_list = json.loads(a.selected_topics_json or "[]")
+                if top_list:
+                    topic = top_list[0]
+            except Exception:
+                pass
+        if not topic:
+            continue
+            
+        if topic not in chapter_stats:
+            chapter_stats[topic] = {
+                "attempts": [],
+                "latest_mark": float(a.final_mark or 0.0),
+                "latest_diff": a.target_difficulty or "easy",
+                "latest_date": a.created_at.isoformat() if a.created_at else ""
+            }
+        chapter_stats[topic]["attempts"].append(float(a.final_mark or 0.0))
+        
+    weaknesses = []
+    recommendations = []
+    diff_labels = {"easy": "Facile", "medium": "Intermédiaire", "hard": "Avancé", "expert": "Expert"}
+    
+    for ch_id, stats in chapter_stats.items():
+        ch_title = ch_dict.get(ch_id, ch_id)
+        att_marks = stats["attempts"]
+        ch_avg = round(sum(att_marks) / len(att_marks), 2)
+        latest_mark = stats["latest_mark"]
+        latest_diff = stats["latest_diff"]
+        
+        if latest_mark < PASSING_MARK or ch_avg < PASSING_MARK:
+            weaknesses.append({
+                "chapter_id": ch_id,
+                "chapter_title": ch_title,
+                "difficulty": latest_diff,
+                "difficulty_label": diff_labels.get(latest_diff, latest_diff),
+                "average_mark": ch_avg,
+                "avg_score": ch_avg,
+                "latest_mark": latest_mark,
+                "status": "À renforcer" if latest_mark < 10.0 else "Moyen (lacunes)",
+                "attempts_count": len(att_marks)
+            })
+            recommendations.append({
+                "chapter_id": ch_id,
+                "chapter_title": ch_title,
+                "difficulty": latest_diff,
+                "difficulty_label": diff_labels.get(latest_diff, latest_diff),
+                "latest_mark": latest_mark,
+                "reason": f"Dernier score : {latest_mark}/20 (Seuil requis : {PASSING_MARK}/20)"
+            })
+            
+    weaknesses.sort(key=lambda w: w["latest_mark"])
+    recommendations.sort(key=lambda r: r.get("latest_mark", 20))
+    
+    if not recommendations:
+        prog = build_progression_state(current_user.id, db)
+        act = prog.get("active_step")
+        if act:
+            recommendations.append({
+                "chapter_id": act.get("chapter_id"),
+                "chapter_title": act.get("chapter_title"),
+                "difficulty": act.get("difficulty"),
+                "difficulty_label": act.get("difficulty_label"),
+                "reason": "Prochain palier officiel à conquérir dans votre cursus"
+            })
+            
+    return {
+        "has_data": True,
+        "total_sessions": total_sessions,
+        "average_mark": avg_mark,
+        "success_rate_percent": success_rate,
+        "badges_count": xp_count,
+        "summary": {
+            "total_sessions": total_sessions,
+            "average_mark": avg_mark,
+            "success_rate": success_rate,
+            "best_mark": best_mark,
+            "xp_badges_count": xp_count,
+            "current_level_title": gamif.get("level_title", "Pratiquant")
+        },
+        "weaknesses": weaknesses[:4],
+        "recommendations": recommendations[:3]
+    }
+
 @router.get("/chapters", response_model=List[ChapterSummary])
 def get_chapters(
     db: Session = Depends(get_db),
@@ -309,13 +448,20 @@ def submit_training_session(
     prev_gamif = calculate_gamification(current_user.id, db)
     prev_unlocked = set(m["id"] for m in prev_gamif["all_milestones"] if m["unlocked"])
     
-    # Cartographie exhaustive des questions et exercices par ID
+    # Cartographie exhaustive des questions et exercices par ID et clé composite
     all_curriculum_items = {}
     for ch in curriculum.get("chapters", []):
+        ch_id = ch.get("id", "")
         for m in ch.get("mcq_questions", []):
-            all_curriculum_items[str(m["id"])] = (m, ch)
+            qid_str = str(m["id"])
+            all_curriculum_items[qid_str] = (m, ch)
+            if ch_id:
+                all_curriculum_items[f"{ch_id}::{qid_str}"] = (m, ch)
         for c in ch.get("coding_exercises", []):
-            all_curriculum_items[str(c["id"])] = (c, ch)
+            cid_str = str(c["id"])
+            all_curriculum_items[cid_str] = (c, ch)
+            if ch_id:
+                all_curriculum_items[f"{ch_id}::{cid_str}"] = (c, ch)
             
     total_items = len(payload.answers)
     if total_items == 0:
@@ -339,7 +485,10 @@ def submit_training_session(
         user_answer_display = ""
         awarded_pts = 0.0
         
-        item_entry = all_curriculum_items.get(str(ans.id))
+        item_entry = (
+            all_curriculum_items.get(f"{topic}::{ans.id}")
+            or all_curriculum_items.get(str(ans.id))
+        )
         if not item_entry:
             detailed_feedback.append({
                 "id": ans.id,
