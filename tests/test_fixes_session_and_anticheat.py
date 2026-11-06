@@ -51,17 +51,26 @@ def test_proctor_overview_total_questions_and_anticheat_suspension():
         assert len(exam.questions) == 40
         assert "CONFIG_RANDOM_STUDENT_QUESTIONS=20" in exam.instructions
 
-        # Get or create an exam session
-        session = db.query(ExamSession).filter(ExamSession.exam_id == exam.id).first()
+        # Ensure we have an active in_progress session with fresh started_at
+        session = db.query(ExamSession).filter(ExamSession.exam_id == exam.id, ExamSession.status == "in_progress").first()
         if not session:
             session = ExamSession(
-                id="SESS-TEST-FIX",
+                id=f"SESS-TEST-FIX-{int(datetime.now().timestamp())}",
                 exam_id=exam.id,
                 room_id="SALLE-TEST",
                 status="in_progress",
                 started_at=datetime.now(timezone.utc)
             )
             db.add(session)
+            db.commit()
+        else:
+            session.started_at = datetime.now(timezone.utc)
+            db.commit()
+
+        # Delete any previous attempt for etu_dev1
+        etu = db.query(User).filter(User.username == "etu_dev1").first()
+        if etu:
+            db.query(StudentAttempt).filter(StudentAttempt.student_id == etu.id).delete()
             db.commit()
 
         # Login as teacher

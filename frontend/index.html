@@ -829,11 +829,6 @@
 
     <!-- 5. VUE : TERMINAL D'EXAMEN & TEST DE NIVEAU UNIFIÉ (1 QUESTION / PAGE + CLAVIER) -->
     <main id="view-exam" class="view">
-      <!-- Bannière d'alerte Réseau Spécifique à l'Écran d'Examen (Visible même en Plein Écran HTML5) -->
-      <div id="exam-banner-offline" class="network-banner in-exam-banner" style="display: none;">
-        ⚠️ Connexion au serveur local momentanément interrompue. Vos réponses sont sauvegardées localement. Continuez votre épreuve sans quitter le plein écran.
-      </div>
-
       <div class="exam-layout">
         
         <!-- Colonne Principale : Question Active -->
@@ -1042,7 +1037,7 @@
 
     <!-- NOUVELLE VUE : SALLE DE SURVEILLANCE & MONITORING EN DIRECT (REV-16) -->
     <main id="view-proctor-live" class="view">
-      <div class="dashboard-container" style="max-width: 1240px; padding: 24px;">
+      <div class="proctor-live-container" style="width: 100%; max-width: 100%; padding: 20px 32px; margin: 0; text-align: left;">
         <!-- Header Proctoring -->
         <div class="proctor-header-box" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; background:var(--bg-surface); padding:18px 24px; border-radius:var(--radius-lg); border:1px solid var(--card-border); margin-bottom:20px;">
           <div>
@@ -1093,6 +1088,45 @@
           </div>
         </div>
 
+        <!-- Synthèse Statistique Supérieure en Temps Réel -->
+        <div class="proctor-stats-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px;">
+          <!-- 1. Postes Connectés -->
+          <div class="kpi-card" style="background:var(--bg-surface); border:1px solid rgba(16,185,129,0.3); border-radius:var(--radius-md); padding:14px 18px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:1.8rem; background:rgba(16,185,129,0.15); width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center;">🟢</div>
+            <div>
+              <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Connectés (En Ligne)</div>
+              <div id="proctor-kpi-connected" style="font-size:1.45rem; font-weight:800; color:#34d399;">0</div>
+            </div>
+          </div>
+          <!-- 2. Postes Non Connectés -->
+          <div class="kpi-card" style="background:var(--bg-surface); border:1px solid rgba(100,116,139,0.3); border-radius:var(--radius-md); padding:14px 18px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:1.8rem; background:rgba(100,116,139,0.15); width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center;">⚪</div>
+            <div>
+              <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Non Connectés (Absents)</div>
+              <div id="proctor-kpi-not-connected" style="font-size:1.45rem; font-weight:800; color:#94a3b8;">0</div>
+            </div>
+          </div>
+          <!-- 3. Copies Terminées / Rendues -->
+          <div class="kpi-card" style="background:var(--bg-surface); border:1px solid rgba(168,85,247,0.3); border-radius:var(--radius-md); padding:14px 18px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:1.8rem; background:rgba(168,85,247,0.15); width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center;">🟣</div>
+            <div>
+              <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Copies Terminées</div>
+              <div id="proctor-kpi-finished" style="font-size:1.45rem; font-weight:800; color:#c084fc;">0</div>
+            </div>
+          </div>
+          <!-- 4. Progression Moyenne de la Salle -->
+          <div class="kpi-card" style="background:var(--bg-surface); border:1px solid rgba(59,130,246,0.3); border-radius:var(--radius-md); padding:14px 18px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:1.8rem; background:rgba(59,130,246,0.15); width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center;">📈</div>
+            <div style="flex:1;">
+              <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Progression Moyenne</div>
+              <div style="display:flex; align-items:baseline; gap:8px;">
+                <span id="proctor-kpi-progress-avg" style="font-size:1.45rem; font-weight:800; color:#60a5fa;">0%</span>
+                <span id="proctor-kpi-progress-detail" style="font-size:0.78rem; color:var(--text-secondary);">(0 / 0 rép.)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Tableau des Postes Candidats (REV-26) -->
         <div style="margin-bottom:24px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -1105,12 +1139,13 @@
           <div class="proctor-table-container" style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); overflow-x:auto;">
             <table class="proctor-table" id="proctor-candidates-table" style="width:100%; border-collapse:separate; border-spacing:0; text-align:left;">
               <thead>
-                <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); font-size:0.82rem; color:var(--text-secondary);">
-                  <th style="padding:12px 16px;">Poste / Candidat</th>
-                  <th style="padding:12px 16px;">Statut</th>
-                  <th style="padding:12px 16px;">Progression</th>
-                  <th style="padding:12px 16px;">Alertes Anti-Triche</th>
-                  <th style="padding:12px 16px;">Dernière Activité</th>
+                <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.03); font-size:0.84rem; color:var(--text-secondary); user-select:none;">
+                  <th class="proctor-sort-th" data-col="name" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par nom">Poste / Candidat <span class="sort-icon" id="proctor-sort-icon-name">▲</span></th>
+                  <th class="proctor-sort-th" data-col="status" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par statut">Statut <span class="sort-icon" id="proctor-sort-icon-status">⇅</span></th>
+                  <th class="proctor-sort-th" data-col="progress" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par progression">Progression <span class="sort-icon" id="proctor-sort-icon-progress">⇅</span></th>
+                  <th class="proctor-sort-th" data-col="alerts" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par nombre d'alertes">Alertes Anti-Triche <span class="sort-icon" id="proctor-sort-icon-alerts">⇅</span></th>
+                  <th class="proctor-sort-th" data-col="activity" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par connectivité">Activité / Connexion <span class="sort-icon" id="proctor-sort-icon-activity">⇅</span></th>
+                  <th class="proctor-sort-th" data-col="mark" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par note">Note Finale <span class="sort-icon" id="proctor-sort-icon-mark">⇅</span></th>
                   <th style="padding:12px 16px; text-align:right;">Actions</th>
                 </tr>
               </thead>
@@ -2457,9 +2492,14 @@
         Pour garantir l'intégrité de l'épreuve officielle, l'examen ne peut se poursuivre qu'en <strong>mode Plein Écran</strong>.<br/>
         L'affichage est temporairement masqué pour empêcher toute consultation tierce.
       </p>
-      <button id="btn-restore-fullscreen" class="btn btn-primary" style="padding: 12px 28px; font-size: 1.05rem; font-weight: 700; background: #ef4444; border-color: #dc2626;">
-        ⛶ Réactiver le Plein Écran Immédiatement
-      </button>
+      <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:14px;">
+        <button id="btn-restore-fullscreen" class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem; font-weight: 700; background: #3b82f6; border-color: #2563eb;">
+          ⛶ Réactiver le Plein Écran
+        </button>
+        <button id="btn-continue-windowed" class="btn btn-secondary" style="padding: 12px 20px; font-size: 0.95rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">
+          Continuer en mode fenêtré
+        </button>
+      </div>
     </div>
   </div>
 

@@ -120,12 +120,7 @@ export class AntiCheatManager {
     const elem = document.documentElement;
     const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? Promise.resolve(elem.webkitRequestFullscreen()) : null);
     if (p && p.then) {
-      p.then(() => {
-        // Verrouille la touche Échap en mode plein écran (Chromium Keyboard Lock API)
-        if (navigator.keyboard && navigator.keyboard.lock) {
-          navigator.keyboard.lock(['Escape']).catch(() => {});
-        }
-      }).catch(() => {});
+      p.catch(() => {});
     }
   }
 
@@ -170,7 +165,20 @@ export class AntiCheatManager {
     const waitingView = document.getElementById('view-waiting-room');
     const overlayFs = document.getElementById('overlay-fullscreen-required');
 
+    // En mode entraînement / révision libre : l'étudiant est totalement libre de quitter le plein écran
+    if (this.isPracticeMode) {
+      if (overlayFs) overlayFs.classList.remove('active');
+      if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
+      if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
+      return;
+    }
+
     if (!isFull && !this.isSuspended) {
+      if (this.allowWindowed) {
+        // L'étudiant a explicitement choisi de continuer en mode fenêtré
+        return;
+      }
+
       // REV-27 / REV-34 : Flou d'obstruction immédiat et affichage du panneau bloquant
       if (examView) examView.classList.add('exam-fullscreen-lost-blurred');
       if (waitingView) waitingView.classList.add('exam-fullscreen-lost-blurred');
@@ -178,27 +186,33 @@ export class AntiCheatManager {
         overlayFs.classList.add('active');
         const btnRestore = document.getElementById('btn-restore-fullscreen');
         if (btnRestore) {
-          btnRestore.onclick = () => this.requestFullscreen();
+          btnRestore.onclick = () => {
+            this.allowWindowed = false;
+            this.requestFullscreen();
+          };
+        }
+        const btnWindowed = document.getElementById('btn-continue-windowed');
+        if (btnWindowed) {
+          btnWindowed.onclick = () => {
+            this.allowWindowed = true;
+            if (overlayFs) overlayFs.classList.remove('active');
+            if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
+            if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
+            this._stopAwayCountdown();
+          };
         }
       }
 
       this._registerWarning("Sortie du mode plein écran détectée.");
-      if (this.isPracticeMode) {
-        this._startPracticeFullscreenCountdown();
-      } else {
-        this._startAwayCountdown("Sortie du mode plein écran détectée.");
-      }
+      this._startAwayCountdown("Sortie du mode plein écran détectée.");
     } else if (isFull && !this.isSuspended) {
+      this.allowWindowed = false;
       // Rétablissement du plein écran : lever le flou
       if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
       if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
       if (overlayFs) overlayFs.classList.remove('active');
 
-      if (this.isPracticeMode) {
-        this._stopPracticeFullscreenCountdown();
-      } else {
-        this._stopAwayCountdown();
-      }
+      this._stopAwayCountdown();
     }
   }
 

@@ -16,6 +16,7 @@ from backend.app.services.training_service import get_level, get_level_title
 from backend.app.services.sandbox_runner import execute_user_code_against_tests, execute_user_code_with_input
 from backend.app.services.websocket_manager import ws_manager
 from backend.app.dependencies import get_current_user
+from backend.app.routers.proctor import auto_close_all_expired_sessions
 
 router = APIRouter(prefix="/api/student", tags=["Interface d'Examen Étudiant"])
 
@@ -32,6 +33,8 @@ def get_available_exams(
         
     if not current_user.group_id:
         return []
+
+    auto_close_all_expired_sessions(db)
 
     # Examens affectés au groupe de l'étudiant
     exams = db.query(Exam).filter(Exam.groups.any(id=current_user.group_id)).all()

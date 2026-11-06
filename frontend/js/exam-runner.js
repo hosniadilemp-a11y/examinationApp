@@ -697,7 +697,7 @@ export class ExamRunner {
                 </div>
               </div>
               <h2 style="font-size:1.4rem; font-weight:700; margin:0 0 10px 0; color:var(--text-primary); line-height:1.3;">
-                ${this._escapeHtml(topicClean || 'Défi Python')}
+                ${this._escapeHtml(q.title || topicClean || 'Défi Python')}
               </h2>
               <div class="problem-meta" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                 ${topicBadgeHtml}
@@ -706,8 +706,42 @@ export class ExamRunner {
               </div>
             </div>
 
-            <div id="problem-description" class="markdown-body" style="flex:1; overflow-y:auto; line-height:1.75; font-size:1.05rem; color:#e2e8f0;">
-              ${promptHtml}
+            <div id="problem-description" class="markdown-body" style="flex:1; overflow-y:auto; line-height:1.75; font-size:1.05rem; color:#e2e8f0; padding-right:8px;">
+              <div class="problem-statement-body" style="font-size:1.05rem; line-height:1.75; margin-bottom:20px; color:#f1f5f9;">
+                ${promptHtml}
+              </div>
+
+              <!-- Exemples d'Exécution & Tests Publics Structurés -->
+              ${validPublicTests && validPublicTests.length > 0 ? `
+                <div class="problem-examples-section" style="margin-top:22px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.12);">
+                  <div style="font-size:0.95rem; font-weight:700; color:#93c5fd; display:flex; align-items:center; gap:8px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.04em;">
+                    <span>📋 Exemples de Validation (E/S)</span>
+                  </div>
+                  ${validPublicTests.map((t, idx) => `
+                    <div class="sample-test-card" style="background:#090e1a; border:1px solid rgba(59,130,246,0.22); border-radius:8px; padding:14px; margin-bottom:12px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:700; font-size:0.88rem; color:#60a5fa;">Exemple #${idx + 1}${t.name ? ` : ${this._escapeHtml(t.name)}` : ''}</span>
+                        ${t.description ? `<span style="font-size:0.78rem; color:var(--text-muted);">${this._escapeHtml(t.description)}</span>` : ''}
+                      </div>
+                      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:10px 12px;">
+                          <div style="font-size:0.72rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>Entrée (stdin)</span>
+                            <button type="button" class="btn-copy-io" data-copy="${this._escapeHtml(t.input !== undefined ? String(t.input) : '')}" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:0.75rem; padding:0;">📋 Copier</button>
+                          </div>
+                          <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:#cbd5e1; white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.input !== undefined && t.input !== '' ? String(t.input) : '(Aucune entrée)')}</pre>
+                        </div>
+                        <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:10px 12px;">
+                          <div style="font-size:0.72rem; text-transform:uppercase; color:#34d399; font-weight:700; margin-bottom:4px;">
+                            <span>Sortie Attendue (stdout)</span>
+                          </div>
+                          <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:#a7f3d0; white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.expected_output !== undefined ? String(t.expected_output) : '')}</pre>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
 
             ${hasHints ? `
@@ -729,13 +763,14 @@ export class ExamRunner {
           <!-- RIGHT PANE: Code Editor & Bottom Console/Tests -->
           <div class="editor-pane" style="width:calc(56% - 5px); flex:1; display:flex; flex-direction:column; background:#0a0f1d; overflow:hidden;">
             <!-- Top Toolbar -->
-            <div class="editor-toolbar" style="padding:10px 16px; background:#070b14; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px;">
+            <div class="editor-toolbar" style="padding:10px 16px; background:#070b14; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <button id="undo-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Annuler (Ctrl+Z)">↩️</button>
               <button id="redo-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Refaire (Ctrl+Y)">↪️</button>
               <div class="toolbar-separator" style="width:1px; height:20px; background:rgba(255,255,255,0.15); margin:0 4px;"></div>
               <button id="comment-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Commenter (Ctrl+/)">💬</button>
               <button id="reset-template-btn" class="toolbar-btn" style="padding:6px 12px; font-size:1.05rem; border-radius:6px;" title="Réinitialiser le code">🔄</button>
               <div class="toolbar-separator" style="width:1px; height:20px; background:rgba(255,255,255,0.15); margin:0 4px;"></div>
+              <button id="btn-toggle-intellisense" class="toolbar-btn" style="padding:5px 12px; font-size:0.85rem; font-weight:600; border-radius:6px; background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); cursor:pointer;" title="Activer / Désactiver les suggestions automatiques (Ctrl+Space reste disponible)">💡 Suggestions : ON</button>
               <span style="font-size:0.95rem; font-weight:600; color:var(--text-secondary);">🐍 Python 3</span>
               <div id="coding-status-indicator" style="margin-left:auto; font-size:0.92rem; color:#10b981; font-weight:600; display:flex; align-items:center; gap:6px;">
                 <span class="status-pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span> Prêt
@@ -1038,15 +1073,17 @@ export class ExamRunner {
           "Ctrl-Space": (cm) => {
             const hintFn = (window.CodeMirror && window.CodeMirror.hint && window.CodeMirror.hint.python) || null;
             if (typeof cm.showHint === 'function') {
+              cm._userDismissedHint = false;
               cm.showHint({ hint: hintFn, completeSingle: false });
             }
           },
           "Esc": (cm) => {
+            cm._userDismissedHint = true;
             if (cm.state.completionActive) {
-              cm.state.completionActive.close();
+              try { cm.state.completionActive.close(); } catch (_) {}
             }
-            const hints = document.querySelector('.CodeMirror-hints-container, .CodeMirror-hints');
-            if (hints) hints.remove();
+            const hints = document.querySelectorAll('.CodeMirror-hints-container, .CodeMirror-hints');
+            hints.forEach(el => { try { el.remove(); } catch (_) {} });
           },
           "Tab": (cm) => {
             if (cm.somethingSelected()) {
@@ -1064,30 +1101,38 @@ export class ExamRunner {
       const cmWrapper = cmInstance.getWrapperElement();
       if (cmWrapper) cmWrapper.style.fontSize = `${currentFontSize}px`;
 
-      // IntelliSense Python Autocomplete automatique à la frappe (sur '.' ou mot >= 2 car.)
+      // IntelliSense Python Autocomplete automatique à la frappe
       cmInstance.on('inputRead', (cm, change) => {
         if (change.origin !== '+input') return;
         const text = change.text[0];
         
-        // Fermeture immédiate si l'utilisateur appuie sur espace ou ponctuation isolée
-        if (!text || text === ' ' || text === '\n' || text === '\t' || text === ':' || text === '(' || text === ')' || text === ',') {
+        // Fermeture immédiate et réinitialisation du dismiss si espace, saut de ligne ou séparateurs
+        if (!text || text === ' ' || text === '\n' || text === '\t' || text === ':' || text === '(' || text === ')' || text === ',' || text === '[' || text === ']' || text === '{' || text === '}') {
+          cm._userDismissedHint = false;
           if (cm.state.completionActive) {
             try { cm.state.completionActive.close(); } catch (_) {}
           }
-          const hints = document.querySelector('.CodeMirror-hints-container, .CodeMirror-hints');
-          if (hints) hints.remove();
+          const hints = document.querySelectorAll('.CodeMirror-hints-container, .CodeMirror-hints');
+          hints.forEach(el => { try { el.remove(); } catch (_) {} });
           return;
         }
-        
+
+        // Si l'utilisateur a désactivé les suggestions automatiques via la barre d'outils
+        if (window._intellisenseDisabled) return;
+
+        // Si l'utilisateur a explicitement appuyé sur Échap pour cette séquence de frappe
+        if (cm._userDismissedHint && text !== '.') return;
+
         let shouldTrigger = false;
         if (text === '.') {
+          cm._userDismissedHint = false;
           shouldTrigger = true;
         } else if (/[a-zA-Z_]/.test(text)) {
           const cur = cm.getCursor();
           const line = cm.getLine(cur.line);
           const before = line.slice(0, cur.ch);
           const match = before.match(/[a-zA-Z_0-9]+$/);
-          if (match && match[0].length >= 2) {
+          if (match && match[0].length >= 3) {
             shouldTrigger = true;
           }
         }
@@ -1186,6 +1231,49 @@ export class ExamRunner {
         }
       };
     }
+
+    // Contrôle d'activation/désactivation du mode IntelliSense automatique
+    const btnIntelli = document.getElementById('btn-toggle-intellisense');
+    if (btnIntelli) {
+      if (window._intellisenseDisabled === undefined) {
+        window._intellisenseDisabled = (localStorage.getItem('intellisense_disabled') === 'true');
+      }
+      const updateIntelliBtn = () => {
+        const disabled = !!window._intellisenseDisabled;
+        btnIntelli.textContent = disabled ? '💡 Suggestions : OFF' : '💡 Suggestions : ON';
+        btnIntelli.style.background = disabled ? 'rgba(100,116,139,0.15)' : 'rgba(59,130,246,0.15)';
+        btnIntelli.style.color = disabled ? '#94a3b8' : '#93c5fd';
+        btnIntelli.style.borderColor = disabled ? 'rgba(100,116,139,0.3)' : 'rgba(59,130,246,0.3)';
+      };
+      updateIntelliBtn();
+      btnIntelli.onclick = () => {
+        window._intellisenseDisabled = !window._intellisenseDisabled;
+        try { localStorage.setItem('intellisense_disabled', window._intellisenseDisabled ? 'true' : 'false'); } catch (_) {}
+        updateIntelliBtn();
+        if (window._intellisenseDisabled && cmInstance) {
+          if (cmInstance.state.completionActive) {
+            try { cmInstance.state.completionActive.close(); } catch (_) {}
+          }
+          const hints = document.querySelectorAll('.CodeMirror-hints-container, .CodeMirror-hints');
+          hints.forEach(el => { try { el.remove(); } catch (_) {} });
+        }
+      };
+    }
+
+    // Gestion du bouton de copie des exemples d'entrée (stdin)
+    container.querySelectorAll('.btn-copy-io').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const textToCopy = btn.getAttribute('data-copy');
+        if (textToCopy !== null && textToCopy !== undefined) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            const original = btn.textContent;
+            btn.textContent = '✅ Copié !';
+            setTimeout(() => { btn.textContent = original; }, 1500);
+          }).catch(() => {});
+        }
+      };
+    });
 
     // 7. Exécuter avec Entrée (stdin)
     const runStdinBtn = document.getElementById('run-stdin-btn');

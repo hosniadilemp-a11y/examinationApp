@@ -50,14 +50,27 @@
 
   Completion.prototype = {
     close: function() {
-      if (!this.active()) return;
-      this.cm.state.completionActive = null;
+      if (this.widget) {
+        try { this.widget.close(); } catch (_) {}
+      }
+      if (this.cm && this.cm.state && this.cm.state.completionActive === this) {
+        this.cm.state.completionActive = null;
+      }
       this.tick = null;
-      this.cm.off("cursorActivity", this.activityFunc);
-      if (this.blurFunc) this.cm.off("blur", this.blurFunc);
+      if (this.cm && this.activityFunc) {
+        try { this.cm.off("cursorActivity", this.activityFunc); } catch (_) {}
+      }
+      if (this.cm && this.blurFunc) {
+        try { this.cm.off("blur", this.blurFunc); } catch (_) {}
+      }
+      try {
+        CodeMirror.signal(this.cm, "endCompletion", this.cm);
+      } catch (_) {}
 
-      if (this.widget) this.widget.close();
-      CodeMirror.signal(this.cm, "endCompletion", this.cm);
+      var orphans = document.querySelectorAll(".CodeMirror-hints-container, .CodeMirror-hints");
+      for (var k = 0; k < orphans.length; k++) {
+        try { orphans[k].remove(); } catch (_) {}
+      }
     },
 
     active: function() {
@@ -257,6 +270,10 @@
       },
       Esc: function() { 
         widget.completion.close(); 
+        var orphans = document.querySelectorAll(".CodeMirror-hints-container, .CodeMirror-hints");
+        for (var k = 0; k < orphans.length; k++) {
+          try { orphans[k].remove(); } catch (_) {}
+        }
         return false;
       }
     };

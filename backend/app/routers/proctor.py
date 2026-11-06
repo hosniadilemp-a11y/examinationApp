@@ -17,7 +17,77 @@ from backend.app.dependencies import get_current_user, require_teacher_or_admin
 
 router = APIRouter(prefix="/api/proctor", tags=["Surveillance & Proctoring Enseignant"])
 
-# --- Endpoints REST Proctoring ---
+# --- Endpoints REST Proctoring & Clôture Automatique ---
+
+def auto_close_session_if_expired(session: ExamSession, db: Session, now: datetime = None) -> bool:
+    """
+    Vérifie si la durée impartie pour une session est écoulée.
+    Si oui, clôture automatiquement la session et évalue toutes les copies non soumises.
+    Retourne True si la session a été clôturée, False sinon.
+    """
+    if not session or session.status != "in_progress" or not session.started_at:
+        return False
+        
+    if now is None:
+        now = datetime.now(timezone.utc)
+        
+    s_time = session.started_at
+    if s_time.tzinfo is None:
+        s_time = s_time.replace(tzinfo=timezone.utc)
+        
+    exam = session.exam
+    duration_sec = (exam.duration_minutes if exam else 60) * 60
+    elapsed_sec = int((now - s_time).total_seconds())
+    
+    if elapsed_sec < duration_sec:
+        return False
+        
+    session.status = "completed"
+    session.ended_at = now
+    
+    questions = exam.questions if exam else []
+    total_possible = sum(q.points for q in questions)
+    
+    for att in session.attempts:
+        if att.status in ["in_progress", "suspended", "waiting"]:
+            answers = {a.question_id: a for a in att.answers}
+            total_awarded = 0.0
+            for q in questions:
+                ans_record = answers.get(q.id)
+                u_ans = json.loads(ans_record.answer_payload_json) if ans_record and ans_record.answer_payload_json else None
+                c_ans = json.loads(q.correct_answers_json) if isinstance(q.correct_answers_json, str) else q.correct_answers_json
+                awarded, is_corr, _ = evaluate_answer(
+                    q_type=q.type,
+                    user_answer=u_ans,
+                    correct_answers=c_ans,
+                    points=q.points,
+                    negative_penalty=q.negative_penalty
+                )
+                total_awarded += awarded
+                if ans_record:
+                    ans_record.is_correct = is_corr
+                    ans_record.awarded_points = awarded
+                    
+            final_mark = round((total_awarded / total_possible) * exam.global_points, 2) if total_possible > 0 else 0.0
+            att.status = "submitted"
+            att.submitted_at = now
+            att.raw_score = round(total_awarded, 2)
+            att.final_mark = final_mark
+            
+    db.commit()
+    return True
+
+def auto_close_all_expired_sessions(db: Session) -> int:
+    """
+    Scanne et clôture toutes les sessions actives en cours dont le temps est écoulé.
+    """
+    now = datetime.now(timezone.utc)
+    in_prog_sessions = db.query(ExamSession).filter(ExamSession.status == "in_progress").all()
+    closed_count = 0
+    for s in in_prog_sessions:
+        if auto_close_session_if_expired(s, db, now):
+            closed_count += 1
+    return closed_count
 
 @router.get("/sessions")
 def list_proctor_sessions(
@@ -26,6 +96,7 @@ def list_proctor_sessions(
     current_user: User = Depends(require_teacher_or_admin)
 ):
     """Liste les sessions d'examen actives ou planifiées en salle."""
+    auto_close_all_expired_sessions(db)
     query = db.query(ExamSession).order_by(ExamSession.started_at.desc())
     if room_id:
         query = query.filter(ExamSession.room_id == room_id)
@@ -124,6 +195,7 @@ def get_session_proctor_overview(
             total_questions = 5
 
     now = datetime.now(timezone.utc)
+    auto_close_session_if_expired(session, db, now)
     
     attempt_by_student = {att.student_id: att for att in session.attempts}
     enrolled_students = []

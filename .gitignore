@@ -24,6 +24,12 @@ venv.bak/
 *.sqlite
 *.sqlite3
 
+# Test-generated image outputs
+*.png
+*.jpg
+*.jpeg
+*.csv.tmp
+
 # Environment secrets (use .env.example as template)
 .env
 

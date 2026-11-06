@@ -15,6 +15,7 @@ from backend.app.schemas import (
 )
 from backend.app.dependencies import get_current_user, require_teacher_or_admin
 from backend.app.services.item_analysis import calculate_exam_item_analysis, generate_item_analysis_csv
+from backend.app.routers.proctor import auto_close_all_expired_sessions
 
 router = APIRouter(prefix="/api/exams", tags=["Gestion des Examens & Questions"])
 
@@ -37,6 +38,7 @@ def list_exams(
     current_user: User = Depends(get_current_user)
 ):
     """Liste les examens créés (filtrable par module)."""
+    auto_close_all_expired_sessions(db)
     query = db.query(Exam)
     if module_code:
         query = query.filter(Exam.module_code == module_code.upper())

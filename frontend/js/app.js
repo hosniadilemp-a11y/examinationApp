@@ -3481,6 +3481,7 @@ class AppController {
     const enrEl = document.getElementById('proctor-enrolled-count');
     if (enrEl) enrEl.textContent = data.total_enrolled;
 
+    this.lastProctorData = data;
     this._proctorSessionStatus = data.status;
     if (data.session_remaining_seconds !== undefined) {
       this._proctorRemainingSeconds = data.session_remaining_seconds;
@@ -3537,10 +3538,106 @@ class AppController {
     const cardsContainer = document.getElementById('proctor-students-grid');
     if (!tableBody && !cardsContainer) return;
 
-    const cards = data.student_cards || [];
-    const connectedCount = cards.filter(c => c.status !== 'not_entered').length;
+    const rawCards = data.student_cards || [];
+    const connectedCount = rawCards.filter(c => c.is_online || c.status === 'in_progress').length;
+    const notConnectedCount = rawCards.filter(c => c.status === 'not_entered' || (!c.is_online && c.status !== 'submitted')).length;
+    const finishedCount = rawCards.filter(c => c.status === 'submitted').length;
+
+    let totalAnsweredAll = 0;
+    let totalQuestionsAll = 0;
+    rawCards.forEach(c => {
+      totalAnsweredAll += (c.answered_count || 0);
+      totalQuestionsAll += (c.total_questions || 0);
+    });
+    const avgProgressPct = totalQuestionsAll > 0 ? Math.round((totalAnsweredAll / totalQuestionsAll) * 100) : 0;
+
+    // Mise à jour des cartes KPI supérieures en temps réel
+    const kpiConn = document.getElementById('proctor-kpi-connected');
+    if (kpiConn) kpiConn.textContent = connectedCount;
+    const kpiNotConn = document.getElementById('proctor-kpi-not-connected');
+    if (kpiNotConn) kpiNotConn.textContent = notConnectedCount;
+    const kpiFin = document.getElementById('proctor-kpi-finished');
+    if (kpiFin) kpiFin.textContent = finishedCount;
+    const kpiAvg = document.getElementById('proctor-kpi-progress-avg');
+    if (kpiAvg) kpiAvg.textContent = `${avgProgressPct}%`;
+    const kpiDetail = document.getElementById('proctor-kpi-progress-detail');
+    if (kpiDetail) kpiDetail.textContent = `(${totalAnsweredAll} / ${totalQuestionsAll} rép.)`;
+
     const statsSummary = document.getElementById('proctor-stats-summary');
-    if (statsSummary) statsSummary.textContent = `${connectedCount} / ${cards.length} postes actifs`;
+    if (statsSummary) statsSummary.textContent = `${connectedCount} connectés / ${rawCards.length} inscrits`;
+
+    // Tri interactif des colonnes de la salle de surveillance
+    this._proctorSortColumn = this._proctorSortColumn || 'name';
+    this._proctorSortDirection = this._proctorSortDirection || 'asc';
+
+    const sortCol = this._proctorSortColumn;
+    const isAsc = this._proctorSortDirection === 'asc';
+
+    const cards = [...rawCards].sort((a, b) => {
+      let valA, valB;
+      if (sortCol === 'name') {
+        valA = (a.student_name || '').toLowerCase();
+        valB = (b.student_name || '').toLowerCase();
+        return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      } else if (sortCol === 'status') {
+        valA = (a.status || '').toLowerCase();
+        valB = (b.status || '').toLowerCase();
+        return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      } else if (sortCol === 'progress') {
+        valA = a.progress_pct !== undefined ? a.progress_pct : 0;
+        valB = b.progress_pct !== undefined ? b.progress_pct : 0;
+        return isAsc ? valA - valB : valB - valA;
+      } else if (sortCol === 'alerts') {
+        valA = a.suspension_count !== undefined ? a.suspension_count : 0;
+        valB = b.suspension_count !== undefined ? b.suspension_count : 0;
+        return isAsc ? valA - valB : valB - valA;
+      } else if (sortCol === 'activity') {
+        valA = a.is_online ? 1 : 0;
+        valB = b.is_online ? 1 : 0;
+        if (valA !== valB) return isAsc ? valA - valB : valB - valA;
+        const actA = a.last_activity_seconds !== null && a.last_activity_seconds !== undefined ? a.last_activity_seconds : 99999;
+        const actB = b.last_activity_seconds !== null && b.last_activity_seconds !== undefined ? b.last_activity_seconds : 99999;
+        return isAsc ? actB - actA : actA - actB;
+      } else if (sortCol === 'mark') {
+        valA = a.final_mark !== null && a.final_mark !== undefined ? Number(a.final_mark) : -1;
+        valB = b.final_mark !== null && b.final_mark !== undefined ? Number(b.final_mark) : -1;
+        return isAsc ? valA - valB : valB - valA;
+      }
+      return 0;
+    });
+
+    // Mise à jour des icônes de tri des en-têtes
+    ['name', 'status', 'progress', 'alerts', 'activity', 'mark'].forEach(col => {
+      const iconEl = document.getElementById(`proctor-sort-icon-${col}`);
+      if (iconEl) {
+        if (col === sortCol) {
+          iconEl.textContent = isAsc ? '▲' : '▼';
+          iconEl.style.color = '#38bdf8';
+        } else {
+          iconEl.textContent = '⇅';
+          iconEl.style.color = 'var(--text-muted)';
+        }
+      }
+    });
+
+    // Attachement des listeners de tri sur les en-têtes
+    if (!this._proctorSortHeadersBound) {
+      this._proctorSortHeadersBound = true;
+      document.querySelectorAll('.proctor-sort-th').forEach(th => {
+        th.onclick = () => {
+          const col = th.getAttribute('data-col');
+          if (this._proctorSortColumn === col) {
+            this._proctorSortDirection = this._proctorSortDirection === 'asc' ? 'desc' : 'asc';
+          } else {
+            this._proctorSortColumn = col;
+            this._proctorSortDirection = 'asc';
+          }
+          if (this.lastProctorData && this.activeSessionId) {
+            this._renderProctorOverviewData(this.lastProctorData, this.activeSessionId);
+          }
+        };
+      });
+    }
 
     const statusLabels = {
       not_entered: { label: 'Absent / Non entré', color: '#64748b', bg: 'rgba(100,116,139,0.15)' },
@@ -3606,7 +3703,7 @@ class AppController {
           </td>
           <td style="padding:12px 16px; text-align:right;">
             <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
-              ${c.status === 'suspended' && c.attempt_id ? `
+              ${(c.status === 'suspended' || c.suspension_count > 0) && c.attempt_id ? `
                 <button class="btn btn-primary btn-card-unlock" data-att="${c.attempt_id}" style="padding:4px 8px; font-size:0.78rem; background:#10b981;">
                   🔓 Débloquer
                 </button>
