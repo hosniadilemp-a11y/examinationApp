@@ -138,7 +138,7 @@ def test_curriculum_and_challenges_10_hidden_tests_requirement():
             assert len(ex.get("public_tests", [])) >= 2, f"Curriculum ex {ex['id']} has < 2 public tests"
             assert len(ex.get("hidden_tests", [])) >= 10, f"Curriculum ex {ex['id']} has < 10 hidden tests"
             
-    assert total_curr == 183, f"Expected 183 curriculum exercises, found {total_curr}"
+    assert total_curr == 333, f"Expected 333 curriculum exercises, found {total_curr}"
     
     # 2. Coding challenges test counts
     chal_path = os.path.join("backend", "app", "data", "python_training", "coding_challenges.json")

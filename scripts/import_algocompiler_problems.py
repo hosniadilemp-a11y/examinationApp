@@ -32,17 +32,28 @@ def run():
             except Exception:
                 pid = 9000 + len(imported) + 1
                 
-            starter_code = (
+            # Preserve customized starter_code if already defined in existing coding_challenges.json
+            existing_starters = {}
+            if os.path.exists(os.path.join("backend", "app", "data", "python_training", "coding_challenges.json")):
+                try:
+                    with open(os.path.join("backend", "app", "data", "python_training", "coding_challenges.json"), "r", encoding="utf-8") as cur_f:
+                        for item in json.load(cur_f):
+                            if item.get("id") and item.get("starter_code"):
+                                existing_starters[item["id"]] = item["starter_code"]
+                except Exception:
+                    pass
+
+            starter_code = existing_starters.get(pid, (
                 "# Solution en Python standard (stdin / stdout)\n"
                 "import sys\n\n"
                 "def solve():\n"
-                "    raw = sys.stdin.read().strip()\n"
-                "    if not raw:\n"
+                "    tokens = sys.stdin.read().split()\n"
+                "    if not tokens:\n"
                 "        return\n"
                 "    # TODO: Écrivez votre logique algorithmique ici\n\n"
                 "if __name__ == '__main__':\n"
                 "    solve()\n"
-            )
+            ))
             
             diff = p.get("difficulty", "Medium").lower()
             pts = 4.0 if diff == "hard" else (3.0 if diff == "medium" else 2.0)

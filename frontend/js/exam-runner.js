@@ -634,6 +634,49 @@ export class ExamRunner {
     }
   }
 
+  // --- Formatage Intelligent des Variables d'Entrée Décomposées ---
+  _formatInputBreakdown(inputStr) {
+    if (!inputStr || typeof inputStr !== 'string') return '';
+    const clean = inputStr.trim();
+    if (!clean) return '';
+    const lines = clean.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) return '';
+
+    let items = [];
+    if (lines.length >= 2 && !isNaN(Number(lines[0])) && lines[1].includes(' ')) {
+      // Cas classique tableau : Ligne 1 = taille (size / n), Ligne 2 = tableau (array / values)
+      items.push(`<div><span style="color:#60a5fa; font-weight:700;">Ligne 1 (taille / size / n) :</span> <code style="color:#fde047; background:rgba(253,224,71,0.1); padding:1px 5px; border-radius:3px;">${this._escapeHtml(lines[0])}</code></div>`);
+      items.push(`<div><span style="color:#34d399; font-weight:700;">Ligne 2 (tableau / array) :</span> <code style="color:#a7f3d0; background:rgba(52,211,153,0.1); padding:1px 5px; border-radius:3px;">${this._escapeHtml(lines[1])}</code></div>`);
+      for (let i = 2; i < lines.length; i++) {
+        const extraLabel = lines.length === 3 ? 'cible / k / target' : `variable ${i + 1}`;
+        items.push(`<div><span style="color:#fbbf24; font-weight:700;">Ligne ${i + 1} (${extraLabel}) :</span> <code style="color:#fef08a; background:rgba(251,191,36,0.1); padding:1px 5px; border-radius:3px;">${this._escapeHtml(lines[i])}</code></div>`);
+      }
+    } else if (lines.length === 1 && lines[0].includes(' ')) {
+      // Liste sur une seule ligne
+      items.push(`<div><span style="color:#34d399; font-weight:700;">Ligne 1 (éléments / array) :</span> <code style="color:#a7f3d0; background:rgba(52,211,153,0.1); padding:1px 5px; border-radius:3px;">${this._escapeHtml(lines[0])}</code></div>`);
+    } else if (lines.length === 1) {
+      // Valeur unique
+      const isNum = !isNaN(Number(lines[0]));
+      items.push(`<div><span style="color:#60a5fa; font-weight:700;">Ligne 1 (${isNum ? 'entier / nombre' : 'chaîne / string'}) :</span> <code style="color:#fde047; background:rgba(253,224,71,0.1); padding:1px 5px; border-radius:3px;">${this._escapeHtml(lines[0])}</code></div>`);
+    } else {
+      // Décomposition générique par ligne
+      lines.forEach((line, idx) => {
+        const isNum = !isNaN(Number(line));
+        const badge = isNum ? 'valeur numérique' : (line.includes(' ') ? 'éléments multiples' : 'chaîne / valeur');
+        items.push(`<div><span style="color:#93c5fd; font-weight:700;">Ligne ${idx + 1} (${badge}) :</span> <code style="color:#cbd5e1; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:3px;">${this._escapeHtml(line)}</code></div>`);
+      });
+    }
+
+    return `
+      <div class="input-vars-breakdown" style="margin-top:8px; padding-top:6px; border-top:1px dashed rgba(255,255,255,0.12); font-size:0.75rem; line-height:1.55; font-family:var(--font-mono);">
+        <div style="font-weight:700; color:#bfdbfe; margin-bottom:3px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.03em; display:flex; align-items:center; gap:5px;">
+          <span>🔍 Variables distinctes :</span>
+        </div>
+        ${items.join('')}
+      </div>
+    `;
+  }
+
   // --- Rendu du Layout AlgoCompiler (2 Colonnes : Problème à gauche, Éditeur & E/S à droite) ---
   _renderCodingChallenge(container, q, topicClean, topicBadgeHtml, diffBadgeHtml, typeLabels, promptHtml) {
     const codeVal = this.answers[q.id] !== undefined ? this.answers[q.id] : (q.starter_code || (q.options && q.options.starter_code) || '# Écrivez votre code Python ici\n');
@@ -730,6 +773,7 @@ export class ExamRunner {
                             <button type="button" class="btn-copy-io" data-copy="${this._escapeHtml(t.input !== undefined ? String(t.input) : '')}" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:0.75rem; padding:0;">📋 Copier</button>
                           </div>
                           <pre style="margin:0; font-family:var(--font-mono); font-size:0.88rem; color:#cbd5e1; white-space:pre-wrap; word-break:break-all;">${this._escapeHtml(t.input !== undefined && t.input !== '' ? String(t.input) : '(Aucune entrée)')}</pre>
+                          ${this._formatInputBreakdown(t.input)}
                         </div>
                         <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:10px 12px;">
                           <div style="font-size:0.72rem; text-transform:uppercase; color:#34d399; font-weight:700; margin-bottom:4px;">
@@ -828,7 +872,7 @@ export class ExamRunner {
             <!-- Tab Console -->
             <div class="tab-content" id="tab-console" style="display:flex; flex:1; padding:12px 16px; gap:14px; overflow:hidden;">
               <div class="console-input-section" style="flex:1; display:flex; flex-direction:column;">
-                <span style="font-size:0.88rem; color:var(--text-muted); font-weight:600; margin-bottom:6px;">Entrée standard (stdin) :</span>
+                <span style="font-size:0.88rem; color:var(--text-muted); font-weight:600; margin-bottom:6px;">Entrée standard (stdin) — Variables distinctes (ex: taille puis tableau) :</span>
                 <textarea id="custom-input" placeholder="Saisissez vos données d'entrée..." style="flex:1; width:100%; font-family:var(--font-mono); font-size:0.95rem; padding:10px 14px; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background:#0b1120; color:#e2e8f0; resize:none; line-height:1.5;">${this._escapeHtml(sampleInput)}</textarea>
               </div>
               <div class="console-output-section" style="flex:1.2; display:flex; flex-direction:column;">
@@ -855,6 +899,7 @@ export class ExamRunner {
                       <div>
                         <div style="color:var(--text-muted); font-size:0.82rem; font-weight:600; margin-bottom:4px;">Entrée :</div>
                         <div class="io-block" style="background:#070b14; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); white-space:pre-wrap; line-height:1.5;">${this._escapeHtml(tc.input || '(Vide)')}</div>
+                        ${this._formatInputBreakdown(tc.input)}
                       </div>
                       <div>
                         <div style="color:var(--text-muted); font-size:0.82rem; font-weight:600; margin-bottom:4px;">Sortie attendue :</div>
