@@ -634,6 +634,16 @@ class ApiClient {
     return await this.downloadBlob(`/exams/${encodeURIComponent(examId)}/results/export-pdf`, fn);
   }
 
+  async downloadExamStudentCopiesZip(examId, moduleCode = '', filename = null) {
+    const fn = filename || `copies_etudiants_${moduleCode ? moduleCode + '_' : ''}${examId}.zip`;
+    return await this.downloadBlob(`/exams/${encodeURIComponent(examId)}/student-copies/zip`, fn);
+  }
+
+  async downloadSessionStudentCopiesZip(sessionId, filename = null) {
+    const fn = filename || `copies_session_${sessionId}.zip`;
+    return await this.downloadBlob(`/proctor/sessions/${encodeURIComponent(sessionId)}/student-copies/zip`, fn);
+  }
+
   async getSessionItemAnalysis(sessionId) {
     return await this.request(`/proctor/sessions/${sessionId}/item-analysis`);
   }

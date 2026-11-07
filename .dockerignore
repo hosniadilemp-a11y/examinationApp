@@ -31,6 +31,13 @@ exam_app.db*
 *.log
 scratch/
 oldapps/
+dist/
+build/
+deployment/images_hors_ligne/
+**/images_docker/
+*.tar
+*.zip
+*.exe
 *.png
 *.jpg
 *.jpeg

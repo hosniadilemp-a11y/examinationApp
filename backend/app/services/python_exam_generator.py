@@ -49,7 +49,18 @@ def normalize_curriculum_question(q_data: Dict[str, Any], idx: int = 1) -> Dict[
     base_prompt = (q_data.get("text") or q_data.get("prompt") or f"Question Python #{idx}").strip()
     penalty = float(q_data.get("penalty") or 0.0)
 
-    if raw_type == "yesno":
+    if raw_type in ["code", "coding", "code_python"]:
+        starter = q_data.get("starter_code", "# Code ici\n")
+        tests = q_data.get("tests", q_data.get("public_tests", []))
+        return {
+            "type": "code_python",
+            "prompt_markdown": base_prompt,
+            "options": {"starter_code": starter, "public_tests": tests},
+            "correct_answers": q_data.get("solution", q_data.get("correct", "")),
+            "negative_penalty": penalty,
+        }
+
+    if raw_type in ["yesno", "boolean"]:
         corr_bool = bool(q_data.get("correct", False))
         return {
             "type": "boolean",

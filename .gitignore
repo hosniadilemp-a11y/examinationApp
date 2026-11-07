@@ -31,7 +31,9 @@ venv.bak/
 *.csv.tmp
 
 # Environment secrets (use .env.example as template)
+*.env
 .env
+!.env.example
 
 # Editor & OS files
 .vscode/
@@ -43,8 +45,33 @@ venv.bak/
 Thumbs.db
 Desktop.ini
 
+# PyInstaller & binary build artifacts
+build/
+dist/
+*.spec
+
+# Large binaries, docker tarballs, offline installation archives
+*.tar
+*.tar.gz
+*.tar.xz
+*.iso
+*.dmg
+*.pkg
+*.bin
+*.exe
+!frontend/vendor/**
+
+# Zip archives (except vendor pyodide assets)
+*.zip
+!frontend/vendor/**
+
+# Large images and offline images folders
+**/images_docker/*
+deployment/images_hors_ligne/*
+!**/images_docker/.gitkeep
+!deployment/images_hors_ligne/.gitkeep
+
 # Legacy reference archives (3.6+ GB old codebase & docker tarballs)
 oldapps/
 scratch/
 test_out.py
-

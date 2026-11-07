@@ -938,7 +938,7 @@
                     <span style="font-size: 1.2rem; margin-right: 6px;">🐍</span> Python Fondamentaux
                   </td>
                   <td style="padding: 12px 14px;">10 Chapitres • 414 Questions</td>
-                  <td style="padding: 12px 14px; text-align: center;">68 Badges XP</td>
+                  <td style="padding: 12px 14px; text-align: center;">Progression XP & Niveaux</td>
                   <td style="padding: 12px 14px; text-align: right;">
                     <button class="btn btn-primary btn-sm" id="btn-hub-open-python">Accéder ➔</button>
                   </td>
@@ -974,7 +974,7 @@
               <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
                 <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">414 QCM</span>
                 <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">47 Défis Code</span>
-                <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">68 Badges</span>
+                <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">Progression XP</span>
               </div>
             </div>
             <div style="display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid var(--card-border);">
@@ -1259,6 +1259,9 @@
             <button id="btn-proctor-download-grades-pdf" class="btn btn-secondary" style="padding:10px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px; background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#fcd34d;" title="Télécharger le Procès-Verbal officiel des notes finales en PDF">
               <span>📄</span> PV Notes (PDF)
             </button>
+            <button id="btn-proctor-download-copies-zip" class="btn btn-secondary" style="padding:10px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,0.2); border-color:#0284c7; color:#38bdf8;" title="Télécharger les copies de tous les étudiants (HTML + JSON + CSV) dans une archive ZIP">
+              <span>📦</span> Copies Étudiants (ZIP)
+            </button>
             <button id="btn-proctor-export-results-zip" class="btn btn-secondary" style="padding:10px 14px; font-weight:600; display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#93c5fd;">
               <span>📦</span> Exporter Résultats (.results.zip)
             </button>
@@ -1310,47 +1313,50 @@
           </div>
         </div>
 
-        <!-- Tableau des Postes Candidats (REV-26) -->
-        <div style="margin-bottom:24px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <h3 style="font-size:1.1rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-              <span>🖥️</span> Postes Candidats (<span id="proctor-stats-summary">0 connectés</span>)
-            </h3>
-            <span style="font-size:0.85rem; color:var(--text-secondary);">🔴 Télémétrie en direct via WebSocket</span>
+        <!-- Surveillance en Salle : Tableau Postes et Journal d'Audit Côte à Côte -->
+        <div style="display: grid; grid-template-columns: minmax(0, 1.85fr) minmax(320px, 1.15fr); gap: 20px; align-items: start; margin-bottom: 24px;">
+          <!-- Colonne Gauche : Tableau des Postes Candidats (REV-26) -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h3 style="font-size:1.1rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                <span>🖥️</span> Postes Candidats (<span id="proctor-stats-summary">0 connectés</span>)
+              </h3>
+              <span style="font-size:0.85rem; color:var(--text-secondary);">🔴 Télémétrie en direct via WebSocket</span>
+            </div>
+
+            <div class="proctor-table-container" style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); overflow-x:auto;">
+              <table class="proctor-table" id="proctor-candidates-table" style="width:100%; border-collapse:separate; border-spacing:0; text-align:left;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.03); font-size:0.84rem; color:var(--text-secondary); user-select:none;">
+                    <th class="proctor-sort-th" data-col="name" style="padding:12px 14px; cursor:pointer;" title="Cliquer pour trier par nom">Poste / Candidat <span class="sort-icon" id="proctor-sort-icon-name">▲</span></th>
+                    <th class="proctor-sort-th" data-col="status" style="padding:12px 14px; cursor:pointer;" title="Cliquer pour trier par statut">Statut <span class="sort-icon" id="proctor-sort-icon-status">⇅</span></th>
+                    <th class="proctor-sort-th" data-col="progress" style="padding:12px 14px; cursor:pointer;" title="Cliquer pour trier par progression">Progression <span class="sort-icon" id="proctor-sort-icon-progress">⇅</span></th>
+                    <th class="proctor-sort-th" data-col="alerts" style="padding:12px 14px; cursor:pointer;" title="Cliquer pour trier par nombre d'alertes">Alertes <span class="sort-icon" id="proctor-sort-icon-alerts">⇅</span></th>
+                    <th class="proctor-sort-th" data-col="activity" style="padding:12px 14px; cursor:pointer;" title="Cliquer pour trier par connectivité">Connexion <span class="sort-icon" id="proctor-sort-icon-activity">⇅</span></th>
+                    <th class="proctor-sort-th" data-col="mark" style="padding:12px 14px; cursor:pointer;" title="Cliquer pour trier par note">Note <span class="sort-icon" id="proctor-sort-icon-mark">⇅</span></th>
+                    <th style="padding:12px 14px; text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="proctor-students-table-body">
+                  <!-- Lignes de candidats injectées dynamiquement -->
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div class="proctor-table-container" style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); overflow-x:auto;">
-            <table class="proctor-table" id="proctor-candidates-table" style="width:100%; border-collapse:separate; border-spacing:0; text-align:left;">
-              <thead>
-                <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.03); font-size:0.84rem; color:var(--text-secondary); user-select:none;">
-                  <th class="proctor-sort-th" data-col="name" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par nom">Poste / Candidat <span class="sort-icon" id="proctor-sort-icon-name">▲</span></th>
-                  <th class="proctor-sort-th" data-col="status" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par statut">Statut <span class="sort-icon" id="proctor-sort-icon-status">⇅</span></th>
-                  <th class="proctor-sort-th" data-col="progress" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par progression">Progression <span class="sort-icon" id="proctor-sort-icon-progress">⇅</span></th>
-                  <th class="proctor-sort-th" data-col="alerts" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par nombre d'alertes">Alertes Anti-Triche <span class="sort-icon" id="proctor-sort-icon-alerts">⇅</span></th>
-                  <th class="proctor-sort-th" data-col="activity" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par connectivité">Activité / Connexion <span class="sort-icon" id="proctor-sort-icon-activity">⇅</span></th>
-                  <th class="proctor-sort-th" data-col="mark" style="padding:12px 16px; cursor:pointer;" title="Cliquer pour trier par note">Note Finale <span class="sort-icon" id="proctor-sort-icon-mark">⇅</span></th>
-                  <th style="padding:12px 16px; text-align:right;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="proctor-students-table-body">
-                <!-- Lignes de candidats injectées dynamiquement -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Journal des Alertes et Événements en Direct -->
-        <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:16px 20px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h4 style="font-size:0.95rem; color:#93c5fd; display:flex; align-items:center; gap:6px;">
-              <span>📜</span> Journal d'Audit & Alertes Anti-Triche en Temps Réel
-            </h4>
-            <span id="proctor-ws-indicator" style="font-size:0.8rem; color:#10b981; display:inline-flex; align-items:center; gap:6px;">
-              <span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block; box-shadow:0 0 6px #10b981;"></span> Canal Enseignant Connecté
-            </span>
-          </div>
-          <div id="proctor-live-feed" style="max-height:160px; overflow-y:auto; font-family:var(--font-mono); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
-            <!-- Flux des alertes en direct -->
+          <!-- Colonne Droite : Journal des Alertes et Événements en Direct -->
+          <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:16px 20px; position:sticky; top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h4 style="font-size:0.95rem; color:#93c5fd; display:flex; align-items:center; gap:6px; margin:0;">
+                <span>📜</span> Journal d'Audit & Événements
+              </h4>
+              <span id="proctor-ws-indicator" style="font-size:0.8rem; color:#10b981; display:inline-flex; align-items:center; gap:6px;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block; box-shadow:0 0 6px #10b981;"></span> Connecté
+              </span>
+            </div>
+            <div id="proctor-live-feed" style="max-height:480px; overflow-y:auto; font-family:var(--font-mono); font-size:0.82rem; color:var(--text-secondary); line-height:1.6; padding-right:4px;">
+              <!-- Flux des alertes en direct -->
+            </div>
           </div>
         </div>
       </div>
@@ -1659,14 +1665,12 @@
               <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
                 <thead>
                   <tr style="border-bottom:1px solid var(--card-border); background:rgba(255,255,255,0.02); color:var(--text-secondary);">
-                    <th style="padding:10px 14px;">ID Examen</th>
-                    <th style="padding:10px 14px;">Titre de l'Épreuve</th>
-                    <th style="padding:10px 14px;">Module</th>
-                    <th style="padding:10px 14px;">Statut Session</th>
-                    <th style="padding:10px 14px;">Durée</th>
-                    <th style="padding:10px 14px;">Barème</th>
-                    <th style="padding:10px 14px;">Questions</th>
-                    <th style="padding:10px 14px; text-align:center;">Actions</th>
+                    <th style="padding:10px 14px; min-width:240px;">Titre de l'Épreuve</th>
+                    <th style="padding:10px 14px; white-space:nowrap;">Statut Session</th>
+                    <th style="padding:10px 14px; white-space:nowrap;">Durée</th>
+                    <th style="padding:10px 14px; white-space:nowrap;">Questions</th>
+                    <th style="padding:10px 14px; white-space:nowrap;">Barème</th>
+                    <th style="padding:10px 14px; text-align:center; min-width:160px;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="admin-exams-table-body">
@@ -2041,34 +2045,6 @@
       </div>
       <div class="modal-actions" style="margin-top: 20px;">
         <button id="btn-practice-history-done" class="btn btn-primary">Fermer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL : GALERIE DES 68 BADGES DE COMPÉTENCES -->
-  <div id="modal-badges-gallery" class="modal-overlay">
-    <div class="modal-box" style="max-width: 900px; width: 95%;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="margin: 0;">🏆 Galerie des 68 Badges & Milestones (XP)</h3>
-        <button id="btn-close-badges-gallery" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;">✕ Fermer</button>
-      </div>
-      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
-        68 trophées à remporter à travers les quiz théoriques, laboratoires de programmation pratique et scores de perfection sur chaque chapitre.
-      </p>
-      
-      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
-        <button class="btn btn-secondary btn-badge-filter active" data-filter="all" style="padding: 4px 12px; font-size: 0.8rem;">Tous (68)</button>
-        <button class="btn btn-secondary btn-badge-filter" data-filter="theo" style="padding: 4px 12px; font-size: 0.8rem;">Quiz Théoriques</button>
-        <button class="btn btn-secondary btn-badge-filter" data-filter="prac" style="padding: 4px 12px; font-size: 0.8rem;">Labs Pratiques</button>
-        <button class="btn btn-secondary btn-badge-filter" data-filter="unlocked" style="padding: 4px 12px; font-size: 0.8rem;">Débloqués Uniquement</button>
-      </div>
-
-      <div class="badges-grid-container" id="badges-gallery-grid">
-        <!-- Injecté dynamiquement par app.js -->
-      </div>
-
-      <div class="modal-actions" style="margin-top: 20px;">
-        <button id="btn-badges-gallery-done" class="btn btn-primary">Fermer la Galerie</button>
       </div>
     </div>
   </div>
@@ -2493,7 +2469,7 @@
           <span>⚠️</span>
           <span id="item-analysis-anomalies-title">Anomalies psychométriques détectées</span>
         </div>
-        <div id="item-analysis-anomalies-list" style="font-size:0.85rem; color:#fca5a5; line-height:1.5;"></div>
+        <div id="item-analysis-anomalies-list" style="font-size:0.85rem; color:#fca5a5; line-height:1.5; max-height:130px; overflow-y:auto; padding-right:6px;"></div>
       </div>
 
       <!-- Tableau des Questions -->

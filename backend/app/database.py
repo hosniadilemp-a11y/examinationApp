@@ -52,6 +52,13 @@ def configure_sqlite_connection(dbapi_connection, connection_record):
         # Ignoré sur PostgreSQL
         pass
 
+@event.listens_for(Engine, "checkout")
+def reset_checkout_connection(dbapi_connection, connection_record, connection_proxy):
+    try:
+        dbapi_connection.rollback()
+    except Exception:
+        pass
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -59,5 +66,8 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()

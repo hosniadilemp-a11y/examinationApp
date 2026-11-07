@@ -48,8 +48,8 @@ def test_deployment_seeding_4_classes_3_modules_and_exam_grade_downloads(client,
     for ex_id, mod_code, expected_q_count in [
         ("EXAM-THEO-PYTHON", "PYTHON_INIT", 40),
         ("EXAM-PRAC-PYTHON", "PYTHON_INIT", 5),
-        ("EXAM-THEO-CRYPTO", "CRYPTO", 5),
-        ("EXAM-THEO-LINUX", "LINUX_ADMIN", 5),
+        ("EXAM-THEO-CRYPTO", "CRYPTO", 40),
+        ("EXAM-THEO-LINUX", "LINUX_ADMIN", 40),
     ]:
         ex = db_session.query(Exam).filter(Exam.id == ex_id).first()
         assert ex is not None

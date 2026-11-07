@@ -2633,8 +2633,9 @@ pre.code-block {
   width: 100vw;
   height: 100vh;
   background: rgba(10, 15, 29, 0.96);
-  backdrop-filter: blur(12px);
-  z-index: 99999;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 999999 !important;
   display: none;
   flex-direction: column;
   justify-content: center;
@@ -4711,4 +4712,316 @@ pre.code-block {
   background: #eff6ff !important;
   color: #2563eb !important;
   border: 1px solid #bfdbfe !important;
+}
+
+/* --- Studio de Configuration & Personnalisation en Mode Clair --- */
+[data-theme="light"] .training-customization-studio {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .studio-header {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .studio-super-title {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .studio-main-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .segmented-control.mode-switcher {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .segmented-control-btn {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .segmented-control-btn:hover {
+  color: #0f172a !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .segmented-control-btn.active {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+}
+
+[data-theme="light"] .guided-step-card {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .guided-step-icon {
+  background: rgba(37, 99, 235, 0.1) !important;
+  border: 1px solid rgba(37, 99, 235, 0.25) !important;
+}
+
+[data-theme="light"] .guided-step-tag {
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .guided-step-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .guided-step-meta {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .config-label {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .custom-select {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .custom-select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+[data-theme="light"] .custom-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .diff-picker-btn {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .diff-picker-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] .diff-picker-btn.active {
+  border-color: #2563eb !important;
+  background: rgba(37, 99, 235, 0.1) !important;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.25) !important;
+}
+
+[data-theme="light"] .diff-picker-label {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .studio-launch-bar {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .studio-launch-summary {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .studio-launch-summary strong {
+  color: #0f172a !important;
+}
+
+/* --- Progression Pédagogique (10 Chapitres) : Couleurs par Paliers Débloqués --- */
+.curriculum-topic-row {
+  border-left: 5px solid #64748b;
+  transition: all 0.2s ease;
+}
+
+/* Palier 0 : Verrouillé / Début */
+.curriculum-topic-row.tier-count-0 {
+  border-left: 5px solid #64748b !important;
+  background: rgba(15, 23, 42, 0.4);
+}
+[data-theme="light"] .curriculum-topic-row.tier-count-0 {
+  border-left: 5px solid #94a3b8 !important;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Palier 1 : 1 Palier Débloqué / Validé (Émeraude / Vert) */
+.curriculum-topic-row.tier-count-1 {
+  border-left: 5px solid #10b981 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.06), transparent) !important;
+}
+[data-theme="light"] .curriculum-topic-row.tier-count-1 {
+  border-left: 5px solid #10b981 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  background: #f0fdf4 !important;
+}
+
+/* Palier 2 : 2 Paliers Débloqués / Validés (Bleu Cyan) */
+.curriculum-topic-row.tier-count-2 {
+  border-left: 5px solid #3b82f6 !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.08), transparent) !important;
+}
+[data-theme="light"] .curriculum-topic-row.tier-count-2 {
+  border-left: 5px solid #2563eb !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  background: #eff6ff !important;
+}
+
+/* Palier 3 : 3 Paliers Débloqués / Validés (Violet / Indigo) */
+.curriculum-topic-row.tier-count-3 {
+  border-left: 5px solid #8b5cf6 !important;
+  border-color: rgba(139, 92, 246, 0.45) !important;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.1), transparent) !important;
+}
+[data-theme="light"] .curriculum-topic-row.tier-count-3 {
+  border-left: 5px solid #7c3aed !important;
+  border-color: rgba(139, 92, 246, 0.4) !important;
+  background: #f5f3ff !important;
+}
+
+/* Palier 4 : 4 Paliers Validés (Expert / Maîtrisé - Ambre / Or) */
+.curriculum-topic-row.tier-count-4 {
+  border-left: 5px solid #f59e0b !important;
+  border-color: rgba(245, 158, 11, 0.55) !important;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.12), transparent) !important;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+}
+[data-theme="light"] .curriculum-topic-row.tier-count-4 {
+  border-left: 5px solid #d97706 !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  background: #fffbeb !important;
+}
+
+.tier-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tier-badge-0 { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); }
+.tier-badge-1 { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.tier-badge-2 { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+.tier-badge-3 { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); }
+.tier-badge-4 { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.5); }
+
+[data-theme="light"] .tier-badge-0 { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+[data-theme="light"] .tier-badge-1 { background: #dcfce7; color: #059669; border: 1px solid #86efac; }
+[data-theme="light"] .tier-badge-2 { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+[data-theme="light"] .tier-badge-3 { background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; }
+[data-theme="light"] .tier-badge-4 { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+
+
+
+/* --- Menus d'Actions Déroulants (Tableaux Enseignant & Admin) --- */
+.row-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-row-menu-toggle {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm, 6px);
+  padding: 6px 10px;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-row-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="light"] .btn-row-menu-toggle {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+[data-theme="light"] .btn-row-menu-toggle:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.row-actions-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 5px);
+  z-index: 9999;
+  min-width: 220px;
+  background: var(--card-bg, #1e293b);
+  border: 1px solid var(--card-border, #334155);
+  border-radius: 8px;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.45);
+  padding: 6px 0;
+  display: none;
+}
+
+[data-theme="light"] .row-actions-dropdown {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.12);
+}
+
+.row-actions-dropdown .menu-action-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  white-space: nowrap;
+}
+
+.row-actions-dropdown .menu-action-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .row-actions-dropdown .menu-action-item:hover {
+  background: #f1f5f9;
+}
+
+.row-actions-dropdown .menu-action-item.danger {
+  color: #f87171;
+  border-top: 1px solid var(--card-border);
+  margin-top: 4px;
+  padding-top: 9px;
+}
+
+.row-actions-dropdown .menu-action-item.danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+[data-theme="light"] .row-actions-dropdown .menu-action-item.danger {
+  color: #dc2626;
+  border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .row-actions-dropdown .menu-action-item.danger:hover {
+  background: #fee2e2;
+}
+
+/* Colonne Spécialité compacte */
+.col-specialite-compact {
+  width: 95px !important;
+  max-width: 115px !important;
+  padding: 10px 6px !important;
 }

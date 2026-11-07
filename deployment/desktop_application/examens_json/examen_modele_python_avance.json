@@ -1,0 +1,88 @@
+{
+  "module_code": "PYTHON_ADV",
+  "title": "Examen Officiel : Programmation Python Avancée & Algorithmique",
+  "instructions": "Épreuve officielle sur poste individuel. Durée : 60 minutes. QCM, code et questions à choix multiples. Environnement d'exécution actif.",
+  "duration_minutes": 60,
+  "global_points": 20.0,
+  "navigation_mode": "free",
+  "shuffle_questions": true,
+  "shuffle_options": true,
+  "partial_credit_enabled": true,
+  "default_negative_penalty": 0.5,
+  "group_ids": ["DEV-PYTHON", "ING-INFO"],
+  "questions": [
+    {
+      "ordering": 1,
+      "type": "single_choice",
+      "prompt_markdown": "En Python, que fait le décorateur `@functools.wraps(fn)` lorsqu'il est appliqué à la fonction interne (wrapper) d'un décorateur personnalisé ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"Il préserve les métadonnées de la fonction d'origine (__name__, __doc__, __annotations__)\"}, {\"id\": \"1\", \"text\": \"Il compile la fonction en C pour accélérer l'exécution de 40%\"}, {\"id\": \"2\", \"text\": \"Il empêche la levée de toute exception non gérée\"}, {\"id\": \"3\", \"text\": \"Il transforme automatiquement la fonction en fonction asynchrone (coroutine)\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 2,
+      "type": "boolean",
+      "prompt_markdown": "Une fonction Python contenant le mot-clé `yield` retourne un objet de type générateur sans exécuter immédiatement le corps de la fonction.",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    },
+    {
+      "ordering": 3,
+      "type": "multi_choice",
+      "prompt_markdown": "Quelles méthodes spéciales (Dunder methods) doivent impérativement être implémentées pour qu'une classe fonctionne avec le gestionnaire de contexte `with` ?",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"__enter__(self)\"}, {\"id\": \"1\", \"text\": \"__exit__(self, exc_type, exc_val, exc_tb)\"}, {\"id\": \"2\", \"text\": \"__init__(self)\"}, {\"id\": \"3\", \"text\": \"__del__(self)\"}, {\"id\": \"4\", \"text\": \"__context__(self)\"}]",
+      "correct_answers_json": "[0, 1]"
+    },
+    {
+      "ordering": 4,
+      "type": "fill_blank",
+      "prompt_markdown": "Quel mot-clé est utilisé en Python moderne avec la boucle événementielle `asyncio` pour suspendre l'exécution d'une coroutine en attendant le résultat d'un `Future` ou d'une `Task` ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"await\"]"
+    },
+    {
+      "ordering": 5,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle est la complexité temporelle moyenne de la recherche d'une clé dans un dictionnaire Python (`dict`) standard ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"O(1)\"}, {\"id\": \"1\", \"text\": \"O(log n)\"}, {\"id\": \"2\", \"text\": \"O(n)\"}, {\"id\": \"3\", \"text\": \"O(n log n)\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 6,
+      "type": "boolean",
+      "prompt_markdown": "Le Global Interpreter Lock (GIL) de CPython empêche plusieurs threads natifs d'exécuter simultanément du bytecode Python sur plusieurs cœurs de processeur.",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    },
+    {
+      "ordering": 7,
+      "type": "multi_choice",
+      "prompt_markdown": "Parmi les assertions suivantes concernant les modules intégrés de la bibliothèque standard Python, lesquelles sont vraies ?",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"multiprocessing permet de contourner le GIL en créant des processus indépendants dotés de leur propre interpréteur\"}, {\"id\": \"1\", \"text\": \"collections.defaultdict appelle une fabrique par défaut pour initialiser automatiquement les clés manquantes\"}, {\"id\": \"2\", \"text\": \"itertools.chain permet d'itérer séquentiellement sur plusieurs itérables sans les fusionner en mémoire\"}, {\"id\": \"3\", \"text\": \"threading crée des processus séparés isolés en mémoire vive\"}]",
+      "correct_answers_json": "[0, 1, 2]"
+    },
+    {
+      "ordering": 8,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle expression produit un ensemble (set) de nombres pairs au carré entre 0 et 8 inclus à l'aide d'une compréhension d'ensemble ?",
+      "points": 4.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"{x**2 for x in range(9) if x % 2 == 0}\"}, {\"id\": \"1\", \"text\": \"[x**2 for x in range(9) if x % 2 == 0]\"}, {\"id\": \"2\", \"text\": \"(x**2 for x in range(9) if x % 2 == 0)\"}, {\"id\": \"3\", \"text\": \"{x: x**2 for x in range(9) if x % 2 == 0}\"}]",
+      "correct_answers_json": "[0]"
+    }
+  ]
+}
+

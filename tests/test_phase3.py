@@ -11,7 +11,7 @@ def test_frontend_static_serving(client):
     res_index = client.get("/")
     assert res_index.status_code == 200
     assert "<!DOCTYPE html>" in res_index.text
-    assert "Platform" in res_index.text
+    assert "Plateforme" in res_index.text or "Platform" in res_index.text
     assert "overlay-suspension" in res_index.text
 
     res_css = client.get("/css/style.css")
@@ -93,7 +93,16 @@ def test_exam_start_dual_shuffling_and_answer_secrecy(client, admin_headers, stu
             }
         )
 
-    # 2. L'étudiant démarre l'épreuve
+    # 2. Le surveillant ouvre et lance la session
+    res_sess = client.post(
+        "/api/proctor/sessions",
+        headers=admin_headers,
+        json={"exam_id": exam_id, "room_id": "SALLE-1"}
+    )
+    sess_id = res_sess.json()["session_id"]
+    client.post(f"/api/proctor/sessions/{sess_id}/launch", headers=admin_headers)
+
+    # 3. L'étudiant démarre l'épreuve
     res_start = client.post(f"/api/student/exams/{exam_id}/start", headers=student_headers)
     assert res_start.status_code == 200
     data = res_start.json()
@@ -143,6 +152,15 @@ def test_autosave_and_attempt_recovery(client, admin_headers, student_headers):
         }
     )
     q_id = res_q.json()["id"]
+
+    # Le surveillant ouvre et lance la session
+    res_sess = client.post(
+        "/api/proctor/sessions",
+        headers=admin_headers,
+        json={"exam_id": exam_id, "room_id": "SALLE-1"}
+    )
+    sess_id = res_sess.json()["session_id"]
+    client.post(f"/api/proctor/sessions/{sess_id}/launch", headers=admin_headers)
 
     # Démarrage
     res_start = client.post(f"/api/student/exams/{exam_id}/start", headers=student_headers)

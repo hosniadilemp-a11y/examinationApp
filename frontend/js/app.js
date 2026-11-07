@@ -38,6 +38,8 @@ class AppController {
 
     this.linuxRunner = null;
 
+    window.activeAppController = this;
+
   }
 
 
@@ -185,6 +187,16 @@ class AppController {
     if (logoutBtn) {
 
       logoutBtn.onclick = () => {
+
+        if (this.waitingRoomInterval) {
+
+          clearInterval(this.waitingRoomInterval);
+
+          this.waitingRoomInterval = null;
+
+        }
+
+        this._cleanupProctorSession();
 
         if (this.activeExamRunner) {
 
@@ -1472,6 +1484,10 @@ class AppController {
 
       this.hideSuspensionScreen();
 
+    }
+
+    if (viewId !== 'view-proctor-live') {
+      this._cleanupProctorSession();
     }
 
 
@@ -3011,89 +3027,139 @@ class AppController {
 
 
         let bodyHtml = '';
+        const qType = (q.type || '').toLowerCase();
 
-        if (q.type === 'single_choice' || q.type === 'multi_choice' || q.type === 'boolean') {
+        // Correspondance robuste pour QCM, choix multiples, vrai/faux (supporte index 0, 'A', texte, valeur, booléen)
+        const matchesOption = (candidate, optIdx, optVal, optText) => {
+          if (candidate === null || candidate === undefined) return false;
+          if (Array.isArray(candidate)) {
+            return candidate.some(c => matchesOption(c, optIdx, optVal, optText));
+          }
+          if (typeof candidate === 'boolean') {
+            if (typeof optVal === 'boolean') return candidate === optVal;
+            const strVal = String(optVal).toLowerCase();
+            if (candidate === true && (strVal === 'true' || strVal === 'vrai' || strVal === '1')) return true;
+            if (candidate === false && (strVal === 'false' || strVal === 'faux' || strVal === '0')) return true;
+          }
+          const sCand = String(candidate).trim().toLowerCase();
+          const sIdx = String(optIdx).trim().toLowerCase();
+          const sLetter = String.fromCharCode(65 + optIdx).toLowerCase();
+          const sOptVal = String(optVal ?? '').trim().toLowerCase();
+          const sOptText = String(optText ?? '').trim().toLowerCase();
+          return sCand === sIdx || sCand === sLetter || sCand === sOptVal || sCand === sOptText;
+        };
 
-          const opts = Array.isArray(q.options) ? q.options : [];
+        if (['single_choice', 'multi_choice', 'multiple_choice', 'qcm', 'boolean'].includes(qType)) {
+          let opts = Array.isArray(q.options) ? q.options : [];
+          if (qType === 'boolean' && (!opts || opts.length === 0)) {
+            opts = [
+              { id: 'true', text: 'Vrai', value: true },
+              { id: 'false', text: 'Faux', value: false }
+            ];
+          }
 
           bodyHtml = `
-
             <div style="display:flex; flex-direction:column; gap:8px; margin: 12px 0;">
+              ${opts.map((opt, optIdx) => {
+                const optVal = typeof opt === 'object' && opt !== null ? (opt.id !== undefined ? opt.id : (opt.value !== undefined ? opt.value : opt.text)) : opt;
+                const optText = typeof opt === 'object' && opt !== null ? (opt.text || opt.label || opt.value || opt.id) : opt;
+                const letter = qType === 'boolean' ? '' : (String.fromCharCode(65 + optIdx) + ') ');
 
-              ${opts.map(opt => {
-
-                const optVal = typeof opt === 'object' ? (opt.id || opt.text || opt.value) : opt;
-
-                const optText = typeof opt === 'object' ? (opt.text || opt.label || opt.value) : opt;
-
-
-
-                let isUserPick = false;
-
-                if (Array.isArray(q.user_answer)) {
-
-                  isUserPick = q.user_answer.includes(optVal) || q.user_answer.includes(optText);
-
-                } else {
-
-                  isUserPick = (q.user_answer === optVal || q.user_answer === optText);
-
-                }
-
-
-
-                let isCorrectOption = false;
-
-                if (Array.isArray(q.correct_answer)) {
-
-                  isCorrectOption = q.correct_answer.includes(optVal) || q.correct_answer.includes(optText);
-
-                } else {
-
-                  isCorrectOption = (q.correct_answer === optVal || q.correct_answer === optText);
-
-                }
-
-
+                const isUserPick = matchesOption(q.user_answer, optIdx, optVal, optText);
+                const isCorrectOption = matchesOption(q.correct_answer, optIdx, optVal, optText);
 
                 let optStyle = 'background:var(--bg-secondary); border:1px solid var(--card-border); color:var(--text-primary);';
                 let tag = '';
 
                 if (isCorrectOption && isUserPick) {
-                  optStyle = 'background:rgba(16,185,129,0.15); border:1px solid #10b981; color:var(--text-primary); font-weight:600;';
+                  optStyle = 'background:rgba(16,185,129,0.15); border:1.5px solid #10b981; color:var(--text-primary); font-weight:600;';
                   tag = '<span style="color:#059669; font-size:0.82rem; font-weight:700; margin-left:auto;">✓ Votre choix (Correct)</span>';
                 } else if (isCorrectOption && !isUserPick) {
-                  optStyle = 'background:rgba(16,185,129,0.1); border:1px dashed #10b981; color:var(--text-primary); font-weight:600;';
+                  optStyle = 'background:rgba(16,185,129,0.1); border:1.5px dashed #10b981; color:var(--text-primary); font-weight:600;';
                   tag = '<span style="color:#059669; font-size:0.82rem; font-weight:700; margin-left:auto;">★ Bonne réponse attendue</span>';
                 } else if (!isCorrectOption && isUserPick) {
-                  optStyle = 'background:rgba(239,68,68,0.12); border:1px solid #ef4444; color:var(--text-primary); font-weight:600;';
+                  optStyle = 'background:rgba(239,68,68,0.12); border:1.5px solid #ef4444; color:var(--text-primary); font-weight:600;';
                   tag = '<span style="color:#dc2626; font-size:0.82rem; font-weight:700; margin-left:auto;">✗ Votre choix (Incorrect)</span>';
                 }
 
                 return `
                   <div style="display:flex; align-items:center; padding:9px 14px; border-radius:7px; font-size:0.92rem; ${optStyle}">
-                    <span>${this._escapeHtml(optText)}</span>
+                    <span style="font-weight:700; margin-right:6px; color:var(--primary);">${this._escapeHtml(letter)}</span>
+                    <span>${this._escapeHtml(String(optText))}</span>
                     ${tag}
                   </div>
                 `;
               }).join('')}
             </div>
           `;
-        } else {
-          const userStr = typeof q.user_answer === 'object' ? JSON.stringify(q.user_answer, null, 2) : String(q.user_answer ?? '(Aucune réponse fournie)');
-          const corrStr = typeof q.correct_answer === 'object' ? JSON.stringify(q.correct_answer, null, 2) : String(q.correct_answer ?? '');
+        } else if (qType === 'matching') {
+          const formatPairList = (pairs) => {
+            if (!pairs) return '(Aucune réponse)';
+            if (typeof pairs === 'object' && !Array.isArray(pairs)) {
+              return Object.entries(pairs).map(([k, v]) => `• ${k} ➔ ${v}`).join('\n');
+            }
+            if (Array.isArray(pairs)) {
+              return pairs.map(p => {
+                if (typeof p === 'object' && p !== null) {
+                  const left = p.left || p.source || p.k || '';
+                  const right = p.right || p.target || p.v || '';
+                  return `• ${left} ➔ ${right}`;
+                }
+                return `• ${p}`;
+              }).join('\n');
+            }
+            return String(pairs);
+          };
+
+          const userStr = formatPairList(q.user_answer);
+          const corrStr = formatPairList(q.correct_answer);
+
           bodyHtml = `
             <div style="display:flex; flex-direction:column; gap:10px; margin: 12px 0;">
               <div style="background: ${isOk ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border: 1px solid ${isOk ? '#10b981' : '#ef4444'}; padding: 10px 14px; border-radius: 7px;">
                 <div style="font-size:0.8rem; font-weight:700; color: ${isOk ? '#059669' : '#dc2626'}; margin-bottom:4px;">
-                  ${isOk ? '✓ Votre Réponse (Validée)' : '✗ Votre Réponse'}
+                  ${isOk ? '✓ Vos Associations (Validées)' : '✗ Vos Associations'}
                 </div>
-                <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary);">${this._escapeHtml(userStr)}</pre>
+                <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary); line-height:1.5;">${this._escapeHtml(userStr)}</pre>
               </div>
               ${!isOk && corrStr ? `
                 <div style="background: rgba(16,185,129,0.1); border: 1px dashed #10b981; padding: 10px 14px; border-radius: 7px;">
-                  <div style="font-size:0.8rem; font-weight:700; color:#059669; margin-bottom:4px;">★ Réponse attendue :</div>
-                  <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary); font-weight:600;">${this._escapeHtml(corrStr)}</pre>
+                  <div style="font-size:0.8rem; font-weight:700; color:#059669; margin-bottom:4px;">★ Associations attendues :</div>
+                  <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary); font-weight:600; line-height:1.5;">${this._escapeHtml(corrStr)}</pre>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          // Coding or other questions
+          let userCode = q.user_answer;
+          if (userCode && typeof userCode === 'object') {
+            userCode = userCode.code !== undefined ? userCode.code : JSON.stringify(userCode, null, 2);
+          }
+          if (userCode === null || userCode === undefined || String(userCode).trim() === '') {
+            userCode = '(Aucun code ou réponse soumise)';
+          }
+
+          let corrCode = q.correct_answer;
+          if (corrCode && typeof corrCode === 'object') {
+            if (corrCode.solution) corrCode = corrCode.solution;
+            else if (corrCode.answer) corrCode = corrCode.answer;
+            else corrCode = JSON.stringify(corrCode, null, 2);
+          }
+          corrCode = corrCode ? String(corrCode) : '';
+
+          bodyHtml = `
+            <div style="display:flex; flex-direction:column; gap:10px; margin: 12px 0;">
+              <div style="background: ${isOk ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; border: 1px solid ${isOk ? '#10b981' : '#ef4444'}; padding: 10px 14px; border-radius: 7px;">
+                <div style="font-size:0.8rem; font-weight:700; color: ${isOk ? '#059669' : '#dc2626'}; margin-bottom:4px;">
+                  ${isOk ? '✓ Votre Solution / Code (Validé)' : '✗ Votre Solution / Code'}
+                </div>
+                <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary); max-height:280px; overflow-y:auto; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:5px;">${this._escapeHtml(String(userCode))}</pre>
+              </div>
+              ${!isOk && corrCode ? `
+                <div style="background: rgba(16,185,129,0.1); border: 1px dashed #10b981; padding: 10px 14px; border-radius: 7px;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#059669; margin-bottom:4px;">★ Solution de référence :</div>
+                  <pre style="margin:0; font-family:var(--font-mono, monospace); font-size:0.88rem; white-space:pre-wrap; color:var(--text-primary); font-weight:500; max-height:280px; overflow-y:auto; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:5px;">${this._escapeHtml(corrCode)}</pre>
                 </div>
               ` : ''}
             </div>
@@ -3184,6 +3250,11 @@ class AppController {
         </div>
 
       `;
+
+      const consultRevBtn = document.getElementById('btn-score-consult-review');
+      if (consultRevBtn && res.attempt_id) {
+        consultRevBtn.onclick = () => this.openExamReviewModal(res.attempt_id, res.exam_id);
+      }
 
     }
 
@@ -6240,9 +6311,58 @@ class AppController {
 
 
 
+  handleExamForcedClosure(data = {}) {
+    console.warn("[AppController] Clôture collective ou soumission forcée déclenchée :", data);
+    this.hideSuspensionScreen();
+    const overlayFs = document.getElementById('overlay-fullscreen-required');
+    if (overlayFs) overlayFs.classList.remove('active');
+    document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+      el.classList.remove('exam-fullscreen-lost-blurred');
+    });
+
+    if (this.activeAntiCheat) {
+      this.activeAntiCheat.stop();
+      this.activeAntiCheat = null;
+    }
+
+    if (this.activeExamRunner) {
+      this.activeExamRunner.stop();
+      this.activeExamRunner = null;
+    }
+
+    if (this._studentWs) {
+      try { this._studentWs.close(); } catch (_) {}
+      this._studentWs = null;
+    }
+
+    const finalResult = {
+      title: data.exam_title || "Épreuve Officielle",
+      final_mark: data.final_mark !== undefined ? data.final_mark : (data.score !== undefined ? data.score : 0),
+      raw_score: data.raw_score !== undefined ? data.raw_score : (data.final_mark !== undefined ? data.final_mark : 0),
+      global_points: data.global_points || 20,
+      max_score: data.global_points || 20,
+      message: "🛑 Épreuve clôturée par l'enseignant. Vos réponses enregistrées ont été scellées et transmises."
+    };
+
+    this.renderScoreScreen(finalResult);
+    this.showToast("🛑 L'épreuve est terminée. Vos résultats officiels sont enregistrés.", "warning", 8000);
+  }
+
   // --- Rendu du Score et Confirmation d'Épreuve Officielle Scellée (REV-32) ---
 
   renderScoreScreen(res) {
+
+    this.hideSuspensionScreen();
+
+    const overlayFs = document.getElementById('overlay-fullscreen-required');
+
+    if (overlayFs) overlayFs.classList.remove('active');
+
+    document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+
+      el.classList.remove('exam-fullscreen-lost-blurred');
+
+    });
 
     this.switchView('view-score');
 
@@ -6355,6 +6475,14 @@ class AppController {
             Statut : SOUMIS & VERROUILLÉ • Date de scellement : ${res.submitted_at ? new Date(res.submitted_at).toLocaleString('fr-FR') : new Date().toLocaleString('fr-FR')}
 
           </div>
+
+          ${res.attempt_id ? `
+            <div style="margin-top: 20px;">
+              <button id="btn-score-consult-review" class="btn btn-primary" style="padding: 10px 22px; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
+                <span>🔍</span> Consulter le Corrigé &amp; Mes Réponses
+              </button>
+            </div>
+          ` : ''}
 
         </div>
 
@@ -6499,376 +6627,279 @@ class AppController {
         <div class="teacher-exams-table-wrap" style="width:100%; overflow-x:auto;">
 
           <table class="teacher-exams-table" style="width:100%; border-collapse:collapse;">
-
             <thead>
-
               <tr style="border-bottom:2px solid var(--card-border); text-align:left; font-size:0.82rem; color:var(--text-muted); text-transform:uppercase;">
-
-                <th style="padding:12px 10px;">Module</th>
-
-                <th style="padding:12px 10px;">Statut Session</th>
-
-                <th style="padding:12px 10px;">Titre de l'Épreuve</th>
-
-                <th style="padding:12px 10px;">Type</th>
-
-                <th style="padding:12px 10px;">Durée</th>
-
-                <th style="padding:12px 10px;">Questions</th>
-
-                <th style="padding:12px 10px;">Barème</th>
-
-                <th style="padding:12px 10px;">Cibles</th>
-
-                <th style="padding:12px 10px; text-align:center;">Actions Directes</th>
-
+                <th style="padding:12px 10px; min-width:240px;">Titre de l'Épreuve</th>
+                <th style="padding:12px 10px; white-space:nowrap;">Statut Session</th>
+                <th style="padding:12px 6px; width:75px; max-width:85px; text-align:center; white-space:nowrap;">Type</th>
+                <th style="padding:12px 10px; white-space:nowrap;">Durée</th>
+                <th style="padding:12px 10px; white-space:nowrap;">Questions</th>
+                <th style="padding:12px 10px; white-space:nowrap;">Barème</th>
+                <th style="padding:12px 6px; width:95px; max-width:115px; white-space:nowrap;" title="Spécialité / Cibles" data-col="Cibles">Spécialité</th>
+                <th style="padding:12px 10px; text-align:center; min-width:160px;">Actions</th>
               </tr>
-
             </thead>
-
             <tbody id="teacher-exams-tbody"></tbody>
-
           </table>
-
         </div>
-
       `;
 
-
-
       const tbody = container.querySelector('#teacher-exams-tbody');
+      const isSuperAdmin = (this.currentUser && this.currentUser.role === 'admin');
 
       exams.forEach(ex => {
-
         const tr = document.createElement('tr');
-
         tr.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
 
-
-
-        const assignedPills = (ex.assigned_groups || []).map(g => `<span class="badge" style="background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid #3b82f6; font-size:0.75rem; padding:2px 6px; border-radius:10px;">${g}</span>`).join(' ') || '<span style="color:var(--text-muted); font-size:0.75rem;">Tous</span>';
-
-
+        const assignedPills = (ex.assigned_groups || []).map(g => `<span class="badge" style="background:rgba(59,130,246,0.12); color:#93c5fd; border:1px solid rgba(59,130,246,0.35); font-size:0.7rem; padding:1px 5px; border-radius:5px; white-space:nowrap;">${g}</span>`).join('') || '<span style="color:var(--text-muted); font-size:0.72rem;">Toutes</span>';
 
         const typeBadge = ex.exam_type === 'practical'
-
-          ? `<span class="badge-exam-type badge-practical" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">💻 Pratique</span>`
-
-          : `<span class="badge-exam-type badge-theoretical" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">📖 Théorique</span>`;
-
-
+          ? `<span class="badge-exam-type badge-practical" style="display:inline-flex; align-items:center; justify-content:center; height:24px; padding:0 6px; border-radius:5px; font-size:0.72rem; font-weight:600; white-space:nowrap; background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4);">💻 Pratique</span>`
+          : `<span class="badge-exam-type badge-theoretical" style="display:inline-flex; align-items:center; justify-content:center; height:24px; padding:0 6px; border-radius:5px; font-size:0.72rem; font-weight:600; white-space:nowrap; background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.4);">📖 Théorique</span>`;
 
         const sessStatus = ex.session_status || 'not_started';
-
         const isCompleted = sessStatus === 'completed';
 
-        let statusBadgeHtml = `<span class="badge" style="background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid #64748b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⚪ Non démarré</span>`;
-
+        let statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid #64748b; font-weight:700; white-space:nowrap;">⚪ Non démarré</span>`;
         if (sessStatus === 'waiting') {
-
-          statusBadgeHtml = `<span class="badge" style="background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⏳ Salle ouverte</span>`;
-
+          statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; font-weight:700; white-space:nowrap;">⏳ Salle ouverte</span>`;
         } else if (sessStatus === 'in_progress') {
-
-          statusBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟢 En cours (LIVE)</span>`;
-
+          statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981; font-weight:700; white-space:nowrap;">🟢 En cours</span>`;
         } else if (isCompleted) {
-
-          statusBadgeHtml = `<span class="badge" style="background:rgba(168,85,247,0.18); color:#d8b4fe; border:1px solid #a855f7; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟣 Terminé (${ex.submitted_count || 0} copie(s))</span>`;
-
+          statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(168,85,247,0.18); color:#d8b4fe; border:1px solid #a855f7; font-weight:700; white-space:nowrap;">🟣 Terminé (${ex.submitted_count || 0})</span>`;
         }
-
-
 
         const cleanInstr = (ex.instructions || '').replace(/\[CONFIG_RANDOM_STUDENT_QUESTIONS=\d+\]/g, '').trim();
 
+        let primaryBtnHtml = '';
+        let menuItemsHtml = '';
 
+        if (isCompleted) {
+          primaryBtnHtml = `
+            <button class="btn btn-secondary btn-exam-item-analysis" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-module="${ex.module_code}" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#6ee7b7; font-weight:600; white-space:nowrap;" title="Psychométrie & discrimination">
+              📊 Stats
+            </button>
+          `;
+          menuItemsHtml = `
+            <button class="menu-action-item btn-exam-download-csv" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}">
+              <span>📥</span> <span>Notes CSV</span>
+            </button>
+            <button class="menu-action-item btn-exam-download-pdf" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}">
+              <span>📄</span> <span>PV Notes PDF</span>
+            </button>
+            <button class="menu-action-item btn-exam-download-copies-zip" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="color:#38bdf8;">
+              <span>📦</span> <span>Copies Étudiants (ZIP)</span>
+            </button>
+            <button class="menu-action-item btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-type="${ex.exam_type || 'theoretical'}">
+              <span>📝</span> <span>Consulter Questions</span>
+            </button>
+            <button class="menu-action-item btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}">
+              <span>📦</span> <span>Exporter (.exam.zip)</span>
+            </button>
+            ${isSuperAdmin ? `
+              <button class="menu-action-item danger btn-exam-delete" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}">
+                <span>🗑️</span> <span>Supprimer l'épreuve</span>
+              </button>
+            ` : ''}
+          `;
+        } else if (sessStatus === 'in_progress') {
+          primaryBtnHtml = `
+            <button class="btn btn-primary btn-open-proctor" data-exam-id="${ex.id}" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:#10b981; border:1px solid #059669; font-weight:700; white-space:nowrap;" title="Surveiller en direct">
+              👁️ Surveiller
+            </button>
+          `;
+          menuItemsHtml = `
+            <button class="menu-action-item btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-type="${ex.exam_type || 'theoretical'}">
+              <span>📝</span> <span>Questions</span>
+            </button>
+            <button class="menu-action-item btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}">
+              <span>📦</span> <span>Exporter (.exam.zip)</span>
+            </button>
+          `;
+        } else {
+          primaryBtnHtml = `
+            <button class="btn btn-primary btn-open-proctor" data-exam-id="${ex.id}" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; font-weight:600; white-space:nowrap;" title="Ouvrir la salle de surveillance">
+              👁️ Surveiller
+            </button>
+          `;
+          menuItemsHtml = `
+            <button class="menu-action-item btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-type="${ex.exam_type || 'theoretical'}">
+              <span>📝</span> <span>Gérer Questions</span>
+            </button>
+            <button class="menu-action-item btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}">
+              <span>📦</span> <span>Exporter (.exam.zip)</span>
+            </button>
+            <button class="menu-action-item danger btn-exam-delete" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}">
+              <span>🗑️</span> <span>Supprimer l'épreuve</span>
+            </button>
+          `;
+        }
 
         tr.innerHTML = `
-
           <td style="padding:12px 10px; vertical-align:middle;">
-
-            <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border-color:#3b82f6; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle; white-space:nowrap;">
-
-            ${statusBadgeHtml}
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle;">
-
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.92rem; margin-bottom:2px;">${this._escapeHtml(ex.title)}</div>
-
-            <div style="font-size:0.75rem; color:var(--text-muted);">${this._escapeHtml(cleanInstr ? (cleanInstr.slice(0, 60) + (cleanInstr.length > 60 ? '...' : '')) : 'Sans consigne')}</div>
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle;">
-
-            ${typeBadge}
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; font-weight:600;">
-
-            ⏱️ ${ex.duration_minutes} min
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem;">
-
-            <span style="font-weight:700; color:#60a5fa;">${ex.question_count}</span> question(s)
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; font-weight:600;">
-
-            🎯 / ${ex.global_points}
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle;">
-
-            ${assignedPills}
-
-          </td>
-
-          <td style="padding:12px 10px; vertical-align:middle; text-align:center;">
-
-            <div style="display:inline-flex; flex-wrap:wrap; gap:6px; justify-content:center;">
-
-              <button class="btn btn-primary btn-open-proctor" data-exam-id="${ex.id}" style="font-size:0.78rem; padding:6px 10px;" title="Ouvrir la salle de surveillance">
-
-                👁️ Surveiller
-
-              </button>
-
-              <button class="btn btn-secondary btn-exam-manage-questions" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-type="${ex.exam_type || 'theoretical'}" style="font-size:0.78rem; padding:6px 8px;" title="Gérer ou ajouter des questions">
-
-                📝 Questions
-
-              </button>
-
-              ${isCompleted ? `
-
-                <button class="btn btn-secondary btn-exam-item-analysis" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Psychométrie & discrimination">
-
-                  📊 Stats
-
-                </button>
-
-                <button class="btn btn-secondary btn-exam-download-csv" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(16,185,129,0.18); border-color:#10b981; color:#6ee7b7;" title="Télécharger les notes finales de tous les étudiants (CSV)">
-
-                  📥 Notes CSV
-
-                </button>
-
-                <button class="btn btn-secondary btn-exam-download-pdf" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(245,158,11,0.18); border-color:#f59e0b; color:#fcd34d;" title="Télécharger le PV des notes finales de tous les étudiants (PDF)">
-
-                  📄 PV Notes PDF
-
-                </button>
-
-              ` : ''}
-
-              <button class="btn btn-secondary btn-exam-export-package" data-exam-id="${ex.id}" data-exam-module="${ex.module_code}" style="font-size:0.78rem; padding:6px 8px; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;" title="Exporter en .exam.zip">
-
-                📦 Export
-
-              </button>
-
-              <button class="btn btn-danger btn-exam-delete" data-exam-id="${ex.id}" data-exam-title="${this._escapeHtml(ex.title)}" style="font-size:0.78rem; padding:6px 8px;" title="Supprimer cet examen">
-
-                🗑️
-
-              </button>
-
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap;">
+              <span class="user-tag" style="background:rgba(59,130,246,0.12); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); font-weight:700; font-size:0.75rem; padding:2px 6px; border-radius:4px;">${this._escapeHtml(ex.module_code)}</span>
+              <span style="font-weight:600; color:var(--text-primary); font-size:0.92rem;">${this._escapeHtml(ex.title)}</span>
             </div>
-
+            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">${this._escapeHtml(cleanInstr ? (cleanInstr.slice(0, 65) + (cleanInstr.length > 65 ? '...' : '')) : 'Sans consigne')}</div>
           </td>
-
+          <td style="padding:12px 10px; vertical-align:middle; white-space:nowrap;">
+            ${statusBadgeHtml}
+          </td>
+          <td style="padding:10px 6px; vertical-align:middle; text-align:center; width:75px; max-width:85px; white-space:nowrap;">
+            ${typeBadge}
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; font-weight:600; white-space:nowrap;">
+            ⏱️ ${ex.duration_minutes} min
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; white-space:nowrap;">
+            <span style="font-weight:700; color:#60a5fa;">${ex.question_count}</span> Q
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; font-size:0.85rem; font-weight:600; white-space:nowrap;">
+            🎯 / ${ex.global_points}
+          </td>
+          <td style="padding:10px 6px; vertical-align:middle; width:95px; max-width:115px;">
+            <div style="display:flex; flex-wrap:wrap; gap:3px;">
+              ${assignedPills}
+            </div>
+          </td>
+          <td style="padding:12px 10px; vertical-align:middle; text-align:center;">
+            <div style="display:inline-flex; align-items:center; gap:6px; position:relative;">
+              ${primaryBtnHtml}
+              <div class="row-menu-wrapper">
+                <button class="btn btn-secondary btn-row-menu-toggle" type="button" title="Options supplémentaires" style="height:28px; line-height:26px; width:28px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">⋮</button>
+                <div class="row-actions-dropdown">
+                  ${menuItemsHtml}
+                </div>
+              </div>
+            </div>
+          </td>
         `;
-
         tbody.appendChild(tr);
-
       });
 
+      // Gestion de l'ouverture / fermeture des menus déroulants
+      container.querySelectorAll('.btn-row-menu-toggle').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const menu = btn.nextElementSibling;
+          const isVisible = menu && menu.style.display === 'block';
+          document.querySelectorAll('.row-actions-dropdown').forEach(m => m.style.display = 'none');
+          if (!isVisible && menu) {
+            menu.style.display = 'block';
+          }
+        };
+      });
 
+      if (!window._globalRowMenuBound) {
+        window._globalRowMenuBound = true;
+        document.addEventListener('click', () => {
+          document.querySelectorAll('.row-actions-dropdown').forEach(m => m.style.display = 'none');
+        });
+      }
 
       // Bind actions on exam table rows
-
       container.querySelectorAll('.btn-open-proctor').forEach(btn => {
-
         btn.onclick = () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           this.openExamProctoringRoom(examId);
-
         };
-
       });
-
-
 
       container.querySelectorAll('.btn-exam-item-analysis').forEach(btn => {
-
         btn.onclick = () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           const title = btn.getAttribute('data-exam-title');
-
           const moduleCode = btn.getAttribute('data-exam-module');
-
           this.openItemAnalysisModal(examId, title, moduleCode);
-
         };
-
       });
-
-
 
       container.querySelectorAll('.btn-exam-manage-questions').forEach(btn => {
-
         btn.onclick = () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           const title = btn.getAttribute('data-exam-title');
-
           this.openManageQuestionsModal(examId, title);
-
         };
-
       });
-
-
 
       container.querySelectorAll('.btn-exam-download-csv').forEach(btn => {
-
         btn.onclick = async () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           const moduleCode = btn.getAttribute('data-exam-module');
-
           try {
-
             await api.downloadExamResultsCsv(examId, moduleCode);
-
             this.showToast('Notes finales (CSV) téléchargées avec succès.', 'success');
-
           } catch (e) {
-
             this.showToast(`Erreur lors du téléchargement CSV : ${e.message}`, 'danger');
-
           }
-
         };
-
       });
 
-
+      container.querySelectorAll('.btn-exam-download-copies-zip').forEach(btn => {
+        btn.onclick = async () => {
+          const examId = btn.getAttribute('data-exam-id');
+          const moduleCode = btn.getAttribute('data-exam-module');
+          try {
+            this.showToast("Génération de l'archive des copies en cours...", "info");
+            await api.downloadExamStudentCopiesZip(examId, moduleCode);
+            this.showToast("Copies des étudiants (ZIP) téléchargées avec succès.", "success");
+          } catch (e) {
+            this.showToast(`Erreur lors du téléchargement des copies : ${e.message}`, "danger");
+          }
+        };
+      });
 
       container.querySelectorAll('.btn-exam-download-pdf').forEach(btn => {
-
         btn.onclick = async () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           const moduleCode = btn.getAttribute('data-exam-module');
-
           try {
-
             await api.downloadExamResultsPdf(examId, moduleCode);
-
             this.showToast('PV des notes finales (PDF) téléchargé avec succès.', 'success');
-
           } catch (e) {
-
             this.showToast(`Erreur lors du téléchargement PDF : ${e.message}`, 'danger');
-
           }
-
         };
-
       });
-
-
 
       container.querySelectorAll('.btn-exam-export-package').forEach(btn => {
-
         btn.onclick = async () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           const moduleCode = btn.getAttribute('data-exam-module');
-
           try {
-
             await api.exportExamPackage(examId, `examen_${moduleCode}_${examId}.exam.zip`);
-
+            this.showToast('Package exporté avec succès.', 'success');
           } catch (e) {
-
             this.showToast(`Erreur d'exportation du package : ${e.message}`, 'danger');
-
           }
-
         };
-
       });
-
-
 
       container.querySelectorAll('.btn-exam-delete').forEach(btn => {
-
         btn.onclick = async () => {
-
           const examId = btn.getAttribute('data-exam-id');
-
           const title = btn.getAttribute('data-exam-title');
-
           const ok = await this.showConfirmModal({
-
             title: "Supprimer l'épreuve",
-
             message: `Confirmez-vous la suppression définitive de l'épreuve "${title}" ? Cette action est irréversible.`,
-
             confirmText: "Supprimer définitivement",
-
             cancelText: "Annuler",
-
             icon: "🗑️",
-
             danger: true
-
           });
-
           if (ok) {
-
             try {
-
               await api.deleteExam(examId);
-
               this.showToast(`Épreuve "${title}" supprimée avec succès.`, 'success');
-
               await this.renderTeacherView();
-
             } catch (err) {
-
               this.showToast(`Erreur de suppression : ${err.message}`, 'danger');
-
             }
-
           }
-
         };
-
       });
+
 
 
 
@@ -7288,6 +7319,19 @@ class AppController {
 
 
 
+    const dlCopiesZipBtn = document.getElementById('btn-proctor-download-copies-zip');
+    if (dlCopiesZipBtn) {
+      dlCopiesZipBtn.onclick = async () => {
+        try {
+          this.showToast("Génération de l'archive des copies en cours...", "info");
+          await api.downloadSessionStudentCopiesZip(sessionId);
+          this.showToast("Copies des étudiants (ZIP) téléchargées avec succès.", "success");
+        } catch (err) {
+          this.showToast(`Erreur téléchargement copies : ${err.message}`, "danger");
+        }
+      };
+    }
+
     const dlGradesPdfBtn = document.getElementById('btn-proctor-download-grades-pdf');
 
     if (dlGradesPdfBtn) {
@@ -7392,16 +7436,44 @@ class AppController {
 
 
 
+  _cleanupProctorSession() {
+    if (this.proctorPollInterval) {
+      clearInterval(this.proctorPollInterval);
+      this.proctorPollInterval = null;
+    }
+    if (this.proctorTimerInterval) {
+      clearInterval(this.proctorTimerInterval);
+      this.proctorTimerInterval = null;
+    }
+    if (this.proctorWebSocket) {
+      try { this.proctorWebSocket.close(); } catch (_) {}
+      this.proctorWebSocket = null;
+    }
+    if (this._studentWs) {
+      try { this._studentWs.close(); } catch (_) {}
+      this._studentWs = null;
+    }
+    this.activeSessionId = null;
+    this.currentProctorSessionId = null;
+    this.currentProctorExamId = null;
+  }
+
   async refreshProctorOverview(sessionId) {
-
+    if (!this.currentUser || (this.currentUser.role !== 'teacher' && this.currentUser.role !== 'admin') || this.currentView !== 'view-proctor-live') {
+      this._cleanupProctorSession();
+      return;
+    }
     try {
-
       const data = await api.getProctorSessionOverview(sessionId);
 
       this._renderProctorOverviewData(data, sessionId);
 
     } catch (err) {
-
+      if (err.status === 401 || err.status === 403 || err.status === 404 ||
+          (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.includes('404') || err.message.includes('expirée') || err.message.includes('Accès refusé')))) {
+        this._cleanupProctorSession();
+        return;
+      }
       console.error("Échec de rafraîchissement proctor :", err);
 
       if (err.status === 404 || (err.message && (err.message.includes('404') || err.message.toLowerCase().includes('introuvable')))) {
@@ -7540,6 +7612,56 @@ class AppController {
 
 
 
+  _formatAuditLogEntry(l, studentMap = {}) {
+    const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('fr-FR') : new Date().toLocaleTimeString('fr-FR');
+    const details = typeof l.details === 'string' ? (() => { try { return JSON.parse(l.details); } catch (_) { return {}; } })() : (l.details || {});
+    const stName = studentMap[l.student_id] || (l.student_id ? `Étudiant ${l.student_id}` : 'Système');
+
+    switch (l.event_type) {
+      case 'FORCE_SUBMITTED': {
+        const by = details.forced_by ? ` par ${details.forced_by}` : '';
+        const mark = details.final_mark !== undefined ? ` Note : ${details.final_mark}/20.` : '';
+        return `[${timeStr}] 🛑 Épreuve de ${stName} soumise de force${by}.${mark}`;
+      }
+      case 'SUBMIT':
+      case 'STUDENT_SUBMITTED':
+      case 'EXAM_SUBMITTED': {
+        const mark = details.final_mark !== undefined ? ` Note : ${details.final_mark}/20.` : (details.score !== undefined ? ` Note : ${details.score}/20.` : '');
+        return `[${timeStr}] ✅ Épreuve soumise par ${stName}.${mark}`;
+      }
+      case 'EXAM_STARTED': {
+        const att = details.attempt_id ? ` (Session #${details.attempt_id.slice(-6)})` : '';
+        return `[${timeStr}] 🚀 Épreuve débutée pour ${stName}${att}.`;
+      }
+      case 'SECURITY_WARNING': {
+        const num = details.warning_number ? ` (Avertissement #${details.warning_number})` : '';
+        const reason = details.reason ? ` — ${details.reason}` : '';
+        return `[${timeStr}] ⚠️ Alerte de sécurité pour ${stName}${num}${reason}.`;
+      }
+      case 'UNLOCKED_BY_TEACHER': {
+        const by = details.unlocked_by ? ` par ${details.unlocked_by}` : ' par le surveillant';
+        return `[${timeStr}] 🔓 Poste de ${stName} débloqué${by} (compteur d'avertissements réinitialisé).`;
+      }
+      case 'STUDENT_CONNECTED':
+        return `[${timeStr}] 🟢 ${stName} connecté au poste d'épreuve.`;
+      case 'STUDENT_DISCONNECTED':
+        return `[${timeStr}] 🔴 Déconnexion détectée pour ${stName}.`;
+      case 'TIME_EXTENDED': {
+        const mins = details.minutes_added || 5;
+        return `[${timeStr}] ⏱️ Prolongation de +${mins} min accordée à ${stName}.`;
+      }
+      case 'SESSION_LAUNCHED':
+        return `[${timeStr}] 🚀 Lancement officiel synchronisé de la session d'épreuve.`;
+      case 'SESSION_CLOSED':
+        return `[${timeStr}] 🛑 Clôture officielle de la session par le surveillant.`;
+      default: {
+        const cleanDetails = details.reason || details.message || (typeof details === 'object' && Object.keys(details).length ? Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(', ') : '');
+        const detailPart = cleanDetails ? ` — ${cleanDetails}` : '';
+        return `[${timeStr}] ℹ️ [${l.event_type}] ${stName}${detailPart}`;
+      }
+    }
+  }
+
   _renderProctorOverviewData(data, sessionId) {
 
     const titleEl = document.getElementById('proctor-exam-title');
@@ -7659,6 +7781,7 @@ class AppController {
     setBtnVisible('btn-proctor-download-grades-csv', isFinished);
 
     setBtnVisible('btn-proctor-download-grades-pdf', isFinished);
+    setBtnVisible('btn-proctor-download-copies-zip', isFinished);
 
     setBtnVisible('btn-proctor-export-results-zip', isFinished);
 
@@ -8150,17 +8273,31 @@ class AppController {
 
     if (data.recent_audit_logs && data.recent_audit_logs.length) {
 
+      const studentMap = {};
+
+      if (Array.isArray(data.student_cards)) {
+
+        data.student_cards.forEach(c => {
+
+          if (c.student_id) studentMap[c.student_id] = c.student_name || c.username || c.student_id;
+
+        });
+
+      }
+
       this._loggedAuditLogIds = this._loggedAuditLogIds || new Set();
 
-      data.recent_audit_logs.forEach(l => {
+      const logs = [...data.recent_audit_logs].reverse();
+
+      logs.forEach(l => {
 
         if (!this._loggedAuditLogIds.has(l.id)) {
 
           this._loggedAuditLogIds.add(l.id);
 
-          const detailStr = typeof l.details === 'object' ? JSON.stringify(l.details) : (l.details || '');
+          const formattedText = this._formatAuditLogEntry(l, studentMap);
 
-          this._logProctorFeed(`[${new Date(l.timestamp).toLocaleTimeString('fr-FR')}] [${l.event_type}] Étudiant ${l.student_id || 'Système'} : ${detailStr}`);
+          this._logProctorFeed(formattedText);
 
         }
 
@@ -8249,6 +8386,22 @@ class AppController {
             }
 
             this.hideSuspensionScreen();
+
+          } else if (msg.type === 'EXAM_FORCE_SUBMITTED' || msg.type === 'SESSION_CLOSED') {
+
+            this.handleExamForcedClosure(msg);
+
+          } else if (msg.type === 'TIME_EXTENDED') {
+
+            const extraMin = msg.extra_minutes || 5;
+
+            if (this.activeExamRunner) {
+
+              this.activeExamRunner.extendTime(extraMin);
+
+            }
+
+            this.showToast(`⏱️ +${extraMin} minutes accordées pour cette épreuve !`, "info");
 
           }
 
@@ -10469,256 +10622,224 @@ class AppController {
       tbody.innerHTML = '';
 
       exams.forEach(ex => {
-
         const tr = document.createElement('tr');
-
         tr.style.borderBottom = '1px solid var(--card-border)';
 
-
-
         const sessStatus = ex.session_status || 'not_started';
-
         const isCompleted = sessStatus === 'completed';
 
-        let statusBadgeHtml = `<span class="badge" style="background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid #64748b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⚪ Non démarré</span>`;
-
+        let statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid #64748b; font-weight:700; white-space:nowrap;">⚪ Non démarré</span>`;
         if (sessStatus === 'waiting') {
-
-          statusBadgeHtml = `<span class="badge" style="background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">⏳ Salle ouverte</span>`;
-
+          statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid #f59e0b; font-weight:700; white-space:nowrap;">⏳ Salle ouverte</span>`;
         } else if (sessStatus === 'in_progress') {
-
-          statusBadgeHtml = `<span class="badge" style="background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟢 En cours (LIVE)</span>`;
-
+          statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981; font-weight:700; white-space:nowrap;">🟢 En cours</span>`;
         } else if (isCompleted) {
-
-          statusBadgeHtml = `<span class="badge" style="background:rgba(168,85,247,0.18); color:#d8b4fe; border:1px solid #a855f7; font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:700;">🟣 Terminé (${ex.submitted_count || 0} copie(s))</span>`;
-
+          statusBadgeHtml = `<span class="badge" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(168,85,247,0.18); color:#d8b4fe; border:1px solid #a855f7; font-weight:700; white-space:nowrap;">🟣 Terminé (${ex.submitted_count || 0})</span>`;
         }
 
+        let primaryBtnHtml = '';
+        let menuItemsHtml = '';
 
+        if (isCompleted) {
+          primaryBtnHtml = `
+            <button class="btn btn-secondary btn-admin-analysis-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" data-module="${ex.module_code}" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#6ee7b7; font-weight:600; white-space:nowrap;" title="Analyse psychométrique & discrimination">
+              📊 Stats
+            </button>
+          `;
+          menuItemsHtml = `
+            <button class="menu-action-item btn-admin-grades-csv-exam" data-id="${ex.id}" data-module="${ex.module_code}">
+              <span>📥</span> <span>Notes CSV</span>
+            </button>
+            <button class="menu-action-item btn-admin-grades-pdf-exam" data-id="${ex.id}" data-module="${ex.module_code}">
+              <span>📄</span> <span>PV PDF</span>
+            </button>
+            <button class="menu-action-item btn-admin-download-copies-zip" data-id="${ex.id}" data-module="${ex.module_code}" style="color:#38bdf8;">
+              <span>📦</span> <span>Copies Étudiants (ZIP)</span>
+            </button>
+            <button class="menu-action-item btn-admin-questions-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}">
+              <span>📝</span> <span>Gérer Questions</span>
+            </button>
+            <button class="menu-action-item btn-admin-export-pkg-exam" data-id="${ex.id}" data-module="${ex.module_code}">
+              <span>📦</span> <span>Exporter (.exam.zip)</span>
+            </button>
+            <button class="menu-action-item danger btn-admin-delete-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}">
+              <span>🗑️</span> <span>Supprimer (Super Admin)</span>
+            </button>
+          `;
+        } else if (sessStatus === 'in_progress') {
+          primaryBtnHtml = `
+            <button class="btn btn-primary btn-admin-proctor-exam" data-id="${ex.id}" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; background:#10b981; border:1px solid #059669; font-weight:700; white-space:nowrap;">
+              🖥️ Surveiller
+            </button>
+          `;
+          menuItemsHtml = `
+            <button class="menu-action-item btn-admin-questions-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}">
+              <span>📝</span> <span>Questions</span>
+            </button>
+            <button class="menu-action-item btn-admin-export-pkg-exam" data-id="${ex.id}" data-module="${ex.module_code}">
+              <span>📦</span> <span>Exporter (.exam.zip)</span>
+            </button>
+          `;
+        } else {
+          primaryBtnHtml = `
+            <button class="btn btn-primary btn-admin-proctor-exam" data-id="${ex.id}" style="display:inline-flex; align-items:center; justify-content:center; height:28px; line-height:26px; padding:0 10px; font-size:0.76rem; border-radius:6px; box-sizing:border-box; font-weight:600; white-space:nowrap;">
+              🖥️ Surveiller
+            </button>
+          `;
+          menuItemsHtml = `
+            <button class="menu-action-item btn-admin-questions-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}">
+              <span>📝</span> <span>Gérer Questions</span>
+            </button>
+            <button class="menu-action-item btn-admin-export-pkg-exam" data-id="${ex.id}" data-module="${ex.module_code}">
+              <span>📦</span> <span>Exporter (.exam.zip)</span>
+            </button>
+            <button class="menu-action-item danger btn-admin-delete-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}">
+              <span>🗑️</span> <span>Supprimer</span>
+            </button>
+          `;
+        }
 
         tr.innerHTML = `
-
-          <td style="padding:10px 14px; font-family:monospace; font-size:0.8rem; color:var(--text-muted);">${this._escapeHtml(ex.id)}</td>
-
-          <td style="padding:10px 14px; font-weight:600; color:var(--text-primary);">${this._escapeHtml(ex.title)}</td>
-
-          <td style="padding:10px 14px;"><span class="badge" style="background:rgba(99,102,241,0.15); color:#818cf8; font-size:0.78rem; padding:2px 8px; border-radius:10px;">${this._escapeHtml(ex.module_code)}</span></td>
-
-          <td style="padding:10px 14px;">${statusBadgeHtml}</td>
-
-          <td style="padding:10px 14px; font-size:0.85rem;">${ex.duration_minutes} min</td>
-
-          <td style="padding:10px 14px; font-size:0.85rem; font-weight:600;">/ ${ex.global_points}</td>
-
-          <td style="padding:10px 14px; font-size:0.85rem;">${ex.questions ? ex.questions.length : (ex.question_count || '—')} quest.</td>
-
-          <td style="padding:10px 14px; text-align:center;">
-
-            <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:center;">
-
-              <button class="btn btn-primary btn-admin-proctor-exam" data-id="${ex.id}" style="padding:4px 8px; font-size:0.78rem;">🖥️ Surveiller</button>
-
-              <button class="btn btn-secondary btn-admin-questions-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" style="padding:4px 8px; font-size:0.78rem;" title="Gérer les questions">📝</button>
-
-              ${isCompleted ? `
-
-                <button class="btn btn-secondary btn-admin-analysis-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;" title="Analyse psychométrique & discrimination">📊</button>
-
-                <button class="btn btn-secondary btn-admin-grades-csv-exam" data-id="${ex.id}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(16,185,129,0.18); border-color:#10b981; color:#6ee7b7;" title="Télécharger les notes finales de tous les étudiants (CSV)">📥 Notes CSV</button>
-
-                <button class="btn btn-secondary btn-admin-grades-pdf-exam" data-id="${ex.id}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(245,158,11,0.18); border-color:#f59e0b; color:#fcd34d;" title="Télécharger le PV des notes finales de tous les étudiants (PDF)">📄 PV PDF</button>
-
-              ` : ''}
-
-              <button class="btn btn-secondary btn-admin-export-pkg-exam" data-id="${ex.id}" data-module="${ex.module_code}" style="padding:4px 8px; font-size:0.78rem; background:rgba(99,102,241,0.15); border-color:#6366f1; color:#a5b4fc;" title="Exporter Package .exam.zip pour transfert USB">📦</button>
-
-              <button class="btn btn-danger btn-admin-delete-exam" data-id="${ex.id}" data-title="${this._escapeHtml(ex.title)}" style="padding:4px 8px; font-size:0.78rem;">🗑️</button>
-
+          <td style="padding:10px 14px; vertical-align:middle;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px; flex-wrap:wrap;">
+              <span class="badge" style="background:rgba(99,102,241,0.15); color:#818cf8; font-size:0.75rem; padding:2px 6px; border-radius:4px; font-weight:700;">${this._escapeHtml(ex.module_code)}</span>
+              <span style="font-weight:600; color:var(--text-primary); font-size:0.92rem;">${this._escapeHtml(ex.title)}</span>
             </div>
-
+            <div style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">${this._escapeHtml(ex.id)}</div>
           </td>
-
+          <td style="padding:10px 14px; vertical-align:middle; white-space:nowrap;">${statusBadgeHtml}</td>
+          <td style="padding:10px 14px; vertical-align:middle; font-size:0.85rem; font-weight:600; white-space:nowrap;">⏱️ ${ex.duration_minutes} min</td>
+          <td style="padding:10px 14px; vertical-align:middle; font-size:0.85rem; white-space:nowrap;"><span style="font-weight:700; color:#60a5fa;">${ex.questions ? ex.questions.length : (ex.question_count || '—')}</span> Q</td>
+          <td style="padding:10px 14px; vertical-align:middle; font-size:0.85rem; font-weight:600; white-space:nowrap;">🎯 / ${ex.global_points}</td>
+          <td style="padding:10px 14px; vertical-align:middle; text-align:center;">
+            <div style="display:inline-flex; align-items:center; gap:6px; position:relative;">
+              ${primaryBtnHtml}
+              <div class="row-menu-wrapper">
+                <button class="btn btn-secondary btn-row-menu-toggle" type="button" title="Options supplémentaires" style="height:28px; line-height:26px; width:28px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">⋮</button>
+                <div class="row-actions-dropdown">
+                  ${menuItemsHtml}
+                </div>
+              </div>
+            </div>
+          </td>
         `;
-
         tbody.appendChild(tr);
-
       });
 
-
+      tbody.querySelectorAll('.btn-row-menu-toggle').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const menu = btn.nextElementSibling;
+          const isVisible = menu && menu.style.display === 'block';
+          document.querySelectorAll('.row-actions-dropdown').forEach(m => m.style.display = 'none');
+          if (!isVisible && menu) {
+            menu.style.display = 'block';
+          }
+        };
+      });
 
       tbody.querySelectorAll('.btn-admin-proctor-exam').forEach(btn => {
-
         btn.onclick = () => {
-
           const id = btn.getAttribute('data-id');
-
           this.openExamProctoringRoom(id);
-
         };
-
       });
-
-
 
       tbody.querySelectorAll('.btn-admin-analysis-exam').forEach(btn => {
-
         btn.onclick = () => {
-
           const id = btn.getAttribute('data-id');
-
           const title = btn.getAttribute('data-title');
-
           const moduleCode = btn.getAttribute('data-module');
-
           this.openItemAnalysisModal(id, title, moduleCode);
-
         };
-
       });
-
-
 
       tbody.querySelectorAll('.btn-admin-questions-exam').forEach(btn => {
-
         btn.onclick = () => {
-
           const id = btn.getAttribute('data-id');
-
           const title = btn.getAttribute('data-title');
-
           this.openManageQuestionsModal(id, title);
-
         };
-
       });
-
-
 
       tbody.querySelectorAll('.btn-admin-grades-csv-exam').forEach(btn => {
-
         btn.onclick = async () => {
-
           const id = btn.getAttribute('data-id');
-
           const moduleCode = btn.getAttribute('data-module');
-
           try {
-
             await api.downloadExamResultsCsv(id, moduleCode);
-
             this.showToast('Notes finales (CSV) téléchargées avec succès.', 'success');
-
           } catch (e) {
-
             this.showToast(`Erreur lors du téléchargement CSV : ${e.message}`, 'danger');
-
           }
-
         };
-
       });
 
-
+      tbody.querySelectorAll('.btn-admin-download-copies-zip').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-id');
+          const moduleCode = btn.getAttribute('data-module');
+          try {
+            this.showToast("Génération de l'archive des copies en cours...", "info");
+            await api.downloadExamStudentCopiesZip(id, moduleCode);
+            this.showToast("Copies des étudiants (ZIP) téléchargées avec succès.", "success");
+          } catch (e) {
+            this.showToast(`Erreur lors du téléchargement des copies : ${e.message}`, "danger");
+          }
+        };
+      });
 
       tbody.querySelectorAll('.btn-admin-grades-pdf-exam').forEach(btn => {
-
         btn.onclick = async () => {
-
           const id = btn.getAttribute('data-id');
-
           const moduleCode = btn.getAttribute('data-module');
-
           try {
-
             await api.downloadExamResultsPdf(id, moduleCode);
-
             this.showToast('PV des notes finales (PDF) téléchargé avec succès.', 'success');
-
           } catch (e) {
-
             this.showToast(`Erreur lors du téléchargement PDF : ${e.message}`, 'danger');
-
           }
-
         };
-
       });
-
-
 
       tbody.querySelectorAll('.btn-admin-export-pkg-exam').forEach(btn => {
-
         btn.onclick = async () => {
-
           const id = btn.getAttribute('data-id');
-
           const moduleCode = btn.getAttribute('data-module');
-
           try {
-
             await api.exportExamPackage(id, `examen_${moduleCode}_${id}.exam.zip`);
-
+            this.showToast('Package exporté avec succès.', 'success');
           } catch (e) {
-
-            this.showToast(`Erreur d'exportation du package : ${e.message}`, "danger");
-
+            this.showToast(`Erreur d'exportation du package : ${e.message}`, 'danger');
           }
-
         };
-
       });
-
-
 
       tbody.querySelectorAll('.btn-admin-delete-exam').forEach(btn => {
-
         btn.onclick = async () => {
-
           const id = btn.getAttribute('data-id');
-
           const title = btn.getAttribute('data-title');
-
           const ok = await this.showConfirmModal({
-
             title: "Supprimer l'examen",
-
             message: `Confirmez-vous la suppression de l'examen "${title}" ?\nToutes les sessions et questions associées seront supprimées.`,
-
             confirmText: "Supprimer",
-
             cancelText: "Annuler",
-
             icon: "🗑️",
-
             danger: true
-
           });
-
           if (ok) {
-
             try {
-
               await api.deleteExam(id);
-
               this.showToast("Examen supprimé avec succès.", "success");
-
               await this.loadAdminExams();
-
               this.loadAdminOverview();
-
             } catch (e) {
-
               this.showToast(`Erreur de suppression : ${e.message}`, "danger");
-
             }
-
           }
-
         };
-
       });
+
 
     } catch (err) {
 
@@ -10764,7 +10885,7 @@ class AppController {
 
     });
 
-    processed = processed.replace(/(^|[^\\])\$([^\$\r\n]+?)\$/g, (match, prefix, formula) => {
+    processed = processed.replace(/(^|[^\\])\$([^\$\n]+?)\$/g, (match, prefix, formula) => {
 
       if (/^\s*\d+([.,]\d+)?\s*$/.test(formula)) return match;
 
@@ -10782,7 +10903,7 @@ class AppController {
 
     const codeBlocks = [];
 
-    processed = processed.replace(/```([a-zA-Z0-9_\-+#.]*)[ \t]*[\r\n]+([\s\S]*?)[\r\n]*```/g, (match, lang, code) => {
+    processed = processed.replace(/```([a-zA-Z0-9_\-+#.]*)[ \t]*[\n]+([\s\S]*?)[\n]*```/g, (match, lang, code) => {
 
       const id = `___CODEBLOCK_${codeBlocks.length}___`;
 
@@ -10790,7 +10911,7 @@ class AppController {
 
       const displayLang = cleanLang ? (cleanLang === 'py' ? 'python' : cleanLang) : 'code';
 
-      const cleanCode = code.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
+      const cleanCode = code.replace(/\n/g, '\n').replace(/\r/g, '\n').trimEnd();
 
       const escapedCode = this._escapeHtml(cleanCode);
 
@@ -10808,7 +10929,7 @@ class AppController {
 
     const inlineCodes = [];
 
-    processed = processed.replace(/`([^`\r\n]+)`/g, (match, code) => {
+    processed = processed.replace(/`([^`\n]+)`/g, (match, code) => {
 
       const id = `___INLINECODE_${inlineCodes.length}___`;
 

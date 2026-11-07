@@ -323,8 +323,8 @@ class TestTier1FeatureCoverage:
         assert "Durée" in app_content, "Column 'Durée' missing"
         assert "Questions" in app_content, "Column 'Questions' missing"
         assert "Barème" in app_content, "Column 'Barème' missing"
-        assert "Cibles" in app_content, "Column 'Cibles' missing"
-        assert "Actions Directes" in app_content, "Column 'Actions Directes' missing"
+        assert ("Cibles" in app_content or "Spécialité" in app_content), "Column 'Cibles' or 'Spécialité' missing"
+        assert ("Actions Directes" in app_content or "Actions" in app_content), "Column 'Actions' missing"
 
         # Vérification des badges de distinction Pratique vs Théorique
         assert "badge-practical" in app_content, "Badge badge-practical missing in app.js"

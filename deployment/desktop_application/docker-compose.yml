@@ -1,0 +1,66 @@
+# ==============================================================================
+# docker-compose.yml - Déploiement Clé en Main avec PostgreSQL 16
+# ==============================================================================
+version: "3.8"
+
+services:
+  # 1. Base de données PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: exam_postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-exam_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-exam_password}
+      POSTGRES_DB: ${POSTGRES_DB:-exam_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # 2. Serveur de Salle / Application FastAPI (Connecté à PostgreSQL)
+  serveur-salle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: examination-quiz-server:latest
+    container_name: exam_app_server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-exam_user}:${POSTGRES_PASSWORD:-exam_password}@db:5432/${POSTGRES_DB:-exam_db}
+      - SECRET_KEY=${SECRET_KEY:-exam_lan_super_secret_production_key_change_me_998877}
+      - APP_NAME=Plateforme d'Examen et d'Entraînement
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASS=${ADMIN_PASS:-admin123}
+      - TEACHER_USER=${TEACHER_USER:-prof_martin}
+      - TEACHER_PASS=${TEACHER_PASS:-prof123}
+      - STUDENT_USER=${STUDENT_USER:-etudiant1}
+      - STUDENT_PASS=${STUDENT_PASS:-etudiant123}
+      - AUTO_SEED_DEFAULT_USERS=${AUTO_SEED_DEFAULT_USERS:-true}
+      - SEED_DATA=${SEED_DATA:-true}
+    volumes:
+      - room_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  postgres_data:
+    name: exam_postgres_data_volume
+  room_data:
+    name: exam_room_data_volume

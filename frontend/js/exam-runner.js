@@ -174,6 +174,13 @@ export class ExamRunner {
     }
   }
 
+  extendTime(extraMinutes = 5) {
+    const extraSec = Math.max(1, extraMinutes) * 60;
+    this.remainingSeconds = (this.remainingSeconds || 0) + extraSec;
+    this._updateTimerDisplay();
+    console.log(`[ExamRunner] +${extraMinutes} min accordées. Nouveau temps restant : ${this.remainingSeconds}s`);
+  }
+
   async _autoSubmitOnTimeout() {
     this.stop();
     if (this._isSubmitting) return;

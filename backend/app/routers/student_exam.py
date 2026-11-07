@@ -32,7 +32,7 @@ from backend.app.services.websocket_manager import ws_manager
 
 from backend.app.dependencies import get_current_user
 
-from backend.app.routers.proctor import auto_close_all_expired_sessions
+from backend.app.routers.proctor import auto_close_all_expired_sessions, auto_close_session_if_expired
 
 
 
@@ -150,6 +150,9 @@ def get_available_exams(
         clean_instr = re.sub(r'\[CONFIG_RANDOM_STUDENT_QUESTIONS=\d+\]', '', instr).strip()
         clean_title = re.sub(r'^(?:Épreuve\s+Officielle|Examen\s+Officiel)\s*:\s*', '', ex.title, flags=re.IGNORECASE).strip()
 
+        last_session = db.query(ExamSession).filter(ExamSession.exam_id == ex.id).order_by(ExamSession.started_at.desc()).first()
+        is_sess_closed = (active_session is None and last_session and last_session.status in ['closed', 'completed', 'archived']) or (attempt and attempt.session and attempt.session.status in ['closed', 'completed', 'archived'])
+        effective_session_status = active_session.status if active_session else (attempt.session.status if (attempt and attempt.session) else (last_session.status if last_session else 'no_active_session'))
         results.append({
             "exam_id": ex.id,
             "title": clean_title,
@@ -169,9 +172,11 @@ def get_available_exams(
 
             "total_question_points": round(sum(q.points for q in ex.questions), 2),
 
-            "session_id": active_session.id if active_session else None,
+            "session_id": active_session.id if active_session else (attempt.session_id if attempt else None),
 
-            "session_status": active_session.status if active_session else "no_active_session",
+            "session_status": effective_session_status,
+
+            "is_session_closed": bool(is_sess_closed),
 
             "attempt_id": attempt.id if attempt else None,
 
@@ -243,41 +248,57 @@ def start_or_resume_exam(
 
 
 
+    # Scan et clôture automatique de toute session active dont le temps est écoulé
+    auto_close_all_expired_sessions(db)
+
     if existing_attempt:
-
+        if existing_attempt.status in ['submitted', 'timed_out', 'completed']:
+            raise HTTPException(
+                status_code=403,
+                detail='Vous avez déjà soumis cette épreuve. Il est strictement interdit de la recommencer.'
+            )
         session = existing_attempt.session
-
     else:
-
         # Recherche de la session de salle active (priorité à in_progress puis waiting)
-
         session = db.query(ExamSession).filter(
-
             ExamSession.exam_id == exam.id,
-
-            ExamSession.status == "in_progress"
-
+            ExamSession.status == 'in_progress'
         ).first()
-
         if not session:
-
             session = db.query(ExamSession).filter(
-
                 ExamSession.exam_id == exam.id,
-
-                ExamSession.status == "waiting"
-
+                ExamSession.status == 'waiting'
             ).first()
 
+    now = datetime.now(timezone.utc)
+    if session and session.status == 'in_progress':
+        if auto_close_session_if_expired(session, db, now):
+            raise HTTPException(
+                status_code=403,
+                detail='Le temps alloué pour cette épreuve est écoulé. La session est clôturée.'
+            )
 
+    if session and session.status in ['completed', 'closed', 'archived']:
+        raise HTTPException(
+            status_code=403,
+            detail='Cette épreuve est terminée et sa session est clôturée. L\'accès est fermé.'
+        )
 
-    # Si aucune session n'est encore créée, en générer une automatique pour la salle en attente
     if not session:
+        has_completed_session = db.query(ExamSession).filter(
+            ExamSession.exam_id == exam.id,
+            ExamSession.status.in_(['completed', 'closed', 'archived'])
+        ).first()
+        if has_completed_session:
+            raise HTTPException(
+                status_code=403,
+                detail='Cette épreuve officielle est terminée. La session est définitivement close.'
+            )
         session = ExamSession(
-            id=f"SESS-{uuid.uuid4().hex[:8].upper()}",
+            id=f'SESS-{uuid.uuid4().hex[:8].upper()}',
             exam_id=exam.id,
-            room_id="SALLE-ATTENTE",
-            status="waiting",
+            room_id='SALLE-ATTENTE',
+            status='waiting',
             started_at=None
         )
         db.add(session)
@@ -392,6 +413,13 @@ def start_or_resume_exam(
     elapsed_seconds = int((now - start_time).total_seconds())
 
     remaining_seconds = max(0, total_seconds - elapsed_seconds)
+
+    if session.status == 'in_progress' and (remaining_seconds <= 0 or elapsed_seconds >= total_seconds):
+        auto_close_session_if_expired(session, db, now)
+        raise HTTPException(
+            status_code=403,
+            detail='Le temps imparti pour cette épreuve est écoulé. La session est clôturée.'
+        )
 
 
 
@@ -1650,8 +1678,14 @@ def get_student_exam_review(
 
 
     if attempt.status not in ["submitted", "timed_out", "completed"]:
-
         raise HTTPException(status_code=400, detail="Le corrigé n'est accessible qu'une fois l'épreuve terminée et soumise.")
+
+    # Clôture impérative de la session d'examen par le surveillant/enseignant
+    if attempt.session.status not in ["closed", "completed", "archived"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Le corrigé officiel et le détail de vos erreurs ne seront consultables qu'une fois la session d'examen officiellement clôturée par l'enseignant."
+        )
 
 
 
@@ -1769,30 +1803,43 @@ def get_student_exam_review(
 
 
 
+        # Détails des tests unitaires et code initial pour questions pratiques
+        exec_details = None
+        if ans_record and getattr(ans_record, "details_json", None):
+            try:
+                exec_details = json.loads(ans_record.details_json)
+            except Exception:
+                exec_details = ans_record.details_json
+
+        test_cases = None
+        if getattr(q, "test_cases_json", None):
+            try:
+                test_cases = json.loads(q.test_cases_json)
+            except Exception:
+                test_cases = q.test_cases_json
+
+        display_corr_ans = corr_ans
+        if isinstance(corr_ans, dict):
+            if "solution" in corr_ans:
+                display_corr_ans = corr_ans["solution"]
+            elif "answer" in corr_ans:
+                display_corr_ans = corr_ans["answer"]
+
         detailed_questions.append({
-
             "index": idx,
-
             "id": q.id,
-
             "type": q.type,
-
             "prompt": q.prompt_markdown,
-
             "points": q.points,
-
             "options": opts,
-
             "user_answer": user_ans,
-
-            "correct_answer": corr_ans,
-
+            "correct_answer": display_corr_ans,
             "is_correct": is_corr,
-
             "awarded_points": awarded,
-
-            "explanation": expl
-
+            "explanation": expl,
+            "starter_code": getattr(q, "starter_code", ""),
+            "test_cases": test_cases,
+            "test_results": exec_details
         })
 
 
@@ -1856,14 +1903,16 @@ def unlock_suspended_attempt(
     attempt = db.query(StudentAttempt).filter(StudentAttempt.id == attempt_id).first()
 
     if not attempt:
-
         raise HTTPException(status_code=404, detail="Tentative introuvable.")
 
-
+    if attempt.status in ["submitted", "timed_out", "completed"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Cette épreuve a déjà été finalisée et soumise par l'étudiant. Déblocage interdit."
+        )
 
     if attempt.status != "suspended":
-
-        return {"success": True, "status": attempt.status, "message": "L'étudiant n'est pas suspendu."}
+        return {"success": False, "status": attempt.status, "message": "L'étudiant n'est pas suspendu."}
 
 
 
@@ -2178,7 +2227,11 @@ def get_student_statistics(
 
                 "submitted_at": a.submitted_at.strftime("%d/%m/%Y %H:%M") if a.submitted_at else "",
 
-                "passed": a.final_mark >= 10.0
+                "passed": a.final_mark >= 10.0,
+
+                "session_status": a.session.status if a.session else "closed",
+
+                "is_session_closed": (a.session.status in ["closed", "completed", "archived"]) if a.session else True
 
             })
 

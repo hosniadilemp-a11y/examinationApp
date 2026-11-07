@@ -1,0 +1,41 @@
+================================================================================
+PLATEFORME D'EXAMEN & D'EVALUATION — IDENTIFIANTS DE CONNEXION (TEST & PRODUCTION)
+================================================================================
+
+1. COMPTE ADMINISTRATEUR PRINCIPAL
+--------------------------------------------------------------------------------
+Role           : Administrateur Global
+Identifiant    : admin
+Mot de passe   : admin123   (ou Admin123! apres reinitialisation vierge)
+Note           : Modifiable a tout moment depuis l'interface Admin (bouton "Mon Compte Admin").
+
+2. COMPTES ENSEIGNANTS (PAR MODULE OFFICIEL)
+--------------------------------------------------------------------------------
+ID          | Identifiant   | Mot de passe | Nom Complet                        | Module(s) Assigne(s)
+------------|---------------|--------------|------------------------------------|---------------------
+TCH-PYTHON  | prof_python   | ProfPython1! | Dr. Martin Laurent (Resp. Python)  | PYTHON_INIT
+TCH-CRYPTO  | prof_crypto   | ProfCrypto1! | Dr. Sophie Bernard (Resp. Crypto)  | CRYPTO
+TCH-LINUX   | prof_linux    | ProfLinux1!  | Dr. Karim Mansouri (Resp. Linux)   | LINUX_ADMIN
+TCH-001     | prof_martin   | prof123      | Dr. Martin Laurent                 | PYTHON_INIT, CRYPTO, LINUX_ADMIN
+
+3. COMPTES ETUDIANTS (4 SPECIALITES x 4 ETUDIANTS = 16 ETUDIANTS)
+--------------------------------------------------------------------------------
+Matricule    | Identifiant  | Mot de passe  | Nom & Prenom             | Annee     | Specialite
+-------------|--------------|---------------|--------------------------|-----------|------------
+ETU-ETU_DEV1 | etu_dev1     | StudentDev1!  | Alice Dev (IA-1)         | 2025-2026 | DEV-IA
+ETU-ETU_DEV2 | etu_dev2     | StudentDev2!  | Bob Dev (IA-2)           | 2025-2026 | DEV-IA
+ETU-ETU_DEV3 | etu_dev3     | StudentDev3!  | Clara Dev (IA-3)         | 2025-2026 | DEV-IA
+ETU-ETU_DEV4 | etu_dev4     | StudentDev4!  | David Dev (IA-4)         | 2025-2026 | DEV-IA
+ETU-ETU_SYS1 | etu_sys1     | StudentSys1!  | Emma Sys (Linux-1)       | 2025-2026 | SYS-ADMIN
+ETU-ETU_SYS2 | etu_sys2     | StudentSys2!  | Fares Sys (Linux-2)      | 2025-2026 | SYS-ADMIN
+ETU-ETU_SYS3 | etu_sys3     | StudentSys3!  | Gilles Sys (Linux-3)     | 2025-2026 | SYS-ADMIN
+ETU-ETU_SYS4 | etu_sys4     | StudentSys4!  | Hajar Sys (Linux-4)      | 2025-2026 | SYS-ADMIN
+ETU-ETU_SEC1 | etu_sec1     | StudentSec1!  | Ines Sec (Crypto-1)      | 2025-2026 | CYBER-SEC
+ETU-ETU_SEC2 | etu_sec2     | StudentSec2!  | Jules Sec (Crypto-2)     | 2025-2026 | CYBER-SEC
+ETU-ETU_SEC3 | etu_sec3     | StudentSec3!  | Karim Sec (Crypto-3)     | 2025-2026 | CYBER-SEC
+ETU-ETU_SEC4 | etu_sec4     | StudentSec4!  | Lena Sec (Crypto-4)      | 2025-2026 | CYBER-SEC
+ETU-001      | etudiant1    | etu123        | Alice Dupont (GL-1)      | 2025-2026 | GRP-1
+ETU-ETU_LOG2 | etu_log2     | StudentLog2!  | Thomas Garnier (GL-2)    | 2025-2026 | GRP-1
+ETU-ETU_LOG3 | etu_log3     | StudentLog3!  | Camille Chevalier (GL-3) | 2025-2026 | GRP-1
+ETU-ETU_LOG4 | etu_log4     | StudentLog4!  | Maxime Lambert (GL-4)    | 2025-2026 | GRP-1
+================================================================================

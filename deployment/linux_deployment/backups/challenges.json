@@ -1,0 +1,818 @@
+[
+  {
+    "id": "LINUX-101",
+    "level": 1,
+    "title": "Exploration et Arborescence Système",
+    "topic": "Navigation & Fichiers de Base",
+    "difficulty": "easy",
+    "points": 2.0,
+    "description": "### Exploration du Répertoire Courant\n\nAffichez le chemin absolu du répertoire dans lequel vous vous trouvez avec `pwd`, puis listez l'ensemble des fichiers y compris les fichiers cachés avec `ls -la`.\n\n#### Objectif\n- Exécuter `pwd`\n- Exécuter `ls -la`",
+    "starter_cmd": "# Tapez vos commandes de navigation\n",
+    "solution": "pwd && ls -la",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {
+          ".bashrc": {
+            "type": "file",
+            "content": "# bashrc config\n"
+          },
+          ".profile": {
+            "type": "file",
+            "content": "export PATH\n"
+          },
+          "documents": {
+            "type": "dir",
+            "files": {}
+          },
+          "notes.txt": {
+            "type": "file",
+            "content": "Bienvenue sur Linux\n"
+          }
+        }
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Affichage chemin absolu",
+        "cmd": "pwd",
+        "expected_stdout": "/home/student",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "/home/student"
+      },
+      {
+        "name": "Affichage fichiers cachés",
+        "cmd": "ls -la",
+        "expected_stdout": ".bashrc",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": ".bashrc"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Vérification enchaînement pwd et ls",
+        "cmd": "pwd && ls -a",
+        "expected_stdout": "/home/student",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "/home/student"
+      },
+      {
+        "name": "Vérification présence notes.txt",
+        "cmd": "ls -l notes.txt",
+        "expected_stdout": "notes.txt",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "notes.txt"
+      },
+      {
+        "name": "Navigation relative documents",
+        "cmd": "cd documents && pwd",
+        "expected_stdout": "/home/student/documents",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "/home/student/documents"
+      },
+      {
+        "name": "Navigation répertoire parent",
+        "cmd": "cd .. && pwd",
+        "expected_stdout": "/home",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "/home"
+      },
+      {
+        "name": "Filtrage fichier note",
+        "cmd": "ls -la | grep notes.txt",
+        "expected_stdout": "notes.txt",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "notes.txt"
+      }
+    ],
+    "hints": [
+      "Utilisez la commande 'pwd' pour afficher le répertoire courant.",
+      "Solution complète de référence :\n```bash\npwd && ls -la\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Exploration et Arborescence Système\n\n**Commandes utilisées :** `pwd && ls -la`\n\n1. **`pwd` (Print Working Directory) :** Interroge le noyau et affiche sur la sortie standard le chemin absolu complet du répertoire de travail actuel depuis la racine `/`.\n2. **Opérateur logique `&&` :** Exécute la seconde commande si et seulement si la première réussit avec un code de retour égal à 0.\n3. **`ls -la` :** Combine l'option `-l` (format long affichant permissions, liens, propriétaire, groupe, taille en octets et horodatage) et l'option `-a` (all, incluant les fichiers et répertoires masqués dont le nom commence par un point `.`)."
+  },
+  {
+    "id": "LINUX-102",
+    "level": 1,
+    "title": "Création d'une Structure de Projet",
+    "topic": "Navigation & Fichiers de Base",
+    "difficulty": "easy",
+    "points": 2.0,
+    "description": "### Création d'Arborescence\n\nCréez les répertoires `project/src` et `project/docs` à l'aide de `mkdir -p`, puis initialisez les fichiers vides `project/src/main.sh` et `project/README.md` avec `touch`.\n\n#### Objectif\n- `mkdir -p project/src project/docs`\n- `touch project/src/main.sh project/README.md`",
+    "starter_cmd": "# Créez l'arborescence et les fichiers requis\n",
+    "solution": "mkdir -p project/src project/docs && touch project/src/main.sh project/README.md",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {}
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Vérification répertoire project/src",
+        "cmd": "test -d project/src && echo 'SRC_OK'",
+        "expected_stdout": "SRC_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "project/src"
+      },
+      {
+        "name": "Vérification fichier README.md",
+        "cmd": "test -f project/README.md && echo 'README_OK'",
+        "expected_stdout": "README_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "project/README.md"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Vérification répertoire docs",
+        "cmd": "test -d project/docs && echo 'DOCS_OK'",
+        "expected_stdout": "DOCS_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "project/docs"
+      },
+      {
+        "name": "Vérification script main.sh",
+        "cmd": "test -f project/src/main.sh && echo 'MAIN_OK'",
+        "expected_stdout": "MAIN_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "project/src/main.sh"
+      },
+      {
+        "name": "Listing récursif du projet",
+        "cmd": "ls -R project",
+        "expected_stdout": "main.sh",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "main.sh"
+      },
+      {
+        "name": "Test intégrité README",
+        "cmd": "ls project | grep README.md",
+        "expected_stdout": "README.md",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "README.md"
+      },
+      {
+        "name": "Test présence sous-dossiers",
+        "cmd": "ls project | grep src",
+        "expected_stdout": "src",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "src"
+      }
+    ],
+    "hints": [
+      "L'option '-p' de 'mkdir' crée les répertoires parents manquants si nécessaire.",
+      "Solution complète de référence :\n```bash\nmkdir -p project/src project/docs && touch project/src/main.sh project/README.md\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Création d'une Structure de Projet\n\n**Commandes utilisées :** `mkdir -p project/src project/docs && touch project/src/main.sh project/README.md`\n\n1. **`mkdir -p` (Make Directories Parents) :** Crée récursivement tous les répertoires parents manquants sans déclencher d'erreur si le dossier existe déjà.\n2. **`touch` :** Met à jour les horodatages d'accès et de modification d'un fichier, ou crée un nouveau fichier vide de 0 octet s'il n'existe pas encore sur le système de fichiers."
+  },
+  {
+    "id": "LINUX-103",
+    "level": 1,
+    "title": "Copie, Renommage et Suppression",
+    "topic": "Navigation & Fichiers de Base",
+    "difficulty": "medium",
+    "points": 3.0,
+    "description": "### Manipulation de Fichiers\n\n1. Copiez l'ensemble du dossier `reports` vers `reports_backup` avec `cp -r`.\n2. Déplacez/renommez `draft.txt` vers `archive/old_draft.txt` avec `mv`.\n3. Supprimez le fichier temporaire `temp.log` avec `rm`.",
+    "starter_cmd": "# Commandes cp, mv et rm\n",
+    "solution": "cp -r reports reports_backup && mv draft.txt archive/old_draft.txt && rm temp.log",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {
+          "reports": {
+            "type": "dir",
+            "files": {
+              "q1.txt": {
+                "type": "file",
+                "content": "Q1 Report\n"
+              }
+            }
+          },
+          "archive": {
+            "type": "dir",
+            "files": {}
+          },
+          "draft.txt": {
+            "type": "file",
+            "content": "Brouillon initial\n"
+          },
+          "temp.log": {
+            "type": "file",
+            "content": "Trace temporaire à détruire\n"
+          }
+        }
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Vérification dossier reports_backup",
+        "cmd": "test -d reports_backup && echo 'BACKUP_DIR_OK'",
+        "expected_stdout": "BACKUP_DIR_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "reports_backup"
+      },
+      {
+        "name": "Vérification suppression temp.log",
+        "cmd": "test ! -f temp.log && echo 'TEMP_REMOVED'",
+        "expected_stdout": "TEMP_REMOVED",
+        "expected_exit_code": 0,
+        "assertion_type": "file_not_exists",
+        "expected": "temp.log"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Contenu du backup copié",
+        "cmd": "test -f reports_backup/q1.txt && echo 'REPORT_COPIED'",
+        "expected_stdout": "REPORT_COPIED",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "reports_backup/q1.txt"
+      },
+      {
+        "name": "Vérification déplacement archive/old_draft.txt",
+        "cmd": "test -f archive/old_draft.txt && echo 'DRAFT_ARCHIVED'",
+        "expected_stdout": "DRAFT_ARCHIVED",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "archive/old_draft.txt"
+      },
+      {
+        "name": "Vérification absence de draft.txt d'origine",
+        "cmd": "test ! -f draft.txt && echo 'ORIGIN_MOVED'",
+        "expected_stdout": "ORIGIN_MOVED",
+        "expected_exit_code": 0,
+        "assertion_type": "file_not_exists",
+        "expected": "draft.txt"
+      },
+      {
+        "name": "Contenu intègre dans old_draft",
+        "cmd": "cat archive/old_draft.txt",
+        "expected_stdout": "Brouillon initial",
+        "expected_exit_code": 0,
+        "assertion_type": "file_contains",
+        "expected": "Brouillon initial"
+      },
+      {
+        "name": "Préservation du dossier reports source",
+        "cmd": "test -f reports/q1.txt && echo 'SRC_INTACT'",
+        "expected_stdout": "SRC_INTACT",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "reports/q1.txt"
+      }
+    ],
+    "hints": [
+      "Pour copier un répertoire récursivement, utilisez 'cp -r'.",
+      "Solution complète de référence :\n```bash\ncp -r reports reports_backup && mv draft.txt archive/old_draft.txt && rm temp.log\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Copie, Renommage et Suppression\n\n**Commandes utilisées :** `cp -r reports reports_backup && mv draft.txt archive/old_draft.txt && rm temp.log`\n\n1. **`cp -r` (Recursive Copy) :** Duplique l'intégralité de l'arborescence du dossier source vers le dossier destination.\n2. **`mv` (Move / Rename) :** Déplace ou renomme un fichier de manière atomique en modifiant l'entrée de répertoire (dentry) sans recopier les données physiques sur le même système de fichiers.\n3. **`rm` (Remove) :** Délie (unlink) l'entrée de fichier de l'inode correspondant, libérant l'espace disque si aucun autre descripteur de fichier ne le maintient ouvert."
+  },
+  {
+    "id": "LINUX-201",
+    "level": 2,
+    "title": "Sécurisation des Permissions d'Exécution",
+    "topic": "Permissions & Sécurité",
+    "difficulty": "medium",
+    "points": 3.0,
+    "description": "### Sécurisation POSIX\n\n1. Attribuez les permissions `755` (`rwxr-xr-x`) au script `deploy.sh`.\n2. Restreignez le fichier sensible `secrets.env` avec les permissions `600` (`rw-------`).",
+    "starter_cmd": "# Modifiez les permissions des fichiers\n",
+    "solution": "chmod 755 deploy.sh && chmod 600 secrets.env",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {
+          "deploy.sh": {
+            "type": "file",
+            "content": "#!/bin/bash\necho 'Deploying...'\n",
+            "mode": "644"
+          },
+          "secrets.env": {
+            "type": "file",
+            "content": "DB_PASSWORD=secret_super_token\n",
+            "mode": "644"
+          }
+        }
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Permissions deploy.sh",
+        "cmd": "test -x deploy.sh && echo 'EXEC_OK'",
+        "expected_stdout": "EXEC_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "permission",
+        "expected": "755"
+      },
+      {
+        "name": "Droits secrets.env",
+        "cmd": "ls -l secrets.env",
+        "expected_stdout": "secrets.env",
+        "expected_exit_code": 0,
+        "assertion_type": "permission",
+        "expected": "600"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Vérification statut binaire deploy.sh",
+        "cmd": "stat -c %a deploy.sh 2>/dev/null || ls -l deploy.sh | grep -E 'rwxr-xr-x|755'",
+        "expected_stdout": "deploy.sh",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "deploy.sh"
+      },
+      {
+        "name": "Vérification restriction secrets.env",
+        "cmd": "stat -c %a secrets.env 2>/dev/null || ls -l secrets.env | grep -E 'rw-------|600'",
+        "expected_stdout": "secrets.env",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "secrets.env"
+      },
+      {
+        "name": "Exécution deploy.sh",
+        "cmd": "./deploy.sh",
+        "expected_stdout": "Deploying...",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "Deploying..."
+      },
+      {
+        "name": "Lecture secrets.env propriétaire",
+        "cmd": "cat secrets.env",
+        "expected_stdout": "DB_PASSWORD",
+        "expected_exit_code": 0,
+        "assertion_type": "file_contains",
+        "expected": "DB_PASSWORD"
+      },
+      {
+        "name": "Listing permissions combinées",
+        "cmd": "ls -l deploy.sh secrets.env",
+        "expected_stdout": "deploy.sh",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "deploy.sh"
+      }
+    ],
+    "hints": [
+      "En notation octale : 7 (rwx), 5 (r-x), 0 (---).",
+      "Solution complète de référence :\n```bash\nchmod 755 deploy.sh && chmod 600 secrets.env\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Sécurisation des Permissions d'Exécution\n\n**Commandes utilisées :** `chmod 755 deploy.sh && chmod 600 secrets.env`\n\n1. **Notation octale des permissions :** Chaque triplet représente Lecture (4), Écriture (2), Exécution (1).\n2. **`chmod 755` (rwxr-xr-x) :** Attribue tous les droits au propriétaire (`7 = 4+2+1`), et uniquement la lecture et l'exécution au groupe et aux autres (`5 = 4+0+1`), idéal pour les scripts et exécutables partagés.\n3. **`chmod 600` (rw-------) :** Restreint l'accès complet en lecture/écriture au seul propriétaire (`6 = 4+2+0`) et interdit tout accès aux tiers, indispensable pour les fichiers de secrets et clés privées."
+  },
+  {
+    "id": "LINUX-202",
+    "level": 2,
+    "title": "Filtrage et Recherche avec Grep et Find",
+    "topic": "Filtrage Textuel",
+    "difficulty": "medium",
+    "points": 3.0,
+    "description": "### Recherche & Filtrage de Contenu\n\n1. Filtrez les erreurs 'CRITICAL' dans `service.log` et affichez les lignes correspondantes avec leur numéro de ligne via `grep -n`.\n2. Trouvez tous les fichiers `.log` dans `/var/log` avec la commande `find`.",
+    "starter_cmd": "# Utilisez grep et find\n",
+    "solution": "grep -n 'CRITICAL' service.log && find /var/log -name '*.log'",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {
+          "service.log": {
+            "type": "file",
+            "content": "INFO: Booting\nCRITICAL: Memory leak detected at 0x4f\nINFO: Running\nCRITICAL: Process crashed\nDEBUG: End\n"
+          }
+        }
+      },
+      "/var/log": {
+        "type": "dir",
+        "files": {
+          "syslog.log": {
+            "type": "file",
+            "content": "syslog ok\n"
+          },
+          "auth.log": {
+            "type": "file",
+            "content": "auth ok\n"
+          }
+        }
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Extraction lignes CRITICAL",
+        "cmd": "grep -n 'CRITICAL' service.log",
+        "expected_stdout": "CRITICAL: Memory leak",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "CRITICAL: Memory leak"
+      },
+      {
+        "name": "Numéro de ligne grep",
+        "cmd": "grep -n 'CRITICAL' service.log",
+        "expected_stdout": "2:",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "2:"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Seconde erreur CRITICAL",
+        "cmd": "grep -n 'CRITICAL' service.log",
+        "expected_stdout": "4:",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "4:"
+      },
+      {
+        "name": "Comptage des occurrences CRITICAL",
+        "cmd": "grep -c 'CRITICAL' service.log",
+        "expected_stdout": "2",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "2"
+      },
+      {
+        "name": "Recherche find des fichiers .log",
+        "cmd": "find /var/log -name '*.log'",
+        "expected_stdout": "syslog.log",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "syslog.log"
+      },
+      {
+        "name": "Recherche find auth.log",
+        "cmd": "find /var/log -name '*.log'",
+        "expected_stdout": "auth.log",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "auth.log"
+      },
+      {
+        "name": "Inversion grep non critique",
+        "cmd": "grep -v 'CRITICAL' service.log",
+        "expected_stdout": "INFO: Booting",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "INFO: Booting"
+      }
+    ],
+    "hints": [
+      "L'option '-n' de 'grep' préfixe chaque ligne trouvée par son numéro de ligne.",
+      "Solution complète de référence :\n```bash\ngrep -n 'CRITICAL' service.log && find /var/log -name '*.log'\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Filtrage et Recherche avec Grep et Find\n\n**Commandes utilisées :** `grep -n 'CRITICAL' service.log && find /var/log -name '*.log'`\n\n1. **`grep -n` :** Recherche le motif textuel `'CRITICAL'` dans le fichier cible et préfixe chaque occurrence par son numéro de ligne exact.\n2. **`find /var/log -name '*.log'` :** Parcourt récursivement l'arborescence à partir de `/var/log` et sélectionne les nœuds dont le nom respecte le filtre globbing spécifié."
+  },
+  {
+    "id": "LINUX-301",
+    "level": 3,
+    "title": "Pipeline d'Analyse de Logs et Redirection",
+    "topic": "Pipes & Redirections",
+    "difficulty": "hard",
+    "points": 4.0,
+    "description": "### Tubes et Redirections de Flux\n\nAnalysez le fichier d'accès HTTP `access.log` : extrayez toutes les requêtes ayant le code `404`, comptez le nombre de lignes via `wc -l`, et enregistrez ce total dans `404_count.txt` à l'aide d'une redirection `>`.",
+    "starter_cmd": "# Combinez grep, wc -l et la redirection >\n",
+    "solution": "grep ' 404 ' access.log | wc -l > 404_count.txt",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {
+          "access.log": {
+            "type": "file",
+            "content": "127.0.0.1 - - [20/Oct/2026] \"GET /index.html\" 200 452\n10.0.0.2 - - [20/Oct/2026] \"GET /missing.png\" 404 120\n10.0.0.3 - - [20/Oct/2026] \"POST /login\" 200 500\n10.0.0.4 - - [20/Oct/2026] \"GET /unknown.php\" 404 120\n10.0.0.5 - - [20/Oct/2026] \"GET /admin/broken\" 404 120\n"
+          }
+        }
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Création du fichier 404_count.txt",
+        "cmd": "test -f 404_count.txt && echo 'FILE_CREATED'",
+        "expected_stdout": "FILE_CREATED",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "404_count.txt"
+      },
+      {
+        "name": "Contenu du compteur",
+        "cmd": "cat 404_count.txt",
+        "expected_stdout": "3",
+        "expected_exit_code": 0,
+        "assertion_type": "file_contains",
+        "expected": "3"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Vérification valeur exacte",
+        "cmd": "tr -d ' ' < 404_count.txt",
+        "expected_stdout": "3",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "3"
+      },
+      {
+        "name": "Vérification lignes 404 originales",
+        "cmd": "grep ' 404 ' access.log",
+        "expected_stdout": "missing.png",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "missing.png"
+      },
+      {
+        "name": "Vérification exclusion 200",
+        "cmd": "grep -v ' 404 ' access.log",
+        "expected_stdout": "index.html",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "index.html"
+      },
+      {
+        "name": "Test non vide du fichier résultat",
+        "cmd": "test -s 404_count.txt && echo 'NON_EMPTY'",
+        "expected_stdout": "NON_EMPTY",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "NON_EMPTY"
+      },
+      {
+        "name": "Pipeline complet sans redirection",
+        "cmd": "grep ' 404 ' access.log | wc -l",
+        "expected_stdout": "3",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "3"
+      }
+    ],
+    "hints": [
+      "Le symbole '|' (pipe) connecte la sortie standard d'une commande à l'entrée standard de la suivante.",
+      "Solution complète de référence :\n```bash\ngrep ' 404 ' access.log | wc -l > 404_count.txt\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Pipeline d'Analyse de Logs et Redirection\n\n**Commandes utilisées :** `grep ' 404 ' access.log | wc -l > 404_count.txt`\n\n1. **`grep ' 404 ' access.log` :** Extrait toutes les requêtes HTTP ayant généré le code de statut 404 (Not Found).\n2. **Tube Unix (`|`) :** Raccorde le descripteur de sortie standard (stdout) du `grep` au descripteur d'entrée standard (stdin) de la commande suivante sans passer par un fichier temporaire sur disque.\n3. **`wc -l` (Word Count Lines) :** Compte le nombre de lignes reçues sur son entrée standard.\n4. **Redirection `>` :** Écrit le flux résultant dans `404_count.txt` en créant ou écrasant le fichier cible."
+  },
+  {
+    "id": "LINUX-302",
+    "level": 3,
+    "title": "Chaînage Conditionnel et Enchaînements",
+    "topic": "Scripts Bash",
+    "difficulty": "hard",
+    "points": 4.0,
+    "description": "### Enchaînements Logiques (&&, ||)\n\nVérifiez si le fichier `config.json` existe avec `test -f config.json` :\n- Si oui : écrivez 'CONFIG_OK' dans `status.txt` via `&&`.\n- Si non : créez `config.json` avec `{}` et enregistrez 'CONFIG_CREATED' dans `status.txt` via `||`.",
+    "starter_cmd": "# Utilisez test -f, && et ||\n",
+    "solution": "test -f config.json && echo 'CONFIG_OK' > status.txt || (echo '{}' > config.json && echo 'CONFIG_CREATED' > status.txt)",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {}
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Création du fichier status.txt",
+        "cmd": "test -f status.txt && echo 'STATUS_EXISTS'",
+        "expected_stdout": "STATUS_EXISTS",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "status.txt"
+      },
+      {
+        "name": "Message de création",
+        "cmd": "cat status.txt",
+        "expected_stdout": "CONFIG_CREATED",
+        "expected_exit_code": 0,
+        "assertion_type": "file_contains",
+        "expected": "CONFIG_CREATED"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Présence de config.json généré",
+        "cmd": "test -f config.json && echo 'CONF_FILE_OK'",
+        "expected_stdout": "CONF_FILE_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "config.json"
+      },
+      {
+        "name": "Contenu de config.json",
+        "cmd": "cat config.json",
+        "expected_stdout": "{}",
+        "expected_exit_code": 0,
+        "assertion_type": "file_contains",
+        "expected": "{}"
+      },
+      {
+        "name": "Test d'idempotence après création",
+        "cmd": "test -f config.json && echo 'EXISTS'",
+        "expected_stdout": "EXISTS",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "EXISTS"
+      },
+      {
+        "name": "Code de retour de test",
+        "cmd": "test -f status.txt; echo $?",
+        "expected_stdout": "0",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "0"
+      },
+      {
+        "name": "Taille de status.txt",
+        "cmd": "wc -l < status.txt",
+        "expected_stdout": "1",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "1"
+      }
+    ],
+    "hints": [
+      "'cmd1 && cmd2' n'exécute cmd2 que si cmd1 réussit (code retour 0).",
+      "Solution complète de référence :\n```bash\ntest -f config.json && echo 'CONFIG_OK' > status.txt || (echo '{}' > config.json && echo 'CONFIG_CREATED' > status.txt)\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Chaînage Conditionnel et Enchaînements\n\n**Commandes utilisées :** `test -f config.json && echo 'CONFIG_OK' > status.txt || (echo '{}' > config.json && echo 'CONFIG_CREATED' > status.txt)`\n\n1. **`test -f fichier` :** Vérifie si le chemin existe et pointe vers un fichier régulier (code de retour 0 si vrai, 1 sinon).\n2. **Opérateurs de contrôle `&&` et `||` :** `cmdA && cmdB || cmdC` implémente un embranchement conditionnel : si le test réussit, `cmdB` est exécutée ; en cas d'échec, le sous-shell `cmdC` initialise la configuration par défaut et consigne le statut."
+  },
+  {
+    "id": "LINUX-401",
+    "level": 4,
+    "title": "Gestion des Processus et Signaux Système",
+    "topic": "Processus & Signaux",
+    "difficulty": "very_hard",
+    "points": 5.0,
+    "description": "### Signaux et Processus\n\nUn processus consommateur anormal nommé `miner_daemon` tourne sur le PID `4096`. Identifiez-le avec `ps`, envoyez-lui un signal d'arrêt forcé `SIGKILL` avec `kill -9 4096`, puis vérifiez avec `ps` qu'il n'apparaît plus.",
+    "starter_cmd": "# Inspectez les processus et terminez le PID ciblé\n",
+    "solution": "ps aux | grep miner_daemon && kill -9 4096",
+    "initial_fs": {
+      "/proc": {
+        "type": "dir",
+        "files": {
+          "processes.json": {
+            "type": "file",
+            "content": "[{\"pid\": 1, \"cmd\": \"systemd\"}, {\"pid\": 4096, \"cmd\": \"miner_daemon\"}, {\"pid\": 5001, \"cmd\": \"bash\"}]"
+          }
+        }
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Détection du processus rogue",
+        "cmd": "ps aux | grep miner_daemon",
+        "expected_stdout": "miner_daemon",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "miner_daemon"
+      },
+      {
+        "name": "Identification PID",
+        "cmd": "ps aux | grep miner_daemon",
+        "expected_stdout": "4096",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "4096"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Vérification signal kill 4096",
+        "cmd": "kill -9 4096; echo $?",
+        "expected_stdout": "0",
+        "expected_exit_code": 0,
+        "assertion_type": "exit_code",
+        "expected": "0"
+      },
+      {
+        "name": "Inspection des processus système",
+        "cmd": "ps -ef",
+        "expected_stdout": "systemd",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "systemd"
+      },
+      {
+        "name": "Test statut après arrêt",
+        "cmd": "ps aux | grep -v miner_daemon",
+        "expected_stdout": "systemd",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "systemd"
+      },
+      {
+        "name": "Vérification absence rogue",
+        "cmd": "ps aux | grep -c miner_daemon || echo 0",
+        "expected_stdout": "0",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "0"
+      },
+      {
+        "name": "Uptime du système",
+        "cmd": "uptime",
+        "expected_stdout": "load average",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "load average"
+      }
+    ],
+    "hints": [
+      "'ps aux' liste l'ensemble des processus avec utilisateur et PID.",
+      "Solution complète de référence :\n```bash\nps aux | grep miner_daemon && kill -9 4096\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Gestion des Processus et Signaux Système\n\n**Commandes utilisées :** `ps aux | grep miner_daemon && kill -9 4096`\n\n1. **`ps aux` :** Liste exhaustive de tous les processus en cours d'exécution dans le namespace système (a: tous les utilisateurs, u: format orienté utilisateur avec consommation CPU/RAM, x: processus sans terminal de contrôle TTY).\n2. **`kill -9 PID` (SIGKILL) :** Envoie au processus le signal numéro 9 (SIGKILL), un signal non interceptable et non ignorable traité directement par l'ordonnanceur du noyau Linux pour forcer l'arrêt immédiat."
+  },
+  {
+    "id": "LINUX-402",
+    "level": 4,
+    "title": "Inspection Système et Export d'Environnement",
+    "topic": "Diagnostic Système",
+    "difficulty": "very_hard",
+    "points": 5.0,
+    "description": "### Variables d'Environnement & Diagnostic Machine\n\n1. Exportez la variable `SYSTEM_TIER=production` avec `export`.\n2. Affichez les caractéristiques du noyau avec `uname -a`.\n3. Enregistrez les variables d'environnement dans `system_env.txt` avec la commande `env`.",
+    "starter_cmd": "# Exportez SYSTEM_TIER et écrivez system_env.txt\n",
+    "solution": "export SYSTEM_TIER=production && uname -a && env > system_env.txt",
+    "initial_fs": {
+      "/home/student": {
+        "type": "dir",
+        "files": {}
+      }
+    },
+    "public_tests": [
+      {
+        "name": "Vérification export SYSTEM_TIER",
+        "cmd": "export SYSTEM_TIER=production && echo $SYSTEM_TIER",
+        "expected_stdout": "production",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "production"
+      },
+      {
+        "name": "Création du snapshot system_env.txt",
+        "cmd": "test -f system_env.txt && echo 'ENV_FILE_OK'",
+        "expected_stdout": "ENV_FILE_OK",
+        "expected_exit_code": 0,
+        "assertion_type": "file_exists",
+        "expected": "system_env.txt"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "Présence de SYSTEM_TIER dans le snapshot",
+        "cmd": "grep 'SYSTEM_TIER=production' system_env.txt",
+        "expected_stdout": "SYSTEM_TIER=production",
+        "expected_exit_code": 0,
+        "assertion_type": "file_contains",
+        "expected": "SYSTEM_TIER=production"
+      },
+      {
+        "name": "Vérification commande uname",
+        "cmd": "uname -a",
+        "expected_stdout": "Linux",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "Linux"
+      },
+      {
+        "name": "Vérification whoami",
+        "cmd": "whoami",
+        "expected_stdout": "student",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "student"
+      },
+      {
+        "name": "Contenu non vide de system_env.txt",
+        "cmd": "test -s system_env.txt && echo 'NON_EMPTY'",
+        "expected_stdout": "NON_EMPTY",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "NON_EMPTY"
+      },
+      {
+        "name": "Présence de USER dans env",
+        "cmd": "grep 'USER=' system_env.txt || echo 'USER=student'",
+        "expected_stdout": "USER",
+        "expected_exit_code": 0,
+        "assertion_type": "stdout",
+        "expected": "USER"
+      }
+    ],
+    "hints": [
+      "'export NOM=valeur' définit une variable disponible pour les sous-processus.",
+      "Solution complète de référence :\n```bash\nexport SYSTEM_TIER=production && uname -a && env > system_env.txt\n```"
+    ],
+    "explanation": "### Analyse Pédagogique : Inspection Système et Export d'Environnement\n\n**Commandes utilisées :** `export SYSTEM_TIER=production && uname -a && env > system_env.txt`\n\n1. **`export VARIABLE=valeur` :** Marque la variable d'environnement pour qu'elle soit transmise à tous les processus fils créés par le shell (`fork()` + `exec()`).\n2. **`uname -a` :** Interroge la table système pour afficher le nom du système d'exploitation, le nom d'hôte réseau, la version de compilation du noyau Linux et l'architecture matérielle.\n3. **`env > system_env.txt` :** Exporte la table des variables d'environnement dans un fichier d'inventaire persistant."
+  }
+]

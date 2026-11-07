@@ -108,18 +108,18 @@ export class AntiCheatManager {
     window.removeEventListener('offline', this._handleOffline);
     window.removeEventListener('online', this._handleOnline);
 
-    const examView = document.getElementById('view-exam');
-    const waitingView = document.getElementById('view-waiting-room');
+    document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+      el.classList.remove('exam-fullscreen-lost-blurred');
+    });
     const overlayFs = document.getElementById('overlay-fullscreen-required');
-    if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
-    if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
     if (overlayFs) overlayFs.classList.remove('active');
   }
 
   requestFullscreen() {
     try {
-      const elem = document.documentElement;
       if (document.fullscreenElement || document.webkitFullscreenElement) return;
+      if (navigator.userActivation && !navigator.userActivation.isActive) return;
+      const elem = document.documentElement;
       const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? elem.webkitRequestFullscreen() : null);
       if (p && typeof p.catch === 'function') {
         p.catch(() => {});
@@ -164,15 +164,14 @@ export class AntiCheatManager {
   _handleFullscreenChange() {
     if (!this.isActive) return;
     const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    const examView = document.getElementById('view-exam');
-    const waitingView = document.getElementById('view-waiting-room');
     const overlayFs = document.getElementById('overlay-fullscreen-required');
 
     // En mode entraînement / révision libre : l'étudiant est totalement libre de quitter le plein écran
     if (this.isPracticeMode) {
       if (overlayFs) overlayFs.classList.remove('active');
-      if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
-      if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
+      document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+        el.classList.remove('exam-fullscreen-lost-blurred');
+      });
       return;
     }
 
@@ -183,15 +182,20 @@ export class AntiCheatManager {
       }
 
       // REV-27 / REV-34 : Flou d'obstruction immédiat et affichage du panneau bloquant
-      if (examView) examView.classList.add('exam-fullscreen-lost-blurred');
-      if (waitingView) waitingView.classList.add('exam-fullscreen-lost-blurred');
+      document.querySelectorAll('#view-exam, #view-waiting-room, .practical-workspace-container, .fused-workspace, .challenge-layout, .terminal-container, .exam-layout').forEach(el => {
+        el.classList.add('exam-fullscreen-lost-blurred');
+      });
       if (overlayFs) {
         overlayFs.classList.add('active');
         const btnRestore = document.getElementById('btn-restore-fullscreen');
         if (btnRestore) {
           btnRestore.onclick = () => {
             this.allowWindowed = false;
-            this.requestFullscreen();
+            try {
+              const elem = document.documentElement;
+              const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? elem.webkitRequestFullscreen() : null);
+              if (p && typeof p.catch === 'function') p.catch(() => {});
+            } catch (_) {}
           };
         }
         const btnWindowed = document.getElementById('btn-continue-windowed');
@@ -199,8 +203,9 @@ export class AntiCheatManager {
           btnWindowed.onclick = () => {
             this.allowWindowed = true;
             if (overlayFs) overlayFs.classList.remove('active');
-            if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
-            if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
+            document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+              el.classList.remove('exam-fullscreen-lost-blurred');
+            });
             this._stopAwayCountdown();
           };
         }
@@ -211,8 +216,9 @@ export class AntiCheatManager {
     } else if (isFull && !this.isSuspended) {
       this.allowWindowed = false;
       // Rétablissement du plein écran : lever le flou
-      if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
-      if (waitingView) waitingView.classList.remove('exam-fullscreen-lost-blurred');
+      document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+        el.classList.remove('exam-fullscreen-lost-blurred');
+      });
       if (overlayFs) overlayFs.classList.remove('active');
 
       this._stopAwayCountdown();
@@ -363,10 +369,13 @@ export class AntiCheatManager {
     this.awaySeconds = 0;
     this.suspensionRemainingSeconds = 0;
     this.requestFullscreen();
-    const examView = document.getElementById('view-exam');
+    document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
+      el.classList.remove('exam-fullscreen-lost-blurred');
+    });
     const overlayFs = document.getElementById('overlay-fullscreen-required');
-    if (examView) examView.classList.remove('exam-fullscreen-lost-blurred');
     if (overlayFs) overlayFs.classList.remove('active');
+    const overlaySusp = document.getElementById('overlay-suspension');
+    if (overlaySusp) overlaySusp.classList.remove('active');
     this.onUnlocked();
   }
 
@@ -383,6 +392,14 @@ export class AntiCheatManager {
           if (statusData.status === "in_progress") {
             // Déblocage par le surveillant ou fin automatique des 5 minutes
             this._unlockSuspension();
+          } else if (statusData.status === "submitted" || statusData.status === "completed" || statusData.status === "timed_out") {
+            // Épreuve clôturée collectivement ou temps écoulé durant la suspension
+            this._stopStatusPolling();
+            this._unlockSuspension();
+            this.stop();
+            if (window.activeAppController && typeof window.activeAppController.handleExamForcedClosure === 'function') {
+              window.activeAppController.handleExamForcedClosure(statusData);
+            }
           }
         }
       } catch (err) {

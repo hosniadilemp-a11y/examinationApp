@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExaminationQuiz — Galerie Interactive des 6 Styles Graphiques</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;800;900&family=Familjen+Grotesk:ital,wght@0,600;0,700;1,700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,6..72,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & Master Switcher UI */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Top Selector Bar */
+    .style-picker-bar {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: rgba(11, 15, 25, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .picker-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+    .picker-brand .logo-tag {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .style-buttons-container {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .style-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .style-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .style-btn.active {
+      background: #3b82f6;
+      border-color: #60a5fa;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+    }
+    .style-btn .num {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 50%;
+      font-size: 0.72rem;
+    }
+
+    /* Style Showcase Viewports */
+    .style-viewport {
+      display: none;
+      min-height: calc(100vh - 65px);
+      animation: fadeIn 0.3s ease-out;
+    }
+    .style-viewport.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Style Info Header */
+    .style-intro-banner {
+      padding: 16px 30px;
+      border-bottom: 1px dashed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    /* =====================================================================
+       STYLE 1 : SWISS / INTERNATIONAL STYLE (Editorial Learning)
+       Palette: White, Black, Single Red #E4002B
+       Type: Archivo / Helvetica, Strict 12-col grid, Hairline rules
+       ===================================================================== */
+    .theme-swiss {
+      background-color: #ffffff;
+      color: #111111;
+      font-family: 'Archivo', -apple-system, sans-serif;
+    }
+    .theme-swiss .style-intro-banner {
+      background: #fafafa;
+      border-color: #111;
+      color: #444;
+    }
+    .swiss-container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 40px 30px 80px 30px;
+    }
+    .swiss-masthead {
+      border-bottom: 2px solid #111;
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+    .swiss-title {
+      font-size: 3.8rem;
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+    }
+    .swiss-accent-dot {
+      color: #E4002B;
+    }
+    .swiss-meta-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      border-left: 1px solid #111;
+      padding-left: 20px;
+    }
+    .swiss-grid-12 {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+    .swiss-col-4 { grid-column: span 4; }
+    .swiss-col-6 { grid-column: span 6; }
+    .swiss-col-8 { grid-column: span 8; }
+    .swiss-col-12 { grid-column: span 12; }
+
+    .swiss-kpi-block {
+      border-top: 1px solid #111;
+      padding-top: 12px;
+      margin-bottom: 40px;
+    }
+    .swiss-kpi-num {
+      font-size: 4.2rem;
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -2px;
+    }
+    .swiss-kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    /* Oversized Numerals Modules */
+    .swiss-module-row {
+      border-top: 1px solid #111;
+      padding: 24px 0;
+      display: grid;
+      grid-template-columns: 80px 2fr 1.2fr 180px;
+      align-items: baseline;
+      gap: 20px;
+      transition: background 0.15s ease;
+    }
+    .swiss-module-row:hover {
+      background: #fafafa;
+    }
+    .swiss-mod-num {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 0.8;
+      color: #fff;
+      -webkit-text-stroke: 1.5px #111;
+      transition: all 0.2s;
+    }
+    .swiss-module-row.completed .swiss-mod-num {
+      color: #E4002B;
+      -webkit-text-stroke: 0px;
+    }
+    .swiss-mod-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .swiss-mod-desc {
+      font-size: 0.88rem;
+      color: #666;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+    .swiss-btn {
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .swiss-btn:hover {
+      background: #E4002B;
+    }
+    .swiss-btn-outline {
+      background: transparent;
+      color: #111;
+      border: 1px solid #111;
+    }
+    .swiss-btn-outline:hover {
+      background: #111;
+      color: #fff;
+    }
+
+    /* Swiss Quiz Preview */
+    .swiss-quiz-box {
+      border: 2px solid #111;
+      padding: 30px;
+      margin-top: 30px;
+    }
+    .swiss-quiz-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #111;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .swiss-radio-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .swiss-radio-item:hover {
+      border-color: #111;
+    }
+    .swiss-radio-item.selected {
+      border-color: #111;
+      background: #111;
+      color: #fff;
+    }
+    .swiss-box-pill {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+    }
+    .swiss-radio-item.selected .swiss-box-pill {
+      background: #E4002B;
+      border-color: #E4002B;
+    }
+
+    /* =====================================================================
+       STYLE 2 : LAB NOTEBOOK (Scientific Laboratory)
+       Palette: Paper #F4EFE3, Ink #1B1B1B, Highlighter Yellow #FFE600
+       Type: Fraunces (Headings), IBM Plex Mono (Annotations & Rules)
+       ===================================================================== */
+    .theme-lab {
+      background-color: #F4EFE3;
+      color: #1B1B1B;
+      font-family: 'Fraunces', Georgia, serif;
+    }
+    .theme-lab .style-intro-banner {
+      background: #EBE5D8;
+      border-color: #1B1B1B;
+      color: #4A463F;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .lab-sheet {
+      max-width: 1100px;
+      margin: 40px auto 80px auto;
+      background: #FAF7F0;
+      border: 1px solid #DED7C8;
+      box-shadow: 0 10px 30px rgba(70, 60, 45, 0.1), 0 1px 3px rgba(0,0,0,0.06);
+      position: relative;
+      padding: 50px 60px 60px 85px;
+      background-image: 
+        linear-gradient(#E8E2D5 1px, transparent 1px);
+      background-size: 100% 32px;
+      line-height: 32px;
+    }
+    /* Red Vertical Margin Line of Notebook */
+    .lab-sheet::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 65px;
+      width: 2px;
+      background: rgba(220, 38, 38, 0.4);
+    }
+    .lab-mono {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+    }
+    .lab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+    .lab-title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .lab-highlight {
+      background: #FFF176;
+      padding: 0 4px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+    /* Stamp badge */
+    .lab-stamp {
+      display: inline-block;
+      padding: 6px 14px;
+      text-transform: uppercase;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: 2px solid #2B5797;
+      color: #2B5797;
+      border-radius: 4px;
+      transform: rotate(-3deg);
+      box-shadow: 1px 1px 0 rgba(43, 87, 151, 0.2);
+    }
+    .lab-stamp.passed {
+      border-color: #15803D;
+      color: #15803D;
+      transform: rotate(2deg);
+    }
+    .lab-margin-note {
+      position: absolute;
+      left: 10px;
+      width: 48px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: #8C8270;
+      text-align: right;
+      line-height: 1.2;
+    }
+    .lab-experiment-card {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid #D8D0C0;
+      border-radius: 6px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(4px);
+    }
+    .lab-blank-line {
+      display: inline-block;
+      border-bottom: 2px solid #1B1B1B;
+      min-width: 140px;
+      padding: 0 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      color: #1D4ED8;
+    }
+
+    /* =====================================================================
+       STYLE 3 : TERMINAL / TUI (CRT Phosphor)
+       Palette: #0D0D0D, Amber Phosphor #FFB000, CRT scanlines
+       Type: JetBrains Mono only, file tree, command prompt
+       ===================================================================== */
+    .theme-terminal {
+      background-color: #0D0D0D;
+      color: #FFB000;
+      font-family: 'JetBrains Mono', monospace;
+      position: relative;
+    }
+    .theme-terminal .style-intro-banner {
+      background: #141414;
+      border-color: #FFB000;
+      color: #D99000;
+    }
+    .terminal-container {
+      max-width: 1200px;
+      margin: 30px auto 60px auto;
+      border: 1.5px solid #FFB000;
+      background: #090909;
+      box-shadow: 0 0 30px rgba(255, 176, 0, 0.12), inset 0 0 40px rgba(0, 0, 0, 0.8);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .terminal-titlebar {
+      background: #FFB000;
+      color: #000;
+      padding: 6px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+    .terminal-body {
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .terminal-ascii {
+      white-space: pre;
+      font-size: 0.75rem;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: #FFB000;
+    }
+    .terminal-tree {
+      margin-bottom: 24px;
+      line-height: 1.8;
+      font-size: 0.9rem;
+    }
+    .terminal-tree-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .terminal-tree-item:hover, .terminal-tree-item.active {
+      background: #FFB000;
+      color: #000;
+    }
+    .terminal-status-ok {
+      color: #33FF33;
+    }
+    .terminal-tree-item.active .terminal-status-ok {
+      color: #000;
+    }
+    .tui-prompt-box {
+      border: 1px dashed #FFB000;
+      padding: 16px;
+      margin-top: 20px;
+      background: rgba(255, 176, 0, 0.03);
+    }
+    .tui-cursor {
+      display: inline-block;
+      width: 9px;
+      height: 16px;
+      background: #FFB000;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* =====================================================================
+       STYLE 4 : BROADSHEET NEWSPAPER
+       Palette: Cream #F7F1E1, Ink #111, Muted Red #991B1B
+       Type: Newsreader (Editorial Serif) + Libre Franklin
+       Layout: Multi-column text, drop caps, bylines, edition numbers
+       ===================================================================== */
+    .theme-broadsheet {
+      background-color: #F7F1E1;
+      color: #111111;
+      font-family: 'Newsreader', Georgia, serif;
+    }
+    .theme-broadsheet .style-intro-banner {
+      background: #ECE4D0;
+      border-color: #111;
+      color: #333;
+      font-family: -apple-system, sans-serif;
+    }
+    .newspaper-container {
+      max-width: 1240px;
+      margin: 40px auto 80px auto;
+      padding: 0 24px;
+    }
+    .newspaper-header {
+      text-align: center;
+      border-bottom: 3px double #111;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .newspaper-date-strip {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #111;
+      border-bottom: 1px solid #111;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-family: -apple-system, sans-serif;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+    .newspaper-masthead {
+      font-size: 4.4rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      line-height: 0.95;
+      margin: 12px 0 8px 0;
+    }
+    .newspaper-sub {
+      font-style: italic;
+      font-size: 1.05rem;
+      color: #444;
+    }
+    .newspaper-columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 30px;
+    }
+    .newspaper-main-article {
+      border-right: 1px solid #C8C0AF;
+      padding-right: 28px;
+    }
+    .newspaper-headline {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .newspaper-byline {
+      font-family: -apple-system, sans-serif;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #991B1B;
+      margin-bottom: 14px;
+    }
+    .newspaper-dropcap::first-letter {
+      float: left;
+      font-size: 4.2rem;
+      line-height: 0.8;
+      padding-top: 4px;
+      padding-right: 10px;
+      padding-bottom: 2px;
+      font-weight: 900;
+      color: #111;
+    }
+    .newspaper-prose {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      text-align: justify;
+    }
+    .newspaper-sidebar-section {
+      border-bottom: 1px solid #C8C0AF;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+    .newspaper-sidebar-headline {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    /* =====================================================================
+       STYLE 5 : BLUEPRINT / TECHNICAL DRAWING
+       Palette: #0B3C6E Background, Pure White & Pale Cyan #38BDF8 Linework
+       Type: Space Mono / Monospace, Dimension lines, Circuit Schematics
+       ===================================================================== */
+    .theme-blueprint {
+      background-color: #0B3C6E;
+      color: #E0F2FE;
+      font-family: 'Space Mono', monospace;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    }
+    .theme-blueprint .style-intro-banner {
+      background: rgba(11, 40, 75, 0.85);
+      border-color: #38BDF8;
+      color: #7DD3FC;
+    }
+    .blueprint-container {
+      max-width: 1280px;
+      margin: 40px auto 80px auto;
+      border: 2px solid #BAE6FD;
+      padding: 30px;
+      position: relative;
+    }
+    /* Blueprint Corner Crosshairs */
+    .blueprint-container::before {
+      content: '+';
+      position: absolute;
+      top: -12px;
+      left: -8px;
+      font-size: 1.5rem;
+      color: #BAE6FD;
+    }
+    .blueprint-container::after {
+      content: '+';
+      position: absolute;
+      bottom: -12px;
+      right: -8px;
+      font-size: 1.5rem;
+      color: #BAE6FD;
+    }
+    .blueprint-titlebox {
+      border: 1.5px solid #BAE6FD;
+      display: inline-block;
+      padding: 10px 20px;
+      background: rgba(11, 60, 110, 0.8);
+      margin-bottom: 30px;
+    }
+    .blueprint-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #FFFFFF;
+      text-transform: uppercase;
+    }
+    .blueprint-dwg-no {
+      font-size: 0.75rem;
+      color: #38BDF8;
+    }
+    .blueprint-schematic-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      position: relative;
+    }
+    .blueprint-component {
+      border: 1.5px solid #38BDF8;
+      background: rgba(7, 36, 68, 0.85);
+      padding: 20px;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .blueprint-component.active-circuit {
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+    .blueprint-component.dashed-circuit {
+      border-style: dashed;
+      opacity: 0.75;
+    }
+    .blueprint-dim-line {
+      font-size: 0.7rem;
+      color: #7DD3FC;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .blueprint-dim-line::before, .blueprint-dim-line::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #7DD3FC;
+    }
+
+    /* =====================================================================
+       STYLE 6 : RISOGRAPH ZINE
+       Palette: Fluorescent Pink #FF48B0, Teal #00838A, Multiply Blend
+       Type: Familjen Grotesk, Halftone Dots, Grain, Hand-cut shapes
+       ===================================================================== */
+    .theme-risograph {
+      background-color: #FAF4EB;
+      color: #111111;
+      font-family: 'Familjen Grotesk', -apple-system, sans-serif;
+      position: relative;
+      background-image: radial-gradient(#d3c7b6 1px, transparent 0);
+      background-size: 16px 16px;
+    }
+    .theme-risograph .style-intro-banner {
+      background: #EFE4D2;
+      border-color: #00838A;
+      color: #00838A;
+      font-weight: 700;
+    }
+    .riso-container {
+      max-width: 1180px;
+      margin: 40px auto 80px auto;
+      padding: 0 20px;
+      position: relative;
+    }
+    .riso-hero-wrapper {
+      position: relative;
+      margin-bottom: 50px;
+    }
+    /* Misregistered layer illusion */
+    .riso-title-under {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      font-size: 4.8rem;
+      font-weight: 900;
+      color: #FF48B0;
+      line-height: 0.9;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      mix-blend-mode: multiply;
+      opacity: 0.85;
+      user-select: none;
+    }
+    .riso-title-top {
+      position: relative;
+      font-size: 4.8rem;
+      font-weight: 900;
+      color: #00838A;
+      line-height: 0.9;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      mix-blend-mode: multiply;
+    }
+    .riso-badge-cutout {
+      display: inline-block;
+      background: #FF48B0;
+      color: #FAF4EB;
+      padding: 6px 16px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      transform: rotate(-2deg);
+      box-shadow: 3px 3px 0 #00838A;
+      margin-bottom: 16px;
+    }
+    .riso-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+    .riso-card {
+      background: #FFFFFF;
+      border: 3px solid #00838A;
+      box-shadow: 6px 6px 0 #FF48B0;
+      padding: 24px;
+      position: relative;
+      transform: rotate(0.5deg);
+      transition: transform 0.2s;
+    }
+    .riso-card:nth-child(even) {
+      transform: rotate(-0.7deg);
+      box-shadow: 6px 6px 0 #00838A;
+      border-color: #FF48B0;
+    }
+    .riso-card:hover {
+      transform: translate(-2px, -2px) rotate(0deg);
+      box-shadow: 8px 8px 0 #000;
+    }
+    .riso-btn {
+      display: inline-block;
+      background: #00838A;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px 20px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #FF48B0;
+      transition: all 0.15s;
+    }
+    .riso-btn:hover {
+      background: #FF48B0;
+      box-shadow: 3px 3px 0 #00838A;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================== -->
+  <!-- TOP STYLE SWITCHER CONTROL BAR             -->
+  <!-- ========================================== -->
+  <header class="style-picker-bar">
+    <div class="picker-brand">
+      <span class="logo-tag">Design Demos</span>
+      <span>ExaminationQuiz • Explorateur de 6 Directions Artistiques</span>
+    </div>
+    <nav class="style-buttons-container">
+      <button class="style-btn active" onclick="switchStyle('swiss')">
+        <span class="num">1</span> Swiss Editorial
+      </button>
+      <button class="style-btn" onclick="switchStyle('lab')">
+        <span class="num">2</span> Scientific Lab
+      </button>
+      <button class="style-btn" onclick="switchStyle('terminal')">
+        <span class="num">3</span> Terminal / TUI
+      </button>
+      <button class="style-btn" onclick="switchStyle('broadsheet')">
+        <span class="num">4</span> Broadsheet
+      </button>
+      <button class="style-btn" onclick="switchStyle('blueprint')">
+        <span class="num">5</span> Blueprint
+      </button>
+      <button class="style-btn" onclick="switchStyle('risograph')">
+        <span class="num">6</span> Risograph Zine
+      </button>
+    </nav>
+  </header>
+
+
+  <!-- =================================================================== -->
+  <!-- 1. SWISS / INTERNATIONAL STYLE VIEWPORT                             -->
+  <!-- =================================================================== -->
+  <section id="viewport-swiss" class="style-viewport active theme-swiss">
+    <div class="style-intro-banner">
+      <div>
+        <strong>STYLE 1 : SWISS / INTERNATIONAL STYLE</strong> — Grille rigide 12 colonnes, filets 1px (hairline), typographie suisse Archivo, numérotation géante déstructurée, accent unique rouge <code>#E4002B</code>.
+      </div>
+      <div>
+        <span>Police : <em>Archivo / Grotesk</em></span> • <span>Contraste : <em>Ultra-Noir &amp; Blanc</em></span>
+      </div>
+    </div>
+
+    <div class="swiss-container">
+      <header class="swiss-masthead">
+        <div>
+          <div style="font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #E4002B; margin-bottom: 8px;">
+            Portail Universitaire d'Évaluation • Promotion 2026
+          </div>
+          <h1 class="swiss-title">ACADEMIC<br>EXAMINATIONS<span class="swiss-accent-dot">.</span></h1>
+        </div>
+        <div class="swiss-meta-col">
+          <div><strong>ÉTUDIANT :</strong> ETU-001 (Adel Hosni)</div>
+          <div><strong>SPÉCIALITÉ :</strong> Intelligence Artificielle</div>
+          <div><strong>CYCLE :</strong> Session Principale 2026/Q1</div>
+          <div style="margin-top: 12px; font-weight: 800; color: #E4002B;">STATUT : EN COURS D'ÉPREUVE</div>
+        </div>
+      </header>
+
+      <!-- 3 KPIs en chiffres géants -->
+      <div class="swiss-grid-12">
+        <div class="swiss-col-4 swiss-kpi-block">
+          <div class="swiss-kpi-num">17<span style="font-size: 2.2rem; font-weight: 400; color: #888;">.4</span></div>
+          <div class="swiss-kpi-label">Moyenne Générale (/20)</div>
+        </div>
+        <div class="swiss-col-4 swiss-kpi-block">
+          <div class="swiss-kpi-num">03<span style="font-size: 2.2rem; font-weight: 400; color: #888;">/04</span></div>
+          <div class="swiss-kpi-label">Épreuves Officielles Validées</div>
+        </div>
+        <div class="swiss-col-4 swiss-kpi-block">
+          <div class="swiss-kpi-num" style="color: #E4002B;">100<span style="font-size: 2.2rem; font-weight: 400;">%</span></div>
+          <div class="swiss-kpi-label">Taux d'Admissibilité Actuel</div>
+        </div>
+      </div>
+
+      <!-- Liste des Épreuves avec Numérotation Géante (Fills outline to solid) -->
+      <div style="margin-top: 20px;">
+        <div style="font-size: 0.78rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid #111; padding-bottom: 8px; margin-bottom: 12px;">
+          Cursus &amp; Modules Programmés
+        </div>
+
+        <div class="swiss-module-row completed">
+          <div class="swiss-mod-num">01</div>
+          <div>
+            <div class="swiss-mod-title">Algorithmique &amp; Structures de Données</div>
+            <div class="swiss-mod-desc">Pointeurs, graphes de parcours, complexité asymptotique Big-O et arbres binaires.</div>
+          </div>
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #111;">VALIDÉ (18.50 / 20)</span>
+            <div style="font-size: 0.78rem; color: #666;">Soumis le 02/11/2026</div>
+          </div>
+          <div>
+            <button class="swiss-btn swiss-btn-outline" style="width: 100%;">Revue Copie</button>
+          </div>
+        </div>
+
+        <div class="swiss-module-row completed">
+          <div class="swiss-mod-num">02</div>
+          <div>
+            <div class="swiss-mod-title">Python Avancé &amp; Programmation Machine</div>
+            <div class="swiss-mod-desc">Challenge pratique : 5 problèmes algorithmiques évalués en bac à sable sécurisé.</div>
+          </div>
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #111;">VALIDÉ (16.00 / 20)</span>
+            <div style="font-size: 0.78rem; color: #666;">Soumis le 04/11/2026</div>
+          </div>
+          <div>
+            <button class="swiss-btn swiss-btn-outline" style="width: 100%;">Revue Copie</button>
+          </div>
+        </div>
+
+        <div class="swiss-module-row">
+          <div class="swiss-mod-num">03</div>
+          <div>
+            <div class="swiss-mod-title">Cryptographie Appliquée &amp; Sécurité</div>
+            <div class="swiss-mod-desc">QCM Théorique de 20 questions échantillonnées sur 40 avec détection d'intégrité.</div>
+          </div>
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #E4002B;">EN ATTENTE DE DÉPART</span>
+            <div style="font-size: 0.78rem; color: #666;">Durée : 45 minutes</div>
+          </div>
+          <div>
+            <button class="swiss-btn" style="width: 100%;">Commencer ➔</button>
+          </div>
+        </div>
+
+        <div class="swiss-module-row">
+          <div class="swiss-mod-num">04</div>
+          <div>
+            <div class="swiss-mod-title">Administration Système &amp; Noyau Linux</div>
+            <div class="swiss-mod-desc">Architecture FHS, gestion avancée des permissions, IPC et signaux POSIX.</div>
+          </div>
+          <div>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #888;">NON ENCORE DÉMARRÉ</span>
+            <div style="font-size: 0.78rem; color: #666;">Durée : 40 minutes</div>
+          </div>
+          <div>
+            <button class="swiss-btn" style="width: 100%;">Accéder ➔</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aperçu d'une Question dans le style Swiss -->
+      <div class="swiss-quiz-box">
+        <div class="swiss-quiz-header">
+          <span>Question 08 / 20 • Cryptographie</span>
+          <span style="color: #E4002B;">Temps restant : 24:18</span>
+        </div>
+        <h3 style="font-size: 1.4rem; font-weight: 800; line-height: 1.3; margin-bottom: 20px;">
+          Dans le cadre du chiffrement symétrique par blocs avec le mode CBC (Cipher Block Chaining), quel est le rôle fondamental du vecteur d'initialisation (IV) ?
+        </h3>
+        <div>
+          <div class="swiss-radio-item selected">
+            <span class="swiss-box-pill"></span>
+            <span>Garantir que deux blocs de texte en clair identiques ne produisent pas le même bloc chiffré</span>
+          </div>
+          <div class="swiss-radio-item">
+            <span class="swiss-box-pill"></span>
+            <span>Remplacer la clé maîtresse lors du chiffrement des en-têtes de paquets réseau</span>
+          </div>
+          <div class="swiss-radio-item">
+            <span class="swiss-box-pill"></span>
+            <span>Accélérer les calculs de hachage SHA-256 en mode parallèle multi-threads</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- 2. SCIENTIFIC LABORATORY (Lab Notebook)                             -->
+  <!-- =================================================================== -->
+  <section id="viewport-lab" class="style-viewport theme-lab">
+    <div class="style-intro-banner">
+      <div>
+        <strong>STYLE 2 : SCIENTIFIC LABORATORY (Lab Notebook)</strong> — Carnet de recherche ligné, papier vergé <code>#F4EFE3</code>, encre <code>#1B1B1B</code>, surlignage feutre jaune, notes de marge, tampons d'homologation datés.
+      </div>
+      <div>
+        <span>Typographie : <em>Fraunces (titres) + IBM Plex Mono</em></span> • <span>Ambiance : <em>Recherche académique</em></span>
+      </div>
+    </div>
+
+    <div class="lab-sheet">
+      <!-- Notes de marge manuscrites -->
+      <div class="lab-margin-note" style="top: 80px;">Réf. EXP-04</div>
+      <div class="lab-margin-note" style="top: 240px;">Hypothèse validée</div>
+      <div class="lab-margin-note" style="top: 450px;">Section QCM</div>
+
+      <header class="lab-header">
+        <div>
+          <div class="lab-mono" style="color: #8C8270; font-size: 0.8rem; text-transform: uppercase;">
+            Protocole d'Expérimentation &bull; Registre d'Évaluation n° 42
+          </div>
+          <h1 class="lab-title">Rapport d'Évaluation : <span class="lab-highlight">Laboratoire Python</span></h1>
+          <p class="lab-mono" style="color: #555;">Sujet : Manipulation de pointeurs et calcul vectoriel distribué.</p>
+        </div>
+        <div style="text-align: right;">
+          <div class="lab-stamp passed">HOMOLOGUÉ 06/11<br><span style="font-size: 0.7rem;">NOTE : 18.00 / 20</span></div>
+        </div>
+      </header>
+
+      <!-- Expérience 1 : Note de cours / Synthèse -->
+      <div class="lab-experiment-card">
+        <h4 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
+          Observation 1.1 — Comportement des listes mutables en mémoire
+        </h4>
+        <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 12px;">
+          Lors de l'affectation <code class="lab-mono" style="background:#ECE5D8; padding:2px 6px;">b = a</code> en Python, aucun clonage n'est effectué : les deux variables référencent la même structure en mémoire tas (heap). Pour réaliser une copie distincte, la fonction <span class="lab-highlight">copy.deepcopy()</span> doit être invoquée.
+        </p>
+        <div class="lab-mono" style="font-size: 0.8rem; color: #666; border-left: 2px solid #B0A692; padding-left: 10px;">
+          // Mesure temps d'accès : 0.042 ms &bull; Allocations : 256 octets &bull; Détecteur de fuite : Clean
+        </div>
+      </div>
+
+      <!-- Expérience 2 : Quiz style texte à trous sur papier réglé -->
+      <div class="lab-experiment-card" style="background: rgba(255,249,235,0.9); border-color: #E2D7C2;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <strong class="lab-mono" style="font-size: 0.82rem; text-transform: uppercase; color: #8A6D3B;">
+            🧪 Question Pratique n° 03 &bull; Barème : 4.00 pts
+          </strong>
+          <span class="lab-mono" style="font-size: 0.8rem; color: #888;">Timer : 38 min rest.</span>
+        </div>
+        <p style="font-size: 1.15rem; line-height: 2.2;">
+          Pour implémenter un générateur paresseux en Python sans charger tous les éléments en RAM, on utilise le mot-clé 
+          <span class="lab-blank-line">yield</span>, ce qui renvoie un objet de type 
+          <span class="lab-blank-line">generator</span> au lieu d'une liste traditionnelle.
+        </p>
+      </div>
+
+      <!-- Progression datée style journal de laboratoire -->
+      <div style="margin-top: 30px; border-top: 1px solid #D8D0C0; padding-top: 16px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div class="lab-mono" style="font-size: 0.82rem;">
+          <strong>Journal des Séances :</strong><br>
+          &bull; 28/10 : Séance théorique validée (15.5/20)<br>
+          &bull; 02/11 : Laboratoire pratique validé (19.0/20)<br>
+          &bull; 06/11 : Certification finale délivrée
+        </div>
+        <div>
+          <button class="lab-mono" style="background: #1B1B1B; color: #FAF7F0; border: none; padding: 10px 18px; border-radius: 4px; font-weight: 600; cursor: pointer;">
+            Signer &amp; Soumettre le Cahier ➔
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- 3. TERMINAL / TUI (Hacker / CRT Amber Phosphor)                     -->
+  <!-- =================================================================== -->
+  <section id="viewport-terminal" class="style-viewport theme-terminal">
+    <div class="style-intro-banner">
+      <div>
+        <strong>STYLE 3 : TERMINAL / TEXT USER INTERFACE (TUI)</strong> — Rendu écran cathodique ambre <code>#FFB000</code> sur noir absolu, navigation arborescente de fichiers, invite de commande interactive, police JetBrains Mono.
+      </div>
+      <div>
+        <span>Clavier : <em>[j/k] nav, [:q] quitter</em></span> • <span>Optimisé : <em>Cours d'Algo &amp; Systèmes Linux</em></span>
+      </div>
+    </div>
+
+    <div class="terminal-container">
+      <div class="terminal-titlebar">
+        <span>● ■ ▲ VT100 — user@examination-core: ~ (ssh:22)</span>
+        <span>AUTH: VALIDATED (TOKEN_OK)</span>
+      </div>
+
+      <div class="terminal-body">
+<div class="terminal-ascii">
+███████╗██╗  ██╗ █████╗ ███╗   ███╗██████╗ ██╗   ██╗███╗   ██╗███╗   ██╗███████╗██████╗ 
+██╔════╝╚██╗██╔╝██╔══██╗████╗ ████║██╔══██╗██║   ██║████╗  ██║████╗  ██║██╔════╝██╔══██╗
+█████╗   ╚███╔╝ ███████║██╔████╔██║██████╔╝██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝
+██╔══╝   ██╔██╗ ██╔══██║██║╚██╔╝██║██╔══██╗██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗
+███████╗██╔╝ ██╗██║  ██║██║ ╚═╝ ██║██║  ██║╚██████╔╝██║ ╚████║██║ ╚████║███████╗██║  ██║
+</div>
+
+        <div style="margin-bottom: 16px; border-bottom: 1px dashed #FFB000; padding-bottom: 8px;">
+          [SYSTEM STATUS: ONLINE] [KERNEL: 6.8.0-45-generic] [BUFFER: WAL_OK] [SESSION: SESS-98F11645]
+        </div>
+
+        <div class="terminal-tree">
+          <div>/home/etudiant/curriculum_2026/</div>
+          <div class="terminal-tree-item">
+            <span>├── [📁] 01_theorie_python/</span>
+            <span class="terminal-status-ok">[✓ 20/20 pts - SUBMITTED]</span>
+          </div>
+          <div class="terminal-tree-item">
+            <span>├── [📁] 02_pratique_defis_machine/</span>
+            <span class="terminal-status-ok">[✓ 18/20 pts - EVAL_PASSED]</span>
+          </div>
+          <div class="terminal-tree-item active">
+            <span>├── [📁] 03_cryptographie_officielle/</span>
+            <span>[▶ IN_PROGRESS - 24m18s]</span>
+          </div>
+          <div class="terminal-tree-item">
+            <span>└── [📁] 04_linux_administration/</span>
+            <span style="color: #777;">[🔒 LOCKED - NEXT_SESSION]</span>
+          </div>
+        </div>
+
+        <!-- Terminal Challenge Prompt -->
+        <div class="tui-prompt-box">
+          <div style="color: #33FF33; margin-bottom: 8px;">
+            [TASK 03/05] Implement binary search with O(log n) time complexity:
+          </div>
+          <div style="color: #999; font-size: 0.85rem; margin-bottom: 12px;">
+            Input: sorted_list: List[int], target: int &bull; Output: int (index or -1)
+          </div>
+          <pre style="color: #FFB000; background: #000; padding: 12px; border: 1px solid #443000; overflow-x: auto; font-size: 0.88rem;">
+<span style="color:#777">1 |</span> <span style="color:#FF79C6">def</span> <span style="color:#50FA7B">binary_search</span>(arr, target):
+<span style="color:#777">2 |</span>     low, high = 0, len(arr) - 1
+<span style="color:#777">3 |</span>     <span style="color:#FF79C6">while</span> low &lt;= high:
+<span style="color:#777">4 |</span>         mid = (low + high) // 2
+<span style="color:#777">5 |</span>         <span style="color:#FF79C6">if</span> arr[mid] == target: <span style="color:#FF79C6">return</span> mid
+<span style="color:#777">6 |</span>         <span style="color:#FF79C6">elif</span> arr[mid] &lt; target: low = mid + 1
+<span style="color:#777">7 |</span>         <span style="color:#FF79C6">else</span>: high = mid - 1
+<span style="color:#777">8 |</span>     <span style="color:#FF79C6">return</span> -1</pre>
+          <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px;">
+            <span style="color: #33FF33;">user@sandbox:~$</span>
+            <span>pytest test_binary_search.py --verbose</span>
+            <span class="tui-cursor"></span>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.8rem; color: #888; display: flex; justify-content: space-between;">
+          <span>Commandes : <strong>:run</strong> tester | <strong>:save</strong> sauvegarder | <strong>:submit</strong> soumettre</span>
+          <span style="color: #33FF33;">ALL LOCAL TESTS PASSING (5/5)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- 4. BROADSHEET NEWSPAPER                                             -->
+  <!-- =================================================================== -->
+  <section id="viewport-broadsheet" class="style-viewport theme-broadsheet">
+    <div class="style-intro-banner">
+      <div>
+        <strong>STYLE 4 : BROADSHEET NEWSPAPER</strong> — Mise en page éditoriale grand format, lettrines historiques, colonnes multiples, gazette universitaire, typographie Newsreader, palette parchemin <code>#F7F1E1</code>.
+      </div>
+      <div>
+        <span>Police : <em>Newsreader (serif) + Antique display</em></span> • <span>Progression : <em>Numéros d'éditions</em></span>
+      </div>
+    </div>
+
+    <div class="newspaper-container">
+      <header class="newspaper-header">
+        <div class="newspaper-date-strip">
+          <span>ÉDITION NATIONALE • N° 1,428</span>
+          <span>VENDREDI 6 NOVEMBRE 2026</span>
+          <span>PRIX : ASSIDUITÉ ACADÉMIQUE</span>
+        </div>
+        <h1 class="newspaper-masthead">THE ACADEMIC CHRONICLE</h1>
+        <div class="newspaper-sub">Organe officiel de certification et de publication des travaux de recherche universitaire</div>
+      </header>
+
+      <div class="newspaper-columns">
+        <!-- Colonne Principale -->
+        <article class="newspaper-main-article">
+          <div class="newspaper-byline">ÉPREUVE MAÎTRESSE • SESSION D'AUTOMNE • PAR LA FACULTÉ DES SCIENCES</div>
+          <h2 class="newspaper-headline">Épreuve Pratique Python : Le défi des structures distribuées est ouvert</h2>
+          <div class="newspaper-prose">
+            <p class="newspaper-dropcap">
+              L'ensemble des candidats inscrits au registre du département informatique sont appelés à présenter leurs solutions algorithmiques avant la clôture définitive de la séance. Les examinateurs rappellent avec insistance que l'optimisation temporelle sera le premier critère de discernement entre les prétendants aux mentions honorifiques.
+            </p>
+            <p style="margin-top: 12px;">
+              Chaque candidat dispose d'un environnement machine isolé garantissant la stricte intégrité de l'évaluation. Les tentatives de sortie d'écran prolongées feront l'objet d'un procès-verbal automatique par le système de surveillance centrale.
+            </p>
+            <div style="margin: 20px 0; border: 1px solid #111; padding: 16px; background: rgba(0,0,0,0.02);">
+              <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">Communiqué de la Commission d'Examen :</h4>
+              <p style="font-size: 0.95rem; font-style: italic;">
+                « La réussite d'un ingénieur se mesure à sa rigueur face aux cas limites et à sa capacité à anticiper les débordements de mémoire. »
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Colonne 2 : Épreuves & Résultats du Jour -->
+        <aside style="border-right: 1px solid #C8C0AF; padding-right: 20px;">
+          <div class="newspaper-sidebar-section">
+            <div class="newspaper-byline">BILAN DES COPIES</div>
+            <h3 class="newspaper-sidebar-headline">Théorie Cryptographique</h3>
+            <p style="font-size: 0.95rem; line-height: 1.45; color: #333;">
+              L'épreuve de 40 questions échantillonnées a été clôturée pour 85% de la promotion. Le corrigé exhaustif est désormais consultable dans le grand salon d'affichage.
+            </p>
+            <div style="margin-top: 8px; font-weight: 700; font-size: 0.9rem; color: #991B1B;">
+              Moyenne générale de salle : 14.82 / 20
+            </div>
+          </div>
+
+          <div class="newspaper-sidebar-section">
+            <div class="newspaper-byline">AVIS AUX CANDIDATS</div>
+            <h3 class="newspaper-sidebar-headline">Administration Linux</h3>
+            <p style="font-size: 0.95rem; line-height: 1.45; color: #333;">
+              Les 6 chapitres du curriculum officiel sont ouverts à l'entraînement individuel dès ce soir 18h00.
+            </p>
+          </div>
+        </aside>
+
+        <!-- Colonne 3 : Encadré Question du Jour & Action -->
+        <aside>
+          <div style="background: #EFE8D6; border: 2px solid #111; padding: 20px;">
+            <div style="font-family: -apple-system; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #991B1B; margin-bottom: 6px;">
+              QUESTION OFFICIELLE EN COURS
+            </div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; line-height: 1.25; margin-bottom: 12px;">
+              Quel algorithme d'ordonnancement garantit l'absence totale de famine tout en prévenant les inversions de priorité ?
+            </h4>
+            <div style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+              &bull; <strong>A)</strong> Round-Robin strict<br>
+              &bull; <strong>B)</strong> Priority Ceiling Protocol<br>
+              &bull; <strong>C)</strong> Shortest Job First
+            </div>
+            <button style="width: 100%; background: #111; color: #F7F1E1; border: none; padding: 10px; font-family: -apple-system; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; cursor: pointer;">
+              Déposer la Réponse au Greffe ➔
+            </button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- 5. BLUEPRINT / TECHNICAL DRAWING                                    -->
+  <!-- =================================================================== -->
+  <section id="viewport-blueprint" class="style-viewport theme-blueprint">
+    <div class="style-intro-banner">
+      <div>
+        <strong>STYLE 5 : BLUEPRINT / TECHNICAL DRAWING</strong> — Tracé vectoriel cyan <code>#38BDF8</code> sur fond bleu marine <code>#0B3C6E</code>, grille millimétrée, cotations dimensionnelles, composants électroniques et circuits.
+      </div>
+      <div>
+        <span>Typographie : <em>Space Mono</em></span> • <span>Progression : <em>Circuits discontinus devenant continus</em></span>
+      </div>
+    </div>
+
+    <div class="blueprint-container">
+      <div class="blueprint-titlebox">
+        <div class="blueprint-dwg-no">DWG NO: ACAD-2026-SYS-01 &bull; SCALE: 1:1 &bull; REV: 8.4</div>
+        <h1 class="blueprint-title">EXAMINATION SCHEMATIC &bull; SYSTEM TOPOLOGY</h1>
+      </div>
+
+      <div class="blueprint-dim-line">
+        TOTAL CANDIDATE PROGRESS TRACK &bull; DIM: 4/4 MODULES CONFIGURED
+      </div>
+
+      <!-- Grille de Composants Schematiques -->
+      <div class="blueprint-schematic-grid">
+        <!-- Composant 1 : Validé (Lignes pleines blanches brillantes) -->
+        <div class="blueprint-component active-circuit">
+          <div style="font-size: 0.72rem; color: #7DD3FC; margin-bottom: 4px;">// COMPONENT: MOD-01</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 8px;">PYTHON_ENGINE</h3>
+          <div style="font-size: 0.8rem; line-height: 1.4; color: #BAE6FD; margin-bottom: 14px;">
+            Execution sandbox unit with Pyodide WebAssembly worker and timeout watcher.
+          </div>
+          <div style="border-top: 1px dashed #38BDF8; padding-top: 8px; font-size: 0.75rem; display: flex; justify-content: space-between;">
+            <span>STATUS: [ONLINE]</span>
+            <span style="color: #6ee7b7; font-weight: 700;">VAL: 19.5/20</span>
+          </div>
+        </div>
+
+        <!-- Composant 2 : En cours (Trace active) -->
+        <div class="blueprint-component active-circuit" style="border-color: #38BDF8;">
+          <div style="font-size: 0.72rem; color: #38BDF8; margin-bottom: 4px;">// COMPONENT: MOD-02</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #38BDF8; margin-bottom: 8px;">CRYPTO_CIPHER_UNIT</h3>
+          <div style="font-size: 0.8rem; line-height: 1.4; color: #BAE6FD; margin-bottom: 14px;">
+            Key generation module, RSA-4096 signature verification, deterministic sampling (20/40).
+          </div>
+          <div style="border-top: 1px dashed #38BDF8; padding-top: 8px; font-size: 0.75rem; display: flex; justify-content: space-between;">
+            <span>TIMER: 24m18s</span>
+            <span style="color: #FBBF24; font-weight: 700;">IN_TEST</span>
+          </div>
+        </div>
+
+        <!-- Composant 3 : Circuit en pointillés (Non encore validé) -->
+        <div class="blueprint-component dashed-circuit">
+          <div style="font-size: 0.72rem; color: #7DD3FC; margin-bottom: 4px;">// COMPONENT: MOD-03</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #BAE6FD; margin-bottom: 8px;">LINUX_KERNEL_LAB</h3>
+          <div style="font-size: 0.8rem; line-height: 1.4; color: #93C5FD; margin-bottom: 14px;">
+            6 curriculum chapters with 20 questions each, randomizing 10 items per pass.
+          </div>
+          <div style="border-top: 1px dashed #38BDF8; padding-top: 8px; font-size: 0.75rem; display: flex; justify-content: space-between;">
+            <span>STATUS: [QUEUED]</span>
+            <span style="color: #93C5FD;">PENDING</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Circuit Diagnostic Terminal Output -->
+      <div style="margin-top: 30px; border: 1.5px solid #38BDF8; padding: 18px; background: rgba(7, 36, 68, 0.9);">
+        <div style="font-size: 0.78rem; font-weight: 700; color: #38BDF8; margin-bottom: 8px;">
+          // CIRCUIT TELEMETRY &bull; PROCTORING ROOM: SALLE-TP-WAIT
+        </div>
+        <div style="font-size: 0.82rem; color: #BAE6FD; line-height: 1.6;">
+          &gt; FULLSCREEN_LOCK: ENGAGED [ESC_KEY_INTERCEPTED]<br>
+          &gt; TIME_SYNC: AUTHORITATIVE_NTP_OK (OFFSET: +0.002s)<br>
+          &gt; CHEAT_DETECTION: 0 FLAGGED EVENTS (TOLERANCE: &lt;10s RECONNECT)<br>
+          &gt; SIGNAL: READY FOR LAUNCH
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- 6. RISOGRAPH ZINE                                                   -->
+  <!-- =================================================================== -->
+  <section id="viewport-risograph" class="style-viewport theme-risograph">
+    <div class="style-intro-banner">
+      <div>
+        <strong>STYLE 6 : RISOGRAPH ZINE (Creative Indie Print)</strong> — Impression 2 encres spot (Rose Fluo <code>#FF48B0</code> &amp; Sarcelle <code>#00838A</code>) avec surimpression `mix-blend-mode: multiply`, trame demi-teinte, typo percutante Familjen Grotesk.
+      </div>
+      <div>
+        <span>Police : <em>Familjen Grotesk</em></span> • <span>Idéal pour : <em>Gamification, ateliers créatifs, hackathons</em></span>
+      </div>
+    </div>
+
+    <div class="riso-container">
+      <div class="riso-hero-wrapper">
+        <div class="riso-badge-cutout">★ EDITION SPECIALE HACKATHON &amp; CODE 2026 ★</div>
+        <!-- Misregistered Overprint Effect -->
+        <div class="riso-title-under">EXAMINATION<br>QUIZ APP !</div>
+        <div class="riso-title-top">EXAMINATION<br>QUIZ APP !</div>
+      </div>
+
+      <p style="font-size: 1.3rem; font-weight: 700; color: #00838A; max-width: 650px; line-height: 1.3; margin-bottom: 35px;">
+        Le fanzine interactif d'évaluation académique où chaque test réussi débloque de l'XP et des badges d'expertise.
+      </p>
+
+      <div class="riso-grid">
+        <!-- Carte 1 -->
+        <div class="riso-card">
+          <div style="font-weight: 800; font-size: 0.8rem; color: #FF48B0; text-transform: uppercase; margin-bottom: 6px;">
+            DÉFI DU JOUR #01
+          </div>
+          <h3 style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; margin-bottom: 10px; color: #00838A;">
+            Algorithmes &amp; Palindromes
+          </h3>
+          <p style="font-size: 0.95rem; line-height: 1.45; color: #222; margin-bottom: 18px;">
+            Écris une fonction qui vérifie si une chaîne est un palindrome en ignorant la casse et la ponctuation. 12 cas de tests cachés t'attendent !
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 800; font-size: 0.9rem; color: #FF48B0;">+250 XP</span>
+            <button class="riso-btn">Coder direct ➔</button>
+          </div>
+        </div>
+
+        <!-- Carte 2 -->
+        <div class="riso-card">
+          <div style="font-weight: 800; font-size: 0.8rem; color: #00838A; text-transform: uppercase; margin-bottom: 6px;">
+            BATTLE QCM #02
+          </div>
+          <h3 style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; margin-bottom: 10px; color: #FF48B0;">
+            Cryptographie &amp; Hashes
+          </h3>
+          <p style="font-size: 0.95rem; line-height: 1.45; color: #222; margin-bottom: 18px;">
+            20 questions tirées au hasard sur une banque de 40. Résiste au chrono et bats le score de ta promotion !
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 800; font-size: 0.9rem; color: #00838A;">TOP SCORE: 19.5</span>
+            <button class="riso-btn" style="background:#FF48B0; box-shadow:3px 3px 0 #00838A;">Lancer le Quiz</button>
+          </div>
+        </div>
+
+        <!-- Carte 3 -->
+        <div class="riso-card">
+          <div style="font-weight: 800; font-size: 0.8rem; color: #FF48B0; text-transform: uppercase; margin-bottom: 6px;">
+            SYS ADMIN LAB #03
+          </div>
+          <h3 style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; margin-bottom: 10px; color: #00838A;">
+            Linux Terminal Playground
+          </h3>
+          <p style="font-size: 0.95rem; line-height: 1.45; color: #222; margin-bottom: 18px;">
+            6 chapitres complets de la gestion des utilisateurs jusqu'aux signaux POSIX et tubes nommés FIFO.
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 800; font-size: 0.9rem; color: #FF48B0;">NIVEAU: EXPERT</span>
+            <button class="riso-btn">Ouvrir le Lab ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Script de commutation des 6 styles -->
+  <script>
+    function switchStyle(styleName) {
+      // 1. Masquer tous les viewports
+      document.querySelectorAll('.style-viewport').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // 2. Désactiver tous les boutons
+      document.querySelectorAll('.style-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // 3. Activer le viewport ciblé
+      const targetViewport = document.getElementById('viewport-' + styleName);
+      if (targetViewport) {
+        targetViewport.classList.add('active');
+      }
+
+      // 4. Activer le bouton cliqué
+      const activeBtn = Array.from(document.querySelectorAll('.style-btn')).find(b => 
+        b.getAttribute('onclick').includes(styleName)
+      );
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      }
+
+      // Sauvegarde du choix dans l'historique de session
+      try {
+        sessionStorage.setItem('selected_demo_style', styleName);
+      } catch (_) {}
+    }
+
+    // Restauration automatique du dernier choix
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = sessionStorage.getItem('selected_demo_style');
+      if (saved && document.getElementById('viewport-' + saved)) {
+        switchStyle(saved);
+      }
+    });
+  </script>
+</body>
+</html>
+

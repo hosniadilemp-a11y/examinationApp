@@ -12,11 +12,8 @@ ENV SQLITE_DB_PATH=/app/data/exam_app.db
 
 WORKDIR /app
 
-# Dépendances système de base
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    iproute2 \
-    && rm -rf /var/lib/apt/lists/*
+# Installation de curl pour les healthchecks et dépendances système
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Installation des dépendances Python
 COPY requirements.txt .
@@ -39,9 +36,9 @@ RUN mkdir -p /app/data
 # Exposition du port HTTP
 EXPOSE 8000
 
-# Contrôle de santé intégré
+# Contrôle de santé intégré (sans dépendance externe curl)
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/health || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
 # Point d'entrée avec gestion de la base de données et du peuplement
 ENTRYPOINT ["./entrypoint.sh"]

@@ -16,6 +16,7 @@ from backend.app.schemas import (
 from backend.app.dependencies import get_current_user, require_teacher_or_admin
 from backend.app.services.item_analysis import calculate_exam_item_analysis, generate_item_analysis_csv
 from backend.app.routers.proctor import auto_close_all_expired_sessions
+from backend.app.services.student_copies_export import build_exam_student_copies_zip
 
 router = APIRouter(prefix="/api/exams", tags=["Gestion des Examens & Questions"])
 
@@ -561,6 +562,25 @@ def delete_exam(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
     _check_module_permission(current_user, exam.module_code)
     
+    # Interdiction de supprimer une épreuve dont la session est en cours
+    in_prog = db.query(ExamSession).filter(ExamSession.exam_id == exam.id, ExamSession.status == "in_progress").first()
+    if in_prog:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible de supprimer un examen dont la session est actuellement en cours."
+        )
+
+    # Après la clôture de l'épreuve, seul le super administrateur (admin) peut le supprimer
+    completed_session = db.query(ExamSession).filter(
+        ExamSession.exam_id == exam.id,
+        ExamSession.status.in_(["completed", "closed", "archived"])
+    ).first()
+    if completed_session and current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seul le super administrateur est autorisé à supprimer une épreuve déjà clôturée."
+        )
+
     db.delete(exam)
     db.commit()
     return None
@@ -1264,3 +1284,27 @@ def export_exam_results_pdf_all_students(
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 
+
+
+@router.get("/{exam_id}/student-copies/zip")
+def download_exam_student_copies_zip_endpoint(
+    exam_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Télécharge l'archive ZIP officielle contenant les copies de tous les étudiants (HTML + JSON + CSV).
+    Accessible pour l'enseignant ou l'administrateur afin d'archiver les réponses et copies.
+    """
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen introuvable.")
+    _check_module_permission(current_user, exam.module_code)
+
+    zip_buffer = build_exam_student_copies_zip(exam=exam, db=db)
+    filename = f"copies_etudiants_{exam.module_code}_{exam.id}.zip"
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )

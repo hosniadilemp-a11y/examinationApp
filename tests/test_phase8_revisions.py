@@ -621,6 +621,9 @@ def test_official_exams_view_and_post_exam_review(client, admin_headers, student
     sub_data = res_sub.json()
     assert sub_data["final_mark"] == 20.0
 
+    # Clôture impérative de la session par le surveillant avant consultation du corrigé
+    client.post(f"/api/proctor/sessions/{session_id}/close", headers=admin_headers)
+
     # Consultation du corrigé
     res_rev = client.get(f"/api/student/attempts/{attempt_id}/review", headers=student_headers)
     assert res_rev.status_code == 200

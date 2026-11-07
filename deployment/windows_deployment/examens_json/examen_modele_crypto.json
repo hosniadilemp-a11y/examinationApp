@@ -1,0 +1,88 @@
+{
+  "module_code": "CRYPTO",
+  "title": "Examen Officiel : Cryptographie Fondamentale & Sécurité Réseau",
+  "instructions": "Épreuve officielle sur poste individuel. Durée : 45 minutes. Tout document ou communication externe interdit.",
+  "duration_minutes": 45,
+  "global_points": 20.0,
+  "navigation_mode": "free",
+  "shuffle_questions": true,
+  "shuffle_options": true,
+  "partial_credit_enabled": true,
+  "default_negative_penalty": 0.5,
+  "group_ids": ["CYBER-SEC"],
+  "questions": [
+    {
+      "ordering": 1,
+      "type": "boolean",
+      "prompt_markdown": "Dans un cryptosystème asymétrique, la clé publique peut être diffusée sans risque car il est calculatoirement impossible d'en déduire la clé privée.",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    },
+    {
+      "ordering": 2,
+      "type": "single_choice",
+      "prompt_markdown": "Quel algorithme de chiffrement symétrique par blocs est le standard mondial NIST (FIPS 197) adopté pour remplacer le DES/3DES ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"AES (Advanced Encryption Standard)\"}, {\"id\": \"1\", \"text\": \"RSA\"}, {\"id\": \"2\", \"text\": \"Diffie-Hellman\"}, {\"id\": \"3\", \"text\": \"SHA-3\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 3,
+      "type": "multi_choice",
+      "prompt_markdown": "Parmi les fonctions suivantes, lesquelles sont des fonctions de hachage cryptographique à sens unique ?",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"SHA-256\"}, {\"id\": \"1\", \"text\": \"BLAKE2b\"}, {\"id\": \"2\", \"text\": \"AES-256-CBC\"}, {\"id\": \"3\", \"text\": \"SHA-3 (Keccak)\"}, {\"id\": \"4\", \"text\": \"ChaCha20\"}]",
+      "correct_answers_json": "[0, 1, 3]"
+    },
+    {
+      "ordering": 4,
+      "type": "fill_blank",
+      "prompt_markdown": "Quel protocole de sécurité de la couche transport assure le chiffrement et l'intégrité des communications sur le Web moderne sous le sigle TLS ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"TLS\", \"Transport Layer Security\"]"
+    },
+    {
+      "ordering": 5,
+      "type": "matching",
+      "prompt_markdown": "Associez chaque objectif de sécurité fondamental à sa primitive ou mécanisme cryptographique associé :",
+      "points": 4.0,
+      "negative_penalty": 0.0,
+      "options_json": "{\"left\": [\"Confidentialité\", \"Intégrité\", \"Authenticité\", \"Non-répudiation\"], \"right\": [\"Chiffrement symétrique ou asymétrique du flux de données\", \"Fonctions de hachage cryptographique et codes HMAC\", \"Certificats électroniques et infrastructures PKI (X.509)\", \"Signature numérique avec clé privée de l'émetteur\"]}",
+      "correct_answers_json": "{\"Confidentialité\": \"Chiffrement symétrique ou asymétrique du flux de données\", \"Intégrité\": \"Fonctions de hachage cryptographique et codes HMAC\", \"Authenticité\": \"Certificats électroniques et infrastructures PKI (X.509)\", \"Non-répudiation\": \"Signature numérique avec clé privée de l'émetteur\"}"
+    },
+    {
+      "ordering": 6,
+      "type": "single_choice",
+      "prompt_markdown": "Quelle est la fonction première du protocole d'échange de clés de Diffie-Hellman ?",
+      "points": 2.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"0\", \"text\": \"Négocier un secret partagé sur un canal public sans jamais transmettre la clé secrète\"}, {\"id\": \"1\", \"text\": \"Chiffrer des courriers électroniques avec authentification\"}, {\"id\": \"2\", \"text\": \"Hacher des empreintes pour stockage sécurisé de mots de passe\"}, {\"id\": \"3\", \"text\": \"Émettre des certificats racines d'autorité de certification\"}]",
+      "correct_answers_json": "[0]"
+    },
+    {
+      "ordering": 7,
+      "type": "fill_blank",
+      "prompt_markdown": "Comment nomme-t-on la situation où deux entrées distinctes $m_1 \\neq m_2$ produisent la même valeur de hachage $H(m_1) = H(m_2)$ ?",
+      "points": 2.0,
+      "negative_penalty": 0.0,
+      "options_json": "[]",
+      "correct_answers_json": "[\"collision\", \"une collision\"]"
+    },
+    {
+      "ordering": 8,
+      "type": "boolean",
+      "prompt_markdown": "Une signature numérique valide garantit à la fois l'identité de l'auteur du message et le fait que le contenu n'a subi aucune altération depuis sa signature.",
+      "points": 3.0,
+      "negative_penalty": 0.5,
+      "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+      "correct_answers_json": "true"
+    }
+  ]
+}
+

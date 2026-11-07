@@ -13,6 +13,7 @@ from backend.app.models import (
 from backend.app.services.websocket_manager import ws_manager
 from backend.app.services.grading import evaluate_answer
 from backend.app.services.item_analysis import calculate_exam_item_analysis, generate_item_analysis_csv
+from backend.app.services.student_copies_export import build_exam_student_copies_zip
 from backend.app.dependencies import get_current_user, require_teacher_or_admin
 
 router = APIRouter(prefix="/api/proctor", tags=["Surveillance & Proctoring Enseignant"])
@@ -593,6 +594,15 @@ async def unlock_student_attempt(
     ).first()
     if not attempt:
         raise HTTPException(status_code=404, detail="Tentative introuvable.")
+
+    if attempt.status in ["submitted", "timed_out", "completed"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Cette épreuve a déjà été finalisée et soumise par l'étudiant. Il est impossible de la débloquer ou de la réouvrir."
+        )
+
+    if attempt.status != "suspended":
+        return {"success": False, "status": attempt.status, "message": "L'étudiant n'est pas suspendu."}
         
     attempt.status = "in_progress"
     attempt.suspension_reason = None
@@ -839,3 +849,28 @@ def export_session_item_analysis_csv_endpoint(
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+
+
+@router.get("/sessions/{session_id}/student-copies/zip")
+def download_session_student_copies_zip_endpoint(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_teacher_or_admin)
+):
+    """
+    Télécharge l'archive ZIP officielle contenant les copies de tous les étudiants pour cette session de surveillance.
+    """
+    session = db.query(ExamSession).filter(ExamSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session introuvable.")
+    exam = session.exam
+    if not exam:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Examen associé introuvable.")
+
+    zip_buffer = build_exam_student_copies_zip(exam=exam, db=db, session_id=session.id)
+    filename = f"copies_session_{session.room_id}_{exam.module_code}_{session.id}.zip"
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
