@@ -1228,6 +1228,14 @@ class AppController {
 
     }
 
+    const btnLinuxBack = document.getElementById('btn-linux-back-dash');
+
+    if (btnLinuxBack) {
+
+      btnLinuxBack.onclick = () => this.renderDashboard(this.currentUser);
+
+    }
+
 
 
     // Modal Historique des Tests de Niveau
@@ -1576,7 +1584,8 @@ class AppController {
       const links = [
         { id: 'nav-dash', label: '🏠 Tableau de Bord', action: () => this.renderDashboard(user) },
         { id: 'nav-official-exams', label: '📝 Épreuves Officielles', action: () => this.renderOfficialExamsView() },
-        { id: 'nav-training-hub', label: '🎓 Centres d\'Entraînement', action: () => this.renderTrainingHubView() }
+        { id: 'nav-training-hub', label: '🎓 Centres d\'Entraînement', action: () => this.renderTrainingHubView() },
+        { id: 'nav-linux', label: '🐧 Centre Linux', action: () => this.renderLinuxTrainingCenter() }
       ];
 
 
@@ -3581,6 +3590,34 @@ class AppController {
       this.showToast(`Erreur préparation session Linux : ${err.message}`, "danger");
 
     }
+
+  }
+
+
+
+  // --- Vue Dédiée : Centre d'Entraînement Linux (Théorique & Pratique Shell) ---
+
+  async renderLinuxTrainingCenter() {
+
+    this.switchView('view-linux');
+
+    this.activeOriginView = 'view-linux';
+
+    if (!this.linuxRunner) {
+
+      this.linuxRunner = new LinuxRunner({ app: this, api });
+
+    }
+
+    const container = document.getElementById('view-linux');
+
+    if (container) {
+
+      this.linuxRunner.bindContainer(container);
+
+    }
+
+    await this.linuxRunner.render();
 
   }
 
