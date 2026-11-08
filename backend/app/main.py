@@ -83,8 +83,11 @@ def init_db():
         elif not admin.plain_password:
             admin.plain_password = settings.INITIAL_ADMIN_PASSWORD
             
-        # 2. Création des Modules et Cours Académiques (3 modules de test + ALGO pour piliers bulletins)
+        # 2. Création des Modules et Cours Académiques (3 Tests de Niveau officiels + Piliers)
         initial_modules = [
+            ("PYTHON_PROG", "Programmation Python & Algorithmique", "Algorithmique fondamentale, structures de données, POO et syntaxe Python."),
+            ("SYS_EXPLOIT", "Systèmes d'Exploitation (Linux & Shell)", "Système de fichiers FHS, permissions, processus, signaux, scripting Bash et réseau."),
+            ("CYBER_CRYPTO", "Cybersécurité & Cryptographie", "Chiffrements sym/asym, RSA, AES, hachage, PKI, cyberattaques web et protocoles sécurisés."),
             ("ALGO", "Bases d'Algorithmique", "Variables, boucles, récursivité, tris et complexités fondamentales."),
             ("PYTHON_INIT", "Initiation à Python", "Apprentissage des bases du langage Python, structures de données et algorithmes fondamentaux."),
             ("CRYPTO", "Cryptographie & Sécurité", "Introduction à la sécurité de l'information, chiffrements symétriques/asymétriques, hachage et signatures numériques."),

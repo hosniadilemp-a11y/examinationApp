@@ -241,22 +241,21 @@ def test_practice_modules_list(client, student_headers):
     res = client.get("/api/practice/modules", headers=student_headers)
     assert res.status_code == 200
     modules = res.json()
-    assert len(modules) == 4
+    assert len(modules) == 3
     codes = [m["code"] for m in modules]
-    assert "ALGO" in codes
-    assert "PYTHON_INIT" in codes
-    assert "CRYPTO" in codes
-    assert "LINUX_ADMIN" in codes
+    assert "PYTHON_PROG" in codes
+    assert "SYS_EXPLOIT" in codes
+    assert "CYBER_CRYPTO" in codes
     for m in modules:
-        assert m["question_count"] == 30
+        assert m["question_count"] >= 100
 
 def test_practice_get_questions_student_view_secrecy(client, student_headers):
-    # Vérifie que les 30 questions de la banque sont renvoyées par défaut et que les réponses exactes sont masquées
+    # Vérifie que les 100 questions de la banque sont renvoyées par défaut et que les réponses exactes sont masquées
     res = client.get("/api/practice/exams/PYTHON_INIT/questions", headers=student_headers)
     assert res.status_code == 200
     data = res.json()
     assert data["module_code"] == "PYTHON_INIT"
-    assert data["total_questions"] == 30
+    assert data["total_questions"] >= 100
     
     first_q = data["questions"][0]
     assert "id" in first_q
@@ -265,7 +264,7 @@ def test_practice_get_questions_student_view_secrecy(client, student_headers):
     assert "correct_answers_json" not in first_q
     assert "correct_answer" not in first_q
 
-    # Test du tirage aléatoire de 20 questions parmi les 30 (REV-10)
+    # Test du tirage aléatoire de 20 questions parmi les 100 (REV-10)
     res_20 = client.get("/api/practice/exams/PYTHON_INIT/questions?count=20", headers=student_headers)
     assert res_20.status_code == 200
     data_20 = res_20.json()
@@ -284,11 +283,11 @@ def test_practice_get_questions_student_view_secrecy(client, student_headers):
 
 def test_practice_submit_and_instant_scoring(client, student_headers):
     # Soumission de réponses pour l'entraînement Python
-    # Q1 est un boolean : "Les tuples sont mutables" -> Réponse attendue : False
+    # Q1 est un boolean : recherche dichotomique triée -> Réponse attendue : True
     payload = {
         "answers": {
-            "PRACTICE-PYTHON_INIT-1": False,  # Bonne réponse (+1.0)
-            "PRACTICE-PYTHON_INIT-4": "lambda"  # Q4 est fill_blank: fonction anonyme -> "lambda" (+1.0)
+            "PRACTICE-PYTHON_INIT-1": True,  # Bonne réponse (+1.0)
+            "PRACTICE-PYTHON_INIT-4": "pile"  # Q4 est fill_blank: structure LIFO -> "pile" (+1.0)
         }
     }
     
@@ -301,7 +300,7 @@ def test_practice_submit_and_instant_scoring(client, student_headers):
     assert result["max_possible"] > 0
     assert "grade_20" in result
     assert "percentage" in result
-    assert len(result["detailed_results"]) == 30
+    assert len(result["detailed_results"]) >= 100
     
     # Vérification des explications de Q1 et Q4
     q1_res = next(r for r in result["detailed_results"] if r["question_id"] == "PRACTICE-PYTHON_INIT-1")
@@ -313,11 +312,11 @@ def test_practice_submit_and_instant_scoring(client, student_headers):
     assert q4_res["awarded_points"] == 1.0
 
 def test_practice_all_modules_loaded(client, student_headers):
-    # Vérifie que les 4 banques de 30 questions se chargent sans aucune erreur
-    for mod_code in ["ALGO", "PYTHON_INIT", "CRYPTO", "LINUX_ADMIN"]:
+    # Vérifie que les 3 banques officielles de >=100 questions se chargent sans aucune erreur
+    for mod_code in ["PYTHON_PROG", "SYS_EXPLOIT", "CYBER_CRYPTO", "ALGO", "PYTHON_INIT", "CRYPTO", "LINUX_ADMIN"]:
         res = client.get(f"/api/practice/exams/{mod_code}/questions", headers=student_headers)
         assert res.status_code == 200
-        assert res.json()["total_questions"] == 30
+        assert res.json()["total_questions"] >= 100
 
 def test_exam_templates_listing(client, teacher_headers):
     res = client.get("/api/exams/templates", headers=teacher_headers)

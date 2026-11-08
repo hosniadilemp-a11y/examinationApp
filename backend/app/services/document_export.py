@@ -971,3 +971,136 @@ def generate_class_sheet_pdf(data: Dict[str, Any]) -> bytes:
 
     doc.build(story)
     return buf.getvalue()
+
+def generate_level_tests_speciality_pdf(
+    speciality_code: Optional[str],
+    students_data: List[Dict[str, Any]]
+) -> bytes:
+    """
+    Génère le Procès-Verbal officiel des Tests de Niveau au format PDF Paysage.
+    Contient exclusivement les scores des 3 tests de niveau :
+    - Programmation Python & Algorithmique (/20)
+    - Systèmes d'Exploitation (Linux & Shell) (/20)
+    - Cybersécurité & Cryptographie (/20)
+    """
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=landscape(A4),
+        leftMargin=24,
+        rightMargin=24,
+        topMargin=24,
+        bottomMargin=24
+    )
+    styles = _get_pdf_styles()
+    story = []
+
+    # En-tête académique officiel
+    story.append(Paragraph("MINISTÈRE DE L'ENSEIGNEMENT SUPÉRIEUR • DIRECTION DES ÉTUDES ET DES EXAMENS", styles["RepubliqueHeader"]))
+    spec_label = speciality_code.upper() if speciality_code and speciality_code.upper() != "ALL" else "TOUTES SPÉCIALITÉS CONFONDUES"
+    story.append(Paragraph(f"PROCÈS-VERBAL OFFICIEL DES TESTS DE NIVEAU — SPÉCIALITÉ : {spec_label}", styles["BulletinTitle"]))
+    story.append(Paragraph(f"Édition académique certifiée (Évaluation 24h/24) • {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles["RepubliqueHeader"]))
+    story.append(Spacer(1, 10))
+
+    # Calcul des métriques KPI
+    total = len(students_data)
+    passes = sum(1 for s in students_data if s.get("passed", False))
+    pass_rate = round((passes / total * 100), 1) if total > 0 else 0.0
+
+    valid_py = [s["python_prog_score"] for s in students_data if s.get("python_prog_score") is not None]
+    avg_py = round(sum(valid_py) / len(valid_py), 2) if valid_py else 0.0
+
+    valid_sys = [s["sys_exploit_score"] for s in students_data if s.get("sys_exploit_score") is not None]
+    avg_sys = round(sum(valid_sys) / len(valid_sys), 2) if valid_sys else 0.0
+
+    valid_cyber = [s["cyber_crypto_score"] for s in students_data if s.get("cyber_crypto_score") is not None]
+    avg_cyber = round(sum(valid_cyber) / len(valid_cyber), 2) if valid_cyber else 0.0
+
+    valid_all = [s["average_score"] for s in students_data if s.get("average_score") is not None]
+    avg_all = round(sum(valid_all) / len(valid_all), 2) if valid_all else 0.0
+
+    kpi_data = [
+        [
+            Paragraph(f"<b>Effectif :</b> {total} étudiants", styles["TableCellBold"]),
+            Paragraph(f"<b>Taux Validation (≥14) :</b> {pass_rate}%", styles["TableCellBold"]),
+            Paragraph(f"<b>Moy. Prog. Python :</b> {avg_py:.2f} / 20", styles["TableCellBold"]),
+            Paragraph(f"<b>Moy. Systèmes d'Exploit. :</b> {avg_sys:.2f} / 20", styles["TableCellBold"]),
+            Paragraph(f"<b>Moy. Cybersécurité :</b> {avg_cyber:.2f} / 20", styles["TableCellBold"]),
+            Paragraph(f"<b>Moyenne Globale :</b> {avg_all:.2f} / 20", styles["TableCellBold"]),
+        ]
+    ]
+    t_kpi = Table(kpi_data, colWidths=[120, 140, 130, 140, 130, 130])
+    t_kpi.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f1f5f9")),
+        ('BOX', (0,0), (-1,-1), 1, BORDER_GRAY),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+    ]))
+    story.append(t_kpi)
+    story.append(Spacer(1, 12))
+
+    # Tableau des résultats
+    headers = [
+        "N°", "Matricule", "Nom & Prénom", "Spécialité",
+        "Prog. Python & Algo", "Systèmes d'Exploit.", "Cyber & Crypto",
+        "Moyenne Tests", "Niveau Attribué"
+    ]
+    table_data = [[Paragraph(f"<b>{h}</b>", styles["TableCellBold"]) for h in headers]]
+
+    for rank, s in enumerate(students_data, start=1):
+        py_str = f"{s['python_prog_score']:.2f}" if s.get("python_prog_score") is not None else "—"
+        sys_str = f"{s['sys_exploit_score']:.2f}" if s.get("sys_exploit_score") is not None else "—"
+        cyb_str = f"{s['cyber_crypto_score']:.2f}" if s.get("cyber_crypto_score") is not None else "—"
+        avg_str = f"{s['average_score']:.2f}" if s.get("average_score") is not None else "—"
+        lvl_str = s.get("level_title", "Grand Débutant")
+
+        lvl_color = "#059669" if s.get("passed") else "#334155"
+
+        table_data.append([
+            Paragraph(str(rank), styles["TableCell"]),
+            Paragraph(f"<code>{s.get('username', s.get('student_id', ''))}</code>", styles["TableCell"]),
+            Paragraph(f"<b>{s.get('full_name', '')[:25]}</b>", styles["TableCellBold"]),
+            Paragraph(s.get("speciality", "—") or "—", styles["TableCell"]),
+            Paragraph(py_str, styles["TableCell"]),
+            Paragraph(sys_str, styles["TableCell"]),
+            Paragraph(cyb_str, styles["TableCell"]),
+            Paragraph(f"<b>{avg_str}</b>", styles["TableCellBold"]),
+            Paragraph(f"<font color='{lvl_color}'><b>{lvl_str}</b></font>", styles["TableCellBold"])
+        ])
+
+    t_main = Table(table_data, colWidths=[25, 80, 160, 80, 110, 110, 100, 75, 120])
+    t_style = [
+        ('BACKGROUND', (0,0), (-1,0), NAVY_BLUE),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('GRID', (0,0), (-1,-1), 0.5, BORDER_GRAY),
+        ('ALIGN', (0,0), (-1,0), 'CENTER'),
+        ('ALIGN', (0,1), (0,-1), 'CENTER'),
+        ('ALIGN', (4,1), (7,-1), 'CENTER'),
+        ('ALIGN', (8,1), (8,-1), 'CENTER'),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, BG_LIGHT_GRAY]),
+    ]
+    t_main.setStyle(TableStyle(t_style))
+    story.append(t_main)
+    story.append(Spacer(1, 15))
+
+    # Bloc signatures
+    sig_data = [
+        [
+            Paragraph("<b>Le Responsable des Tests de Niveau</b><br/><br/><br/>Signature & Visa", styles["TableCell"]),
+            Paragraph("<b>Le Responsable Pédagogique</b><br/><br/><br/>Signature & Cachet", styles["TableCell"])
+        ]
+    ]
+    t_sig = Table(sig_data, colWidths=[395, 395])
+    t_sig.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('LINEABOVE', (0,0), (-1,0), 0.5, BORDER_GRAY),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+    ]))
+    story.append(KeepTogether(t_sig))
+
+    doc.build(story)
+    return buf.getvalue()

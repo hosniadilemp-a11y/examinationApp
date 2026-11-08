@@ -47,12 +47,23 @@ Double-cliquez directement sur :
 ---
 
 ## 🛡️ 4. Sauvegarde 1-Clic (Snapshots) & Pare-Feu Windows
+## 🛡️ 4. Sauvegarde 1-Clic, Pare-Feu Windows & Réseau Câblé (LAN)
 
 - **Point de Restauration Instantané (Snapshot 1-Clic) :**
   - Cliquez sur **`📸 Créer Snapshot Base`** sur le tableau de bord pour créer une sauvegarde intégrale horodatée de la base de données PostgreSQL 16 dans `backups/snapshots/` avant de lancer une épreuve.
 - **Déblocage Automatique du Pare-Feu Windows :**
   - Dans l'onglet **"🩺 Diagnostic & Résolution"**, l'application vérifie si Windows Defender Firewall autorise le port 8000 (FastAPI) et 5353 (mDNS).
   - Un bouton **`Résoudre`** en 1 clic crée automatiquement les règles d'autorisation entrantes.
+
+- **🚀 Déblocage Automatique du Réseau Câblé (Switch 100% Ethernet sans Wi-Fi) :**
+  - **Problème fréquent :** Lorsque le serveur est relié par câble Ethernet à un commutateur (switch) autonome sans box/routeur Internet, Windows classe la connexion en *"Réseau Non Identifié (Public)"*. Le Pare-Feu Windows bloque alors **toutes** les requêtes entrantes des postes étudiants.
+  - **Résolution 1-Clic dans l'application :** 
+    - Un bandeau **"🔌 Câble LAN (Ethernet)"** indique en direct le statut (Réseau Privé ou Public).
+    - Cliquez sur **`🚀 Débloquer Accès Câblé (LAN)`** : l'application bascule le profil réseau en Privé, ouvre les ports 8000 (TCP), 5353 (UDP mDNS) et autorise le Ping (ICMP) sur tous les profils de pare-feu, et configure le pont WSL2 PortProxy (`0.0.0.0:8000 -> 127.0.0.1:8000`).
+  - **Résolution par script :**
+    - Vous pouvez aussi faire un clic droit sur 👉 [**`debloquer_acces_lan.bat`**](./debloquer_acces_lan.bat) > *"Exécuter en tant qu'administrateur"*.
+  - **⚠️ Cas d'un switch sans serveur DHCP (Adresses APIPA 169.254.x.x) :**
+    - Si l'IP affichée commence par `169.254...`, il n'y a pas de serveur DHCP dans la salle. Attribuez une IP fixe au serveur (ex: `192.168.1.100`, masque `255.255.255.0`) et aux postes étudiants (`192.168.1.101`, etc.) dans les paramètres de la carte Ethernet.
 
 ---
 

@@ -180,6 +180,8 @@ class AppController {
 
     this.initClearExamsHandler();
 
+    this.initLevelTestRenameHandlers();
+
     // Déconnexion
 
     const logoutBtn = document.getElementById('btn-logout');
@@ -1837,7 +1839,7 @@ class AppController {
 
       if (fundAvgText) {
 
-        fundAvgText.textContent = `Moyenne 4 Piliers : ${stats.fundamental_average.toFixed(2)} / 20`;
+        fundAvgText.textContent = `Moyenne Tests de Niveau : ${stats.fundamental_average.toFixed(2)} / 20`;
 
       }
 
@@ -2181,7 +2183,7 @@ class AppController {
 
       if (fundAvgText) {
 
-        fundAvgText.textContent = `Moyenne 4 Piliers : ${data.overall_last_4_average.toFixed(2)} / 20`;
+        fundAvgText.textContent = `Moyenne Tests de Niveau : ${data.overall_last_4_average.toFixed(2)} / 20`;
 
       }
 
@@ -10221,6 +10223,8 @@ class AppController {
 
   async loadAdminModules() {
 
+    this.loadAdminLevelTests();
+
     const tbody = document.getElementById('admin-modules-table-body');
 
     if (!tbody) return;
@@ -11040,47 +11044,45 @@ class AppController {
 
 
   toggleFullscreen() {
-
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-
-      const elem = document.documentElement;
-
-      if (elem.requestFullscreen) {
-
-        elem.requestFullscreen().catch(() => {});
-
-      } else if (elem.webkitRequestFullscreen) {
-
-        elem.webkitRequestFullscreen();
-
+    if (this.activeAntiCheat && this.activeAntiCheat.isActive) {
+      // Durant un examen officiel ou un test de niveau, le plein écran est obligatoire et ne peut être quitté
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        }
       }
-
-    } else {
-
-      if (document.exitFullscreen) {
-
-        document.exitFullscreen().catch(() => {});
-
-      } else if (document.webkitExitFullscreen) {
-
-        document.webkitExitFullscreen();
-
-      }
-
+      return;
     }
 
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
   }
 
-
-
   _updateFullscreenButtonText() {
-
     const btn = document.getElementById('btn-toggle-fullscreen');
-
     if (!btn) return;
-
     const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
-
+    if (this.activeAntiCheat && this.activeAntiCheat.isActive) {
+      btn.innerHTML = '<span>⛶</span> Plein Écran Obligatoire';
+      btn.title = 'Le mode Plein Écran est obligatoire durant les épreuves et tests de niveau.';
+      return;
+    }
+    btn.title = '';
     btn.innerHTML = isFull ? '<span>✖️</span> Quitter Plein Écran' : '<span>⛶</span> Plein Écran';
 
   }
@@ -13822,53 +13824,205 @@ class AppController {
 
 
   initClearExamsHandler() {
-
-    const btnClear = document.getElementById('btn-admin-clear-exams');
-
-    if (btnClear) {
-
-      btnClear.onclick = async () => {
-
-        const confirmed = await this.showConfirmModal({
-
-          title: "Purge Totale des Examens & Notes",
-
-          message: "⚠️ ATTENTION : Êtes-vous certain de vouloir purger TOUS les examens, sessions et notes ?\n\nLes comptes utilisateurs et modules seront conservés.\nCette action est irréversible.",
-
-          confirmText: "🗑️ Purger Tout",
-
-          cancelText: "Annuler",
-
-          icon: "⚠️",
-
-          danger: true
-
-        });
-
-        if (!confirmed) return;
-
-
-
+    // Export PV Tests de Niveau (PDF)
+    const btnExportLevel = document.getElementById('btn-admin-export-level-tests-pdf');
+    if (btnExportLevel) {
+      btnExportLevel.onclick = async () => {
+        const specSelect = document.getElementById('select-admin-level-tests-spec');
+        const spec = specSelect ? specSelect.value : 'ALL';
+        this.showToast(`Génération du PV officiel des Tests de Niveau (${spec})...`, "info");
         try {
-
-          const res = await api.clearAllExamsAndScores(false);
-
-          this.showToast(res.message || "Examens et notes purgés avec succès.", "success");
-
-          await this.loadAdminOverview();
-
-          await this.loadAdminResults();
-
+          await api.downloadLevelTestsPDF(spec);
+          this.showToast("Procès-Verbal des Tests de Niveau téléchargé avec succès.", "success");
         } catch (err) {
-
-          this.showToast(`Erreur lors de la purge : ${err.message}`, "danger");
-
+          this.showToast(`Erreur d'export du PV : ${err.message}`, "danger");
         }
-
       };
-
     }
 
+    // Purge exclusive des scores des Tests de Niveau
+    const btnPurgePractice = document.getElementById('btn-admin-purge-practice-scores');
+    if (btnPurgePractice) {
+      btnPurgePractice.onclick = async () => {
+        const confirmed = await this.showConfirmModal({
+          title: "Purger les Scores des Tests de Niveau",
+          message: "⚠️ Voulez-vous réinitialiser l'ensemble des scores et tentatives de Tests de Niveau (Programmation Python, Systèmes d'Exploitation, Cybersécurité) pour tous les étudiants ?\n\nLes comptes étudiants et les 100 questions par module restent intacts.",
+          confirmText: "🗑️ Purger Scores Tests",
+          cancelText: "Annuler",
+          icon: "⚠️",
+          danger: true
+        });
+        if (!confirmed) return;
+
+        try {
+          const res = await api.purgePracticeScores();
+          this.showToast(res.message || "Scores des tests de niveau purgés avec succès.", "success");
+          await this.loadAdminOverview();
+        } catch (err) {
+          this.showToast(`Erreur lors de la purge : ${err.message}`, "danger");
+        }
+      };
+    }
+
+    // Purge exclusive des notes d'examen officiel (sessions réinitialisées sans effacer les sujets)
+    const btnPurgeExams = document.getElementById('btn-admin-purge-exam-scores');
+    if (btnPurgeExams) {
+      btnPurgeExams.onclick = async () => {
+        const confirmed = await this.showConfirmModal({
+          title: "Purger les Notes des Examens Officiels",
+          message: "⚠️ Voulez-vous purger l'ensemble des copies, notes et tentatives d'examen officiel pour démarrer une nouvelle session d'examen ?\n\nLes sujets d'examens, barèmes et questions créés sont préservés intacts.",
+          confirmText: "🗑️ Purger Notes Examens",
+          cancelText: "Annuler",
+          icon: "⚠️",
+          danger: true
+        });
+        if (!confirmed) return;
+
+        try {
+          const res = await api.purgeExamScores();
+          this.showToast(res.message || "Notes des examens officiels purgées avec succès.", "success");
+          await this.loadAdminOverview();
+          await this.loadAdminResults();
+        } catch (err) {
+          this.showToast(`Erreur lors de la purge : ${err.message}`, "danger");
+        }
+      };
+    }
+
+    const btnClear = document.getElementById('btn-admin-clear-exams');
+    if (btnClear) {
+      btnClear.onclick = async () => {
+        const confirmed = await this.showConfirmModal({
+          title: "Purge Totale des Examens & Notes",
+          message: "⚠️ ATTENTION : Êtes-vous certain de vouloir purger TOUS les examens, sessions et notes ?\n\nLes comptes utilisateurs et modules seront conservés.\nCette action est irréversible.",
+          confirmText: "🗑️ Purger Tout",
+          cancelText: "Annuler",
+          icon: "⚠️",
+          danger: true
+        });
+        if (!confirmed) return;
+
+        try {
+          const res = await api.clearAllExamsAndScores(false);
+          this.showToast(res.message || "Examens et notes purgés avec succès.", "success");
+          await this.loadAdminOverview();
+          await this.loadAdminResults();
+        } catch (err) {
+          this.showToast(`Erreur lors de la purge : ${err.message}`, "danger");
+        }
+      };
+    }
+  }
+
+  initLevelTestRenameHandlers() {
+    const btnRefresh = document.getElementById('btn-admin-refresh-level-tests');
+    if (btnRefresh) {
+      btnRefresh.onclick = () => {
+        this.loadAdminLevelTests();
+      };
+    }
+
+    const form = document.getElementById('form-edit-level-test');
+    if (form) {
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const code = document.getElementById('edit-level-test-code')?.value;
+        const title = document.getElementById('edit-level-test-title')?.value?.trim();
+        const description = document.getElementById('edit-level-test-desc')?.value?.trim();
+
+        if (!code || !title) {
+          this.showToast("Le titre officiel est obligatoire.", "warning");
+          return;
+        }
+
+        try {
+          const res = await api.updateLevelTestName(code, { title, description });
+          this.showToast(res.message || "Intitulé du test de niveau mis à jour avec succès !", "success");
+          this.closeModal('modal-edit-level-test');
+          await this.loadAdminLevelTests();
+          await this.loadAdminModules();
+          if (typeof this._loadPracticeModules === 'function') {
+            await this._loadPracticeModules();
+          }
+        } catch (err) {
+          this.showToast(`Erreur de mise à jour : ${err.message}`, "danger");
+        }
+      };
+    }
+  }
+
+  async loadAdminLevelTests() {
+    const tbody = document.getElementById('admin-level-tests-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-muted);">Chargement des tests de niveau...</td></tr>';
+
+    try {
+      const tests = await api.getLevelTestsConfigs();
+      this._adminLevelTestsList = tests;
+
+      if (!tests || tests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-muted);">Aucun test de niveau trouvé.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      tests.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--card-border)';
+        tr.innerHTML = `
+          <td style="padding:10px 14px; font-family:monospace; font-weight:700; color:#38bdf8;">
+            ${this._escapeHtml(t.code)}
+          </td>
+          <td style="padding:10px 14px; font-weight:600; color:var(--text-primary);">
+            ${this._escapeHtml(t.title)}
+          </td>
+          <td style="padding:10px 14px; font-size:0.82rem; color:var(--text-secondary); max-width:320px;">
+            ${this._escapeHtml(t.description || '—')}
+          </td>
+          <td style="padding:10px 14px; text-align:center;">
+            <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; font-weight:700; font-size:0.8rem; padding:3px 8px; border-radius:12px;">
+              ${t.total_questions || 100} Q
+            </span>
+          </td>
+          <td style="padding:10px 14px; text-align:center;">
+            <button class="btn btn-secondary btn-admin-edit-level-test" data-code="${t.code}" style="padding:5px 10px; font-size:0.8rem; border-color:#38bdf8; color:#38bdf8;">
+              ✏️ Renommer
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.btn-admin-edit-level-test').forEach(btn => {
+        btn.onclick = () => {
+          const code = btn.getAttribute('data-code');
+          const t = (this._adminLevelTestsList || []).find(x => x.code === code);
+          if (t) {
+            this.openEditLevelTestModal(t);
+          }
+        };
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:18px; color:var(--danger);">Erreur : ${this._escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  openEditLevelTestModal(test) {
+    const modal = document.getElementById('modal-edit-level-test');
+    if (!modal) return;
+
+    const codeInp = document.getElementById('edit-level-test-code');
+    const codeDisp = document.getElementById('edit-level-test-code-display');
+    const titleInp = document.getElementById('edit-level-test-title');
+    const descInp = document.getElementById('edit-level-test-desc');
+
+    if (codeInp) codeInp.value = test.code || '';
+    if (codeDisp) codeDisp.value = test.code || '';
+    if (titleInp) titleInp.value = test.title || '';
+    if (descInp) descInp.value = test.description || '';
+
+    this.openModal('modal-edit-level-test');
   }
 
 

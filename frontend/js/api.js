@@ -597,6 +597,35 @@ class ApiClient {
     });
   }
 
+  async downloadLevelTestsPDF(speciality = 'ALL') {
+    const qs = speciality && speciality !== 'ALL' ? `?speciality=${encodeURIComponent(speciality)}` : '';
+    const fn = `pv_tests_niveau_${speciality || 'toutes_specialites'}.pdf`;
+    return await this.downloadBlob(`/admin/level-tests/export-pdf${qs}`, fn);
+  }
+
+  async purgePracticeScores() {
+    return await this.request('/admin/purge-practice-scores', {
+      method: 'POST'
+    });
+  }
+
+  async purgeExamScores() {
+    return await this.request('/admin/purge-exam-scores', {
+      method: 'POST'
+    });
+  }
+
+  async getLevelTestsConfigs() {
+    return await this.request('/admin/level-tests/configs');
+  }
+
+  async updateLevelTestName(moduleCode, payload) {
+    return await this.request(`/admin/level-tests/${encodeURIComponent(moduleCode)}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  }
+
   // --- Générateur d'Épreuves Python (Banque d'Exercices) ---
   async getPythonBankStats() {
     return await this.request('/exams/python/bank-stats');

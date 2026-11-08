@@ -1,0 +1,972 @@
+[
+  {
+    "ordering": 1,
+    "type": "boolean",
+    "prompt_markdown": "Dans le chiffrement asymétrique (RSA), la clé publique sert à chiffrer le message et la clé privée sert à le déchiffrer.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 2,
+    "type": "single_choice",
+    "prompt_markdown": "Quel algorithme parmi les suivants est un algorithme de **chiffrement symétrique par blocs** largement utilisé et standardisé ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"AES (Advanced Encryption Standard)\"}, {\"id\": \"b\", \"text\": \"RSA\"}, {\"id\": \"c\", \"text\": \"SHA-256\"}, {\"id\": \"d\", \"text\": \"Diffie-Hellman\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 3,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles sont les propriétés fondamentales attendues d'une **fonction de hachage cryptographique** sécurisée (comme SHA-256) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"R\\u00e9sistance aux pr\\u00e9images (sens unique)\"}, {\"id\": \"b\", \"text\": \"R\\u00e9sistance aux collisions (deux entr\\u00e9es distinctes ne doivent pas donner le m\\u00eame hash)\"}, {\"id\": \"c\", \"text\": \"Effet avalanche (une l\\u00e9g\\u00e8re modification d'entr\\u00e9e modifie radicalement le hash)\"}, {\"id\": \"d\", \"text\": \"R\\u00e9versibilit\\u00e9 facile pour retrouver le message d'origine\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 4,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel est le nom du célèbre chiffre par décalage monoalphabétique utilisé dans l'Antiquité romaine ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"cesar\", \"c\\u00e9sar\", \"chiffre de c\\u00e9sar\", \"chiffre de cesar\"]"
+  },
+  {
+    "ordering": 5,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque protocole ou algorithme cryptographique à sa catégorie :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"AES\", \"RSA\", \"SHA-3\", \"Diffie-Hellman\"], \"right\": [\"Chiffrement sym\\u00e9trique\", \"Chiffrement asym\\u00e9trique\", \"Fonction de hachage\", \"\\u00c9change de cl\\u00e9s\"]}",
+    "correct_answers_json": "{\"AES\": \"Chiffrement sym\\u00e9trique\", \"RSA\": \"Chiffrement asym\\u00e9trique\", \"SHA-3\": \"Fonction de hachage\", \"Diffie-Hellman\": \"\\u00c9change de cl\\u00e9s\"}"
+  },
+  {
+    "ordering": 6,
+    "type": "boolean",
+    "prompt_markdown": "Question 6 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 7,
+    "type": "single_choice",
+    "prompt_markdown": "Question 7 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 8,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 8 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 9,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 9 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 10,
+    "type": "matching",
+    "prompt_markdown": "Question 10 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 11,
+    "type": "boolean",
+    "prompt_markdown": "Question 11 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 12,
+    "type": "single_choice",
+    "prompt_markdown": "Question 12 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 13,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 13 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 14,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 14 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 15,
+    "type": "matching",
+    "prompt_markdown": "Question 15 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 16,
+    "type": "boolean",
+    "prompt_markdown": "Question 16 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 17,
+    "type": "single_choice",
+    "prompt_markdown": "Question 17 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 18,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 18 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 19,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 19 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 20,
+    "type": "matching",
+    "prompt_markdown": "Question 20 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 21,
+    "type": "boolean",
+    "prompt_markdown": "Question 21 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 22,
+    "type": "single_choice",
+    "prompt_markdown": "Question 22 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 23,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 23 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 24,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 24 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 25,
+    "type": "matching",
+    "prompt_markdown": "Question 25 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 26,
+    "type": "boolean",
+    "prompt_markdown": "Question 26 : Une signature numérique garantit à la fois l'authenticité de l'expéditeur et l'intégrité du message transmis.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 27,
+    "type": "single_choice",
+    "prompt_markdown": "Question 27 : Quelle attaque consiste à intercepter et altérer la communication entre deux interlocuteurs sans qu'aucun ne s'en aperçoive ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Attaque par d\\u00e9ni de service (DDoS)\"}, {\"id\": \"c\", \"text\": \"Injection SQL\"}, {\"id\": \"d\", \"text\": \"Attaque par force brute sur mot de passe\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 28,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 28 : Quels sont les modes d'opération courants pour le chiffrement par blocs ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"b\", \"text\": \"CBC (Cipher Block Chaining)\"}, {\"id\": \"c\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"d\", \"text\": \"HTTP (HyperText Transfer Protocol)\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 29,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 29 : Quelle structure tierce de confiance délivre et signe les certificats numériques X.509 (acronyme de 2 lettres en français ou 2 lettres en anglais CA) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"ca\", \"ac\", \"autorit\\u00e9 de certification\", \"autorite de certification\"]"
+  },
+  {
+    "ordering": 30,
+    "type": "matching",
+    "prompt_markdown": "Question 30 : Associez chaque terme cryptographique à sa définition :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Salage (Salt)\", \"Non-r\\u00e9pudiation\", \"Confidentialit\\u00e9\", \"Cl\\u00e9 publique\"], \"right\": [\"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 distribuable librement \\u00e0 tous\"]}",
+    "correct_answers_json": "{\"Salage (Salt)\": \"Donn\\u00e9e al\\u00e9atoire ajout\\u00e9e au hachage de mot de passe\", \"Non-r\\u00e9pudiation\": \"Impossibilit\\u00e9 pour l'auteur de nier l'envoi\", \"Confidentialit\\u00e9\": \"Seul le destinataire l\\u00e9gitime peut lire\", \"Cl\\u00e9 publique\": \"Cl\\u00e9 distribuable librement \\u00e0 tous\"}"
+  },
+  {
+    "ordering": 31,
+    "type": "single_choice",
+    "prompt_markdown": "Quel algorithme de chiffrement symétrique par blocs est le standard mondial adopté par le NIST pour succéder au DES ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"AES (Rijndael)\"}, {\"id\": \"b\", \"text\": \"Blowfish\"}, {\"id\": \"c\", \"text\": \"RC4\"}, {\"id\": \"d\", \"text\": \"Twofish\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'AES (Advanced Encryption Standard), basé sur l'algorithme Rijndael avec des blocs de 128 bits, est le standard officiel."
+  },
+  {
+    "ordering": 32,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la taille de bloc standard (en bits) utilisée par l'algorithme AES, quelle que soit la longueur de la clé ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"128 bits\"}, {\"id\": \"b\", \"text\": \"64 bits\"}, {\"id\": \"c\", \"text\": \"256 bits\"}, {\"id\": \"d\", \"text\": \"512 bits\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "AES traite obligatoirement des blocs de 128 bits, avec des clés de 128, 192 ou 256 bits."
+  },
+  {
+    "ordering": 33,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la principale faiblesse du mode de chiffrement ECB (Electronic Codebook) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Deux blocs de texte en clair identiques produisent des blocs chiffrés identiques\"}, {\"id\": \"b\", \"text\": \"Il ne supporte pas les clés de 256 bits\"}, {\"id\": \"c\", \"text\": \"Il nécessite obligatoirement un échange asymétrique\"}, {\"id\": \"d\", \"text\": \"Il requiert une synchronisation temporelle stricte\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le mode ECB ne masque pas les redondances et les motifs du texte clair, ce qui rend le chiffré analysable visuellement ou statistiquement."
+  },
+  {
+    "ordering": 34,
+    "type": "single_choice",
+    "prompt_markdown": "Quel mode d'opération de chiffrement symétrique fournit simultanément la confidentialité et l'intégrité authentifiée des données (AEAD) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"GCM (Galois/Counter Mode)\"}, {\"id\": \"b\", \"text\": \"ECB (Electronic Codebook)\"}, {\"id\": \"c\", \"text\": \"CBC classique\"}, {\"id\": \"d\", \"text\": \"OFB (Output Feedback)\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "AES-GCM est un mode AEAD moderne très rapide combinant le chiffrement CTR et une étiquette d'authentification GMAC."
+  },
+  {
+    "ordering": 35,
+    "type": "single_choice",
+    "prompt_markdown": "Dans le chiffrement symétrique en mode CBC, quel est le rôle du Vecteur d'Initialisation (IV) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Garantir qu'un même texte clair chiffré deux fois produise des cryptogrammes distincts\"}, {\"id\": \"b\", \"text\": \"Remplacer la clé secrète partagée\"}, {\"id\": \"c\", \"text\": \"Signer numériquement le message\"}, {\"id\": \"d\", \"text\": \"Compresser le texte clair avant chiffrement\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'IV doit être aléatoire ou pseudo-aléatoire et unique pour éviter que des messages commençant de la même façon ne révèlent des similitudes."
+  },
+  {
+    "ordering": 36,
+    "type": "single_choice",
+    "prompt_markdown": "Pourquoi l'algorithme de chiffrement à flot RC4 est-il aujourd'hui totalement banni des protocoles modernes comme TLS 1.3 ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Des biais statistiques dans les premiers octets du flux permettent de recouvrer le texte clair\"}, {\"id\": \"b\", \"text\": \"Il n'utilise que des opérations 8 bits incompatibles avec les processeurs 64 bits\"}, {\"id\": \"c\", \"text\": \"Sa licence propriétaire interdit l'usage public\"}, {\"id\": \"d\", \"text\": \"Il nécessite obligatoirement du matériel quantique\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "RC4 présente de sérieux biais dans son générateur pseudo-aléatoire (attaques Fluhrer-Mantin-Shamir, Bar-mitzvah, etc.)."
+  },
+  {
+    "ordering": 37,
+    "type": "single_choice",
+    "prompt_markdown": "Selon le principe de Kerckhoffs, la sécurité d'un système cryptographique doit reposer uniquement sur :",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Le secret de la clé cryptographique, l'algorithme pouvant être public\"}, {\"id\": \"b\", \"text\": \"Le secret absolu de l'algorithme et de son implémentation\"}, {\"id\": \"c\", \"text\": \"La complexité de l'infrastructure réseau\"}, {\"id\": \"d\", \"text\": \"L'absence totale de documentation technique\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le principe de Kerckhoffs stipule que la sécurité d'un cryptosystème ne doit dépendre que du secret de la clé, jamais de la confidentialité de l'algorithme."
+  },
+  {
+    "ordering": 38,
+    "type": "single_choice",
+    "prompt_markdown": "Sur quel problème mathématique réputé difficile repose la sécurité du cryptosystème asymétrique RSA ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"La factorisation d'entiers produit de deux grands nombres premiers\"}, {\"id\": \"b\", \"text\": \"Le logarithme discret sur champ fini uniquement\"}, {\"id\": \"c\", \"text\": \"Le sac à dos (Knapsack problem)\"}, {\"id\": \"d\", \"text\": \"Le voyageur de commerce (TSP)\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "RSA tire sa sécurité de la difficulté de factoriser n = p * q lorsque p et q sont de très grands nombres premiers."
+  },
+  {
+    "ordering": 39,
+    "type": "single_choice",
+    "prompt_markdown": "Quel est le principal avantage de la cryptographie sur les courbes elliptiques (ECC) par rapport à RSA ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Offrir un niveau de sécurité équivalent avec des tailles de clés beaucoup plus courtes\"}, {\"id\": \"b\", \"text\": \"Ne nécessiter aucun calcul modulaire\"}, {\"id\": \"c\", \"text\": \"Être totalement insensible aux attaques par ordinateur quantique\"}, {\"id\": \"d\", \"text\": \"Supprimer le besoin d'autorités de certification\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Une clé ECC de 256 bits offre un niveau de sécurité comparable à une clé RSA de 3072 bits, réduisant la consommation de bande passante et de calcul."
+  },
+  {
+    "ordering": 40,
+    "type": "single_choice",
+    "prompt_markdown": "Dans le protocole d'échange de clés Diffie-Hellman classique, quel problème fondamental n'est PAS résolu nativement sans authentification ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'attaque de l'homme du milieu (Man-in-the-Middle)\"}, {\"id\": \"b\", \"text\": \"Le calcul modulaire de la puissance\"}, {\"id\": \"c\", \"text\": \"La dérivation de clé symétrique\"}, {\"id\": \"d\", \"text\": \"L'accord sur les paramètres p et g\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Diffie-Hellman pur ne fournit pas d'authentification des parties, le rendant vulnérable à une attaque MitM sans certificat ou signature."
+  },
+  {
+    "ordering": 41,
+    "type": "single_choice",
+    "prompt_markdown": "Lorsqu'Alice souhaite envoyer un message confidentiel à Bob avec un cryptosystème asymétrique, quelle clé utilise-t-elle pour chiffrer le message ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"La clé publique de Bob\"}, {\"id\": \"b\", \"text\": \"La clé privée d'Alice\"}, {\"id\": \"c\", \"text\": \"La clé publique d'Alice\"}, {\"id\": \"d\", \"text\": \"La clé privée de Bob\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Alice chiffre avec la clé publique du destinataire (Bob), et seul Bob pourra le déchiffrer à l'aide de sa clé privée correspondante."
+  },
+  {
+    "ordering": 42,
+    "type": "single_choice",
+    "prompt_markdown": "Lorsqu'Alice signe numériquement un document pour prouver son authenticité et sa non-répudiation, quelle clé utilise-t-elle ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Sa propre clé privée\"}, {\"id\": \"b\", \"text\": \"La clé publique de Bob\"}, {\"id\": \"c\", \"text\": \"La clé publique de l'autorité de certification\"}, {\"id\": \"d\", \"text\": \"Une clé symétrique partagée\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Alice chiffre l'empreinte de hachage avec sa clé privée ; quiconque possédant sa clé publique peut vérifier l'intégrité et l'authenticité."
+  },
+  {
+    "ordering": 43,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle propriété d'une fonction de hachage cryptographique garantit qu'il est impossible de trouver deux messages distincts produisant la même empreinte ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Résistance aux collisions\"}, {\"id\": \"b\", \"text\": \"Résistance à la première préimage\"}, {\"id\": \"c\", \"text\": \"Résistance à la seconde préimage\"}, {\"id\": \"d\", \"text\": \"Effet avalanche\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "La résistance aux collisions stipule qu'il est impossible en pratique de trouver deux entrées x1 != x2 telles que H(x1) = H(x2)."
+  },
+  {
+    "ordering": 44,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la taille en bits du condensat (hash digest) généré par la fonction SHA-256 ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"256 bits (32 octets)\"}, {\"id\": \"b\", \"text\": \"128 bits (16 octets)\"}, {\"id\": \"c\", \"text\": \"512 bits (64 octets)\"}, {\"id\": \"d\", \"text\": \"160 bits (20 octets)\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "SHA-256 génère une empreinte numérique de 256 bits, soit 32 octets, généralement représentée par 64 caractères hexadécimaux."
+  },
+  {
+    "ordering": 45,
+    "type": "single_choice",
+    "prompt_markdown": "Pourquoi les fonctions MD5 et SHA-1 sont-elles formellement déconseillées pour signer des certificats numériques ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Des collisions pratiques ont été démontrées et générées en laboratoire\"}, {\"id\": \"b\", \"text\": \"Leur calcul consomme trop de mémoire vive\"}, {\"id\": \"c\", \"text\": \"Elles sont incompatibles avec le codage UTF-8\"}, {\"id\": \"d\", \"text\": \"Elles nécessitent des clés privées trop volumineuses\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Des attaques par collision pratiques (ex: SHAttered pour SHA-1, Flame pour MD5) ont démontré leur rupture cryptographique définitive."
+  },
+  {
+    "ordering": 46,
+    "type": "single_choice",
+    "prompt_markdown": "Quel mécanisme cryptographique permet de vérifier à la fois l'intégrité et l'authenticité d'un message en combinant une fonction de hachage et une clé secrète ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"HMAC (Hash-based Message Authentication Code)\"}, {\"id\": \"b\", \"text\": \"CRC32\"}, {\"id\": \"c\", \"text\": \"Base64\"}, {\"id\": \"d\", \"text\": \"MD5 simple\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "HMAC combine une clé secrète partagée et une fonction de hachage cryptographique pour produire un tag d'intégrité infalsifiable."
+  },
+  {
+    "ordering": 47,
+    "type": "single_choice",
+    "prompt_markdown": "Dans une infrastructure à clés publiques (PKI), quel document standard définit le format des certificats numériques électroniques ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"X.509\"}, {\"id\": \"b\", \"text\": \"RFC 1918\"}, {\"id\": \"c\", \"text\": \"IEEE 802.11\"}, {\"id\": \"d\", \"text\": \"ISO 27001\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "La norme ITU-T X.509 régit la structure, les attributs et les signatures des certificats de clés publiques."
+  },
+  {
+    "ordering": 48,
+    "type": "single_choice",
+    "prompt_markdown": "Quel protocole moderne et léger permet à un client de vérifier en temps réel le statut de révocation d'un certificat sans télécharger l'intégralité de la CRL ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"OCSP (Online Certificate Status Protocol)\"}, {\"id\": \"b\", \"text\": \"SNMP\"}, {\"id\": \"c\", \"text\": \"NTP\"}, {\"id\": \"d\", \"text\": \"BGP\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "OCSP permet d'interroger directement un répondeur pour connaître l'état (valide, révoqué, inconnu) d'un certificat spécifique."
+  },
+  {
+    "ordering": 49,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle extension du protocole TLS permet à un serveur de présenter lui-même une réponse de révocation OCSP signée et horodatée par la CA lors du handshake ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"OCSP Stapling\"}, {\"id\": \"b\", \"text\": \"SNI (Server Name Indication)\"}, {\"id\": \"c\", \"text\": \"ALPN\"}, {\"id\": \"d\", \"text\": \"STARTTLS\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'OCSP Stapling (agrafage OCSP) évite que chaque client n'interroge le serveur de la CA, améliorant les performances et la confidentialité."
+  },
+  {
+    "ordering": 50,
+    "type": "single_choice",
+    "prompt_markdown": "Qu'est-ce qu'une attaque par certificat révoqué ou expiré ignorée dans une application ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Une brèche permettant l'interception et le déchiffrement des flux par usurpation d'identité (MitM)\"}, {\"id\": \"b\", \"text\": \"Une panne matérielle du processeur hôte\"}, {\"id\": \"c\", \"text\": \"Un dépassement de tampon sur la carte réseau\"}, {\"id\": \"d\", \"text\": \"Une boucle de routage au niveau IP\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Désactiver la vérification des certificats ou ignorer leur expiration permet à un attaquant en position d'écoute de falsifier l'identité du serveur."
+  },
+  {
+    "ordering": 51,
+    "type": "single_choice",
+    "prompt_markdown": "Pourquoi le simple hachage d'un mot de passe avec SHA-256 est-il insuffisant pour le stockage sécurisé dans une base de données ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"SHA-256 est trop rapide, facilitant les attaques par force brute et dictionnaires sur GPU\"}, {\"id\": \"b\", \"text\": \"SHA-256 est réversible avec une clé publique\"}, {\"id\": \"c\", \"text\": \"SHA-256 tronque les mots de passe de plus de 8 caractères\"}, {\"id\": \"d\", \"text\": \"SHA-256 génère obligatoirement des collisions\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Les fonctions de hachage généralistes sont conçues pour être ultrarapides. Sur GPU moderne, des milliards de hash SHA-256 peuvent être calculés par seconde."
+  },
+  {
+    "ordering": 52,
+    "type": "single_choice",
+    "prompt_markdown": "Quel est le rôle fondamental du 'sel' (salt) cryptographique aléatoire associé à chaque mot de passe lors de son enregistrement ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Empêcher l'efficacité des tables arc-en-ciel (rainbow tables) et la détection de doublons\"}, {\"id\": \"b\", \"text\": \"Chiffrer le mot de passe de façon réversible\"}, {\"id\": \"c\", \"text\": \"Vérifier la validité de l'adresse email de l'utilisateur\"}, {\"id\": \"d\", \"text\": \"Augmenter artificiellement la bande passante réseau\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le sel garantit que deux utilisateurs ayant le même mot de passe auront des hachés totalement différents, rendant les tables précalculées inutilisables."
+  },
+  {
+    "ordering": 53,
+    "type": "single_choice",
+    "prompt_markdown": "Quel algorithme de dérivation de clé (KDF) a remporté la Password Hashing Competition (PHC) et est réputé résistant aux attaques par matériel dédié (ASIC/GPU) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Argon2 (Argon2id)\"}, {\"id\": \"b\", \"text\": \"MD5-Crypt\"}, {\"id\": \"c\", \"text\": \"SHA-512\"}, {\"id\": \"d\", \"text\": \"HMAC-MD5\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Argon2id est le standard recommandé par l'OWASP, configuré avec des paramètres de coût en temps, en mémoire vive et en parallélisme."
+  },
+  {
+    "ordering": 54,
+    "type": "single_choice",
+    "prompt_markdown": "Qu'est-ce qu'un 'poivre' (pepper) dans le contexte de la sécurité des mots de passe ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Une valeur secrète globale stockée hors de la base de données (ex: HSM ou variable d'env) ajoutée avant hachage\"}, {\"id\": \"b\", \"text\": \"Un algorithme de hachage obsolète\"}, {\"id\": \"c\", \"text\": \"Une liste de mots de passe interdits\"}, {\"id\": \"d\", \"text\": \"Un cookie d'authentification temporaire\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le poivre ajoute une couche de protection : même en cas de fuite de la base de données SQL, l'attaquant ne dispose pas du secret nécessaire pour recalculer les hachés."
+  },
+  {
+    "ordering": 55,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle vulnérabilité survient lorsqu'une application inclut des données non fiables dans une page web sans échappement, exécutant du code JavaScript dans le navigateur victime ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"XSS (Cross-Site Scripting)\"}, {\"id\": \"b\", \"text\": \"SQLi (Injection SQL)\"}, {\"id\": \"c\", \"text\": \"CSRF\"}, {\"id\": \"d\", \"text\": \"SSRF\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le Cross-Site Scripting (XSS) permet à un pirate de dérober des cookies de session, détourner le compte de l'utilisateur ou injecter de fausses interfaces."
+  },
+  {
+    "ordering": 56,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle mesure technique est la protection la plus universelle et rigoureuse contre les attaques par injection SQL ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'utilisation systématique de requêtes préparées avec requêtes paramétrées (Prepared Statements / ORM)\"}, {\"id\": \"b\", \"text\": \"Le filtrage artisanal des mots-clés 'SELECT' et 'UNION'\"}, {\"id\": \"c\", \"text\": \"Le chiffrement symétrique de toute la base de données\"}, {\"id\": \"d\", \"text\": \"L'interdiction des espaces dans les champs de saisie\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Les requêtes préparées séparent formellement la structure du code SQL et les données d'entrée fournies par l'utilisateur."
+  },
+  {
+    "ordering": 57,
+    "type": "single_choice",
+    "prompt_markdown": "Quel attribut de cookie HTTP empêche le code JavaScript côté client (y compris lors d'une attaque XSS) d'accéder au cookie de session ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"HttpOnly\"}, {\"id\": \"b\", \"text\": \"Secure\"}, {\"id\": \"c\", \"text\": \"SameSite\"}, {\"id\": \"d\", \"text\": \"Domain\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'attribut HttpOnly interdit tout accès au cookie via document.cookie, neutralisant le vol de session direct par script malveillant."
+  },
+  {
+    "ordering": 58,
+    "type": "single_choice",
+    "prompt_markdown": "Quel attribut de cookie permet de restreindre l'envoi de cookies lors des requêtes d'origine croisée pour neutraliser les attaques CSRF ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"SameSite=Strict ou SameSite=Lax\"}, {\"id\": \"b\", \"text\": \"HttpOnly\"}, {\"id\": \"c\", \"text\": \"Secure\"}, {\"id\": \"d\", \"text\": \"Path=/\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "SameSite empêche le navigateur d'envoyer le cookie avec des requêtes initiées par des sites tiers, contrecarrant le CSRF."
+  },
+  {
+    "ordering": 59,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle vulnérabilité consiste pour un serveur à exécuter des requêtes HTTP vers des ressources internes protégées sur instruction non validée d'un utilisateur ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"SSRF (Server-Side Request Forgery)\"}, {\"id\": \"b\", \"text\": \"CSRF\"}, {\"id\": \"c\", \"text\": \"XSS\"}, {\"id\": \"d\", \"text\": \"Clickjacking\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le SSRF permet à un pirate d'utiliser le serveur cible comme relais pour sonder le réseau local interne, les services de métadonnées cloud (169.254.169.254), etc."
+  },
+  {
+    "ordering": 60,
+    "type": "single_choice",
+    "prompt_markdown": "Qu'est-ce qu'une faille IDOR (Insecure Direct Object Reference) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'accès non autorisé à un objet ou enregistrement via modification directe de son identifiant (ex: /api/order/102)\"}, {\"id\": \"b\", \"text\": \"L'injection de requêtes DNS non sécurisées\"}, {\"id\": \"c\", \"text\": \"Un débordement d'entier dans un pilote graphique\"}, {\"id\": \"d\", \"text\": \"L'absence d'antivirus sur le poste de travail\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'IDOR se produit lorsque l'application utilise l'identifiant fourni par le client sans vérifier si l'utilisateur possède les autorisations d'accès sur cette ressource."
+  },
+  {
+    "ordering": 61,
+    "type": "single_choice",
+    "prompt_markdown": "Quel en-tête de réponse HTTP permet d'interdire l'affichage d'une page dans une iframe afin d'empêcher les attaques par Clickjacking ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"X-Frame-Options: DENY (ou frame-ancestors en CSP)\"}, {\"id\": \"b\", \"text\": \"X-Content-Type-Options: nosniff\"}, {\"id\": \"c\", \"text\": \"Strict-Transport-Security\"}, {\"id\": \"d\", \"text\": \"Access-Control-Allow-Origin\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "X-Frame-Options ou CSP frame-ancestors empêche un site malveillant d'intégrer l'application dans une iframe invisible pour piéger les clics de la victime."
+  },
+  {
+    "ordering": 62,
+    "type": "single_choice",
+    "prompt_markdown": "Quel en-tête HTTP moderne permet de définir précisément quelles sources de scripts, images, polices et connexions externes le navigateur est autorisé à charger ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Content-Security-Policy (CSP)\"}, {\"id\": \"b\", \"text\": \"CORS\"}, {\"id\": \"c\", \"text\": \"X-XSS-Protection\"}, {\"id\": \"d\", \"text\": \"ETag\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "CSP (Content Security Policy) est une couche de défense majeure restreignant l'exécution de code arbitraire et atténuant grandement les failles XSS."
+  },
+  {
+    "ordering": 63,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle attaque au niveau de la couche liaison (OSI niveau 2) permet à un intrus de s'insérer entre deux machines en faussant les tables de correspondance IP/MAC ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ARP Poisoning / ARP Spoofing\"}, {\"id\": \"b\", \"text\": \"DNS Tunneling\"}, {\"id\": \"c\", \"text\": \"BGP Hijacking\"}, {\"id\": \"d\", \"text\": \"SYN Flood\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'usurpation ARP consiste à émettre de fausses réponses ARP pour associer l'adresse MAC de l'attaquant à l'IP d'une passerelle ou d'un serveur légitime."
+  },
+  {
+    "ordering": 64,
+    "type": "single_choice",
+    "prompt_markdown": "Dans une attaque par déni de service SYN Flood, quel mécanisme du protocole TCP est détourné pour épuiser les ressources du serveur ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'envoi massif de paquets SYN sans jamais renvoyer le paquet ACK final (connexions demi-ouvertes)\"}, {\"id\": \"b\", \"text\": \"La surcharge des trames FIN/RST\"}, {\"id\": \"c\", \"text\": \"La modification du numéro de port éphémère\"}, {\"id\": \"d\", \"text\": \"Le calcul incorrect de la somme de contrôle TCP\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le serveur alloue des structures mémoire dans sa file d'attente (backlog) pour chaque SYN reçu en attente du handshake à 3 voies qui n'arrive jamais."
+  },
+  {
+    "ordering": 65,
+    "type": "single_choice",
+    "prompt_markdown": "Quel mécanisme technique déployé au niveau du noyau Linux ou des pare-feux permet de contrer efficacement les attaques SYN Flood ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"SYN Cookies\"}, {\"id\": \"b\", \"text\": \"Chiffrement AES\"}, {\"id\": \"c\", \"text\": \"Désactivation du port 80\"}, {\"id\": \"d\", \"text\": \"Double NAT\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Les SYN Cookies encodent les paramètres de la connexion dans le numéro de séquence initial sans allouer d'état mémoire jusqu'à la réception du ACK."
+  },
+  {
+    "ordering": 66,
+    "type": "single_choice",
+    "prompt_markdown": "Quel protocole de sécurité réseau ajoute des signatures cryptographiques aux enregistrements DNS pour garantir leur authenticité et leur intégrité ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"DNSSEC (DNS Security Extensions)\"}, {\"id\": \"b\", \"text\": \"DoH (DNS over HTTPS)\"}, {\"id\": \"c\", \"text\": \"DHCP Snooping\"}, {\"id\": \"d\", \"text\": \"NTPsec\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "DNSSEC empêche l'empoisonnement de cache DNS (DNS Cache Poisoning) en validant cryptographiquement l'origine des réponses."
+  },
+  {
+    "ordering": 67,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la principale amélioration apportée par TLS 1.3 concernant la négociation du handshake par rapport à TLS 1.2 ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Handshake réduit à 1 seul aller-retour (1-RTT) et suppression des suites cryptographiques non sécurisées\"}, {\"id\": \"b\", \"text\": \"Obligation d'utiliser des adresses IPv6\"}, {\"id\": \"c\", \"text\": \"Remplacement complet de TCP par UDP\"}, {\"id\": \"d\", \"text\": \"Suppression des clés privées côté serveur\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "TLS 1.3 accélère la connexion (1-RTT ou 0-RTT avec session resumption) tout en interdisant RSA pour l'échange de clés, forçant le Forward Secrecy."
+  },
+  {
+    "ordering": 68,
+    "type": "single_choice",
+    "prompt_markdown": "Que signifie la propriété cryptographique 'PFS' (Perfect Forward Secrecy / Confidentialité persistante) dans les échanges TLS ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"La compromission ultérieure de la clé privée à long terme du serveur ne permettra pas de déchiffrer les sessions enregistrées par le passé\"}, {\"id\": \"b\", \"text\": \"Le serveur n'a plus besoin de certificat numérique\"}, {\"id\": \"c\", \"text\": \"Le mot de passe de l'utilisateur est conservé indéfiniment sans risque\"}, {\"id\": \"d\", \"text\": \"Le trafic est chiffré deux fois par deux algorithmes distincts\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "PFS génère des clés de session éphémères (ex: ECDHE) pour chaque communication. Une fois la session close, ces clés sont définitivement détruites."
+  },
+  {
+    "ordering": 69,
+    "type": "single_choice",
+    "prompt_markdown": "Dans le protocole TOTP (Time-based One-Time Password) utilisé pour la 2FA (RFC 6238), quels éléments sont combinés pour générer le code à 6 chiffres ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Un secret partagé et l'horodatage courant divisé en fenêtres de temps (souvent 30 secondes)\"}, {\"id\": \"b\", \"text\": \"L'adresse MAC et l'adresse IP publique de l'utilisateur\"}, {\"id\": \"c\", \"text\": \"Le mot de passe de l'utilisateur et son numéro de téléphone\"}, {\"id\": \"d\", \"text\": \"Un compteur de clics envoyé par SMS\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "TOTP applique HMAC sur le timestamp courant discrétisé par tranches de 30 secondes en utilisant la clé secrète partagée lors de l'enrôlement."
+  },
+  {
+    "ordering": 70,
+    "type": "single_choice",
+    "prompt_markdown": "Dans un jeton JWT (JSON Web Token), quelle partie contient la signature numérique garantissant que les données n'ont pas été modifiées ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"La 3e partie (Header.Payload.Signature)\"}, {\"id\": \"b\", \"text\": \"La 1re partie uniquement\"}, {\"id\": \"c\", \"text\": \"La 2e partie (Payload)\"}, {\"id\": \"d\", \"text\": \"Le cookie de session externe\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Un JWT est composé de 3 segments séparés par des points : l'en-tête (Header), le corps (Payload) et la signature cryptographique (Signature)."
+  },
+  {
+    "ordering": 71,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle vulnérabilité critique a historiquement touché certaines implémentations naïves de vérification des jetons JWT ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'acceptation de l'algorithme 'none' dans l'en-tête, désactivant la vérification de la signature\"}, {\"id\": \"b\", \"text\": \"L'obligation de chiffrer l'en-tête en Base64\"}, {\"id\": \"c\", \"text\": \"La limitation de taille à 256 octets\"}, {\"id\": \"d\", \"text\": \"L'expiration automatique au bout de 5 secondes\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Si la bibliothèque accepte 'alg': 'none', un attaquant peut modifier les privilèges (ex: 'admin': true) sans recalculer de signature valide."
+  },
+  {
+    "ordering": 72,
+    "type": "single_choice",
+    "prompt_markdown": "Dans le standard OAuth 2.0, quel est le flux (grant type) recommandé pour les applications web avec serveur backend (sécurité maximale) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Authorization Code Grant (avec PKCE)\"}, {\"id\": \"b\", \"text\": \"Implicit Flow\"}, {\"id\": \"c\", \"text\": \"Resource Owner Password Credentials\"}, {\"id\": \"d\", \"text\": \"Client Credentials sans authentification\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'Authorization Code Grant combiné à PKCE est le flux standard recommandé par l'IETF pour sécuriser l'échange de jetons."
+  },
+  {
+    "ordering": 73,
+    "type": "single_choice",
+    "prompt_markdown": "Quel protocole d'authentification réseau basé sur un centre de distribution de clés (KDC) et des tickets d'accès est le cœur des domaines Microsoft Active Directory ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Kerberos\"}, {\"id\": \"b\", \"text\": \"RADIUS\"}, {\"id\": \"c\", \"text\": \"TACACS+\"}, {\"id\": \"d\", \"text\": \"LDAP sans chiffrement\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Kerberos (port 88) utilise un KDC (Authentication Server + Ticket Granting Server) pour authentifier les utilisateurs et services via des tickets chiffrés."
+  },
+  {
+    "ordering": 74,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la différence fondamentale entre un pare-feu sans état (stateless) et un pare-feu à état (stateful) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Le pare-feu stateful analyse le contexte et le suivi des connexions (table d'états TCP/UDP) au-delà des paquets individuels\"}, {\"id\": \"b\", \"text\": \"Le pare-feu stateless chiffre l'ensemble des paquets\"}, {\"id\": \"c\", \"text\": \"Le pare-feu stateful ne fonctionne qu'au niveau applicatif HTTP\"}, {\"id\": \"d\", \"text\": \"Le pare-feu stateless bloque obligatoirement tous les flux UDP\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Un pare-feu stateful suit les sessions réseau (états NEW, ESTABLISHED, RELATED) pour autoriser automatiquement les flux retour légitimes."
+  },
+  {
+    "ordering": 75,
+    "type": "single_choice",
+    "prompt_markdown": "Quel équipement de sécurité réseau se distingue d'un IDS (détection) par sa capacité à bloquer activement le trafic malveillant en temps réel ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"IPS (Intrusion Prevention System)\"}, {\"id\": \"b\", \"text\": \"SIEM\"}, {\"id\": \"c\", \"text\": \"Sonde NetFlow\"}, {\"id\": \"d\", \"text\": \"Serveur Syslog\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'IPS est positionné en coupure (inline) sur le réseau et peut abandonner immédiatement les paquets hostiles (drop) détectés."
+  },
+  {
+    "ordering": 76,
+    "type": "single_choice",
+    "prompt_markdown": "Qu'est-ce qu'une zone démilitarisée (DMZ) dans l'architecture réseau d'une organisation ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Un sous-réseau isolé hébergeant les serveurs accessibles depuis Internet pour protéger le réseau interne\"}, {\"id\": \"b\", \"text\": \"Une zone sans aucune sécurité ni pare-feu\"}, {\"id\": \"c\", \"text\": \"Un réseau privé réservé exclusivement aux administrateurs systèmes\"}, {\"id\": \"d\", \"text\": \"Une base de données de secours\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "La DMZ sépare les services exposés (web, mail) du réseau interne confidentiel, limitant l'impact en cas de compromission d'un serveur public."
+  },
+  {
+    "ordering": 77,
+    "type": "single_choice",
+    "prompt_markdown": "Quel est le principe fondamental du modèle de sécurité 'Zero Trust' (Confiance Zéro) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Ne jamais faire confiance, toujours vérifier (Never Trust, Always Verify), quel que soit l'emplacement de l'utilisateur\"}, {\"id\": \"b\", \"text\": \"Faire confiance par défaut à tous les équipements situés sur le réseau local interne\"}, {\"id\": \"c\", \"text\": \"Interdire tout accès distant aux télétravailleurs\"}, {\"id\": \"d\", \"text\": \"Supprimer tous les mots de passe et les pare-feux\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Zero Trust part du principe que des menaces existent déjà au sein du réseau et impose une vérification d'identité et de contexte continue."
+  },
+  {
+    "ordering": 78,
+    "type": "single_choice",
+    "prompt_markdown": "Quel outil centralise, agrège et corrèle les journaux d'événements de sécurité de l'ensemble d'un parc informatique pour détecter les incidents ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"SIEM (Security Information and Event Management)\"}, {\"id\": \"b\", \"text\": \"DHCP\"}, {\"id\": \"c\", \"text\": \"DNS Resolver\"}, {\"id\": \"d\", \"text\": \"SNMP Trap simple\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Un SIEM (comme Splunk, Elastic Security ou Wazuh) corrèle les logs de pare-feux, serveurs et postes pour générer des alertes de sécurité."
+  },
+  {
+    "ordering": 79,
+    "type": "single_choice",
+    "prompt_markdown": "Quel type de logiciel malveillant chiffre les données d'un système victime et exige un paiement financier pour fournir la clé de déchiffrement ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Ransomware (Rançongiciel)\"}, {\"id\": \"b\", \"text\": \"Spyware\"}, {\"id\": \"c\", \"text\": \"Adware\"}, {\"id\": \"d\", \"text\": \"Scareware simple\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Les ransomwares (ex: WannaCry, LockBit) paralysent les organisations en chiffrant leurs sauvegardes et serveurs de production."
+  },
+  {
+    "ordering": 80,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle technique d'ingénierie sociale consiste à cibler spécifiquement un cadre dirigeant ou une personne clé d'une organisation avec un message hyper-personnalisé ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Spear-phishing (ou Whaling)\"}, {\"id\": \"b\", \"text\": \"Phishing de masse\"}, {\"id\": \"c\", \"text\": \"Vishing aveugle\"}, {\"id\": \"d\", \"text\": \"Spamming commercial\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le spear-phishing (harponnage) exploite des recherches préalables poussées sur la victime pour tromper sa vigilance avec un scénario sur-mesure."
+  },
+  {
+    "ordering": 81,
+    "type": "single_choice",
+    "prompt_markdown": "Qu'est-ce qu'une vulnérabilité 'Zero-Day' (0-day) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Une vulnérabilité de sécurité inconnue de l'éditeur ou sans correctif de sécurité disponible\"}, {\"id\": \"b\", \"text\": \"Une faille vieille de plusieurs années répertoriée sur le site de l'ANSSI\"}, {\"id\": \"c\", \"text\": \"Une panne d'électricité générale dans un datacenter\"}, {\"id\": \"d\", \"text\": \"Une erreur de saisie lors de la création d'un utilisateur\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le terme Zero-Day signifie que l'éditeur dispose de zéro jour de préavis pour concevoir un patch avant qu'une exploitation ne soit possible."
+  },
+  {
+    "ordering": 82,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle attaque consiste pour un pirate à injecter des données dépassant la mémoire allouée sur la pile (stack) afin de détourner le flot d'exécution du programme ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Buffer Overflow (Dépassement de tampon)\"}, {\"id\": \"b\", \"text\": \"Race Condition\"}, {\"id\": \"c\", \"text\": \"Cross-Site Scripting\"}, {\"id\": \"d\", \"text\": \"XML Injection\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le dépassement de tampon permet d'écraser l'adresse de retour (EIP/RIP) pour faire exécuter du code arbitraire (shellcode)."
+  },
+  {
+    "ordering": 83,
+    "type": "single_choice",
+    "prompt_markdown": "Quel mécanisme de protection au niveau du système d'exploitation rend aléatoires les adresses mémoire des bibliothèques et de la pile pour compliquer les exploits ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ASLR (Address Space Layout Randomization)\"}, {\"id\": \"b\", \"text\": \"DEP / NX bit\"}, {\"id\": \"c\", \"text\": \"Stack Canary\"}, {\"id\": \"d\", \"text\": \"Secure Boot\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "L'ASLR permute les adresses en mémoire à chaque exécution du processus, empêchant l'attaquant de cibler des adresses mémoire fixes."
+  },
+  {
+    "ordering": 84,
+    "type": "single_choice",
+    "prompt_markdown": "Quel type d'attaque cryptographique exploite le temps mis par un serveur pour comparer deux chaînes de caractères (ex: signatures ou clés) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attaque par canal auxiliaire temporelle (Timing Attack)\"}, {\"id\": \"b\", \"text\": \"Attaque par dictionnaire\"}, {\"id\": \"c\", \"text\": \"Attaque par rejeu (Replay attack)\"}, {\"id\": \"d\", \"text\": \"Attaque par collision SHA-3\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Une attaque temporelle mesure les micro-variations de temps d'exécution pour deviner octet par octet une valeur secrète. On y pare avec du temps constant (constant-time compare)."
+  },
+  {
+    "ordering": 85,
+    "type": "single_choice",
+    "prompt_markdown": "Pourquoi l'utilisation d'un générateur de nombres pseudo-aléatoires standard (comme `random()` en Python) est-elle interdite pour générer des clés cryptographiques ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Leur état interne est prédictible car ils sont conçus pour les simulations mathématiques, non pour la sécurité\"}, {\"id\": \"b\", \"text\": \"Ils ne génèrent que des nombres pairs\"}, {\"id\": \"c\", \"text\": \"Ils consomment trop de mémoire vive\"}, {\"id\": \"d\", \"text\": \"Ils dépendent exclusivement du protocole NTP\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Il faut impérativement utiliser un CSPRNG (Cryptographically Secure Pseudo-Random Number Generator, ex: `secrets` ou `/dev/urandom`)."
+  },
+  {
+    "ordering": 86,
+    "type": "single_choice",
+    "prompt_markdown": "Dans le protocole IPsec, quel protocole fournit à la fois le chiffrement des paquets, l'authentification et l'intégrité des données ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"ESP (Encapsulating Security Payload)\"}, {\"id\": \"b\", \"text\": \"AH (Authentication Header)\"}, {\"id\": \"c\", \"text\": \"IKEv1\"}, {\"id\": \"d\", \"text\": \"GRE\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "ESP assure à la fois la confidentialité (chiffrement) et l'intégrité, tandis que AH n'assure que l'intégrité sans aucun chiffrement."
+  },
+  {
+    "ordering": 87,
+    "type": "single_choice",
+    "prompt_markdown": "Qu'est-ce qu'une attaque par rejeu (Replay Attack) et comment s'en prémunir ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'interception d'un message légitime pour le renvoyer à l'identique ; on s'en protège avec des nonces ou horodatages stricts\"}, {\"id\": \"b\", \"text\": \"La modification du mot de passe utilisateur dans l'annuaire LDAP\"}, {\"id\": \"c\", \"text\": \"Une attaque par déni de service sur le serveur web\"}, {\"id\": \"d\", \"text\": \"Le reformatage complet d'un disque dur\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Un assaillant retransmet une requête authentique (ex: un virement). L'utilisation de tokens à usage unique (nonce) ou d'un compteur de session neutralise le rejeu."
+  },
+  {
+    "ordering": 88,
+    "type": "single_choice",
+    "prompt_markdown": "Quel standard de sécurité des cartes de paiement exige des contrôles stricts sur le stockage et le traitement des numéros de cartes bancaires (PAN) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"PCI-DSS (Payment Card Industry Data Security Standard)\"}, {\"id\": \"b\", \"text\": \"HIPAA\"}, {\"id\": \"c\", \"text\": \"RGPD uniquement\"}, {\"id\": \"d\", \"text\": \"SOX\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "PCI-DSS définit les exigences obligatoires pour toute entité stockant, traitant ou transmettant des données de cartes bancaires."
+  },
+  {
+    "ordering": 89,
+    "type": "single_choice",
+    "prompt_markdown": "Dans la norme ISO 27001, quelle méthode est au cœur du Système de Management de la Sécurité de l'Information (SMSI) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'analyse et l'évaluation continue des risques de sécurité de l'information\"}, {\"id\": \"b\", \"text\": \"L'achat obligatoire de pare-feux certifiés par le gouvernement\"}, {\"id\": \"c\", \"text\": \"L'interdiction absolue de tout accès Internet aux salariés\"}, {\"id\": \"d\", \"text\": \"L'archivage des données uniquement sur bandes magnétiques\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "ISO 27001 repose sur une approche par les risques pour concevoir, appliquer et améliorer continuellement les mesures de sécurité."
+  },
+  {
+    "ordering": 90,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle commande d'inspection réseau en ligne de commande permet de capturer et d'analyser en temps réel les paquets circulant sur une interface réseau Linux ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"tcpdump\"}, {\"id\": \"b\", \"text\": \"netstat\"}, {\"id\": \"c\", \"text\": \"ip link\"}, {\"id\": \"d\", \"text\": \"traceroute\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "tcpdump est le renifleur de paquets en ligne de commande de référence sous Linux, équivalent en console à Wireshark."
+  },
+  {
+    "ordering": 91,
+    "type": "single_choice",
+    "prompt_markdown": "Quel type de scan de ports Nmap envoie des paquets TCP avec le drapeau SYN sans terminer la poignée de main, limitant l'apparition dans les logs applicatifs ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Scan SYN furtif (-sS)\"}, {\"id\": \"b\", \"text\": \"Scan TCP Connect (-sT)\"}, {\"id\": \"c\", \"text\": \"Scan UDP (-sU)\"}, {\"id\": \"d\", \"text\": \"Scan Ping simple (-sn)\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le scan SYN furtif (-sS) n'établit jamais la connexion complète, ce qui évitait historiquement d'être consigné par les démons applicatifs."
+  },
+  {
+    "ordering": 92,
+    "type": "single_choice",
+    "prompt_markdown": "Dans le modèle OSI, à quel niveau opère un protocole de chiffrement comme IPsec ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Couche 3 (Réseau)\"}, {\"id\": \"b\", \"text\": \"Couche 7 (Application)\"}, {\"id\": \"c\", \"text\": \"Couche 2 (Liaison)\"}, {\"id\": \"d\", \"text\": \"Couche 4 (Transport)\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "IPsec opère au niveau de la couche réseau (IP), permettant de chiffrer l'ensemble du trafic de façon transparente pour les couches supérieures."
+  },
+  {
+    "ordering": 93,
+    "type": "single_choice",
+    "prompt_markdown": "Quel est l'objectif premier d'un exercice de cyber-crise de type 'Red Team vs Blue Team' ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Éprouver la capacité réelle de détection et de réaction des équipes défensives face à un scénario d'attaque réaliste\"}, {\"id\": \"b\", \"text\": \"Remplacer les pare-feux et les antivirus de l'entreprise\"}, {\"id\": \"c\", \"text\": \"Calculer le coût total du matériel informatique\"}, {\"id\": \"d\", \"text\": \"Réécrire le code source de toutes les applications\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "La Red Team simule des assaillants réels, tandis que la Blue Team s'entraîne à détecter, endiguer et remédier à l'attaque en conditions réelles."
+  },
+  {
+    "ordering": 94,
+    "type": "single_choice",
+    "prompt_markdown": "Dans un chiffrement de type 'Masque Jetable' (Vernam / One-Time Pad), quelle condition mathématique est requise pour garantir le secret parfait absolu de Shannon ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"La clé doit être aussi longue que le message, totalement aléatoire, utilisée une seule fois et gardée secrète\"}, {\"id\": \"b\", \"text\": \"La clé doit être dérivée d'un grand nombre premier\"}, {\"id\": \"c\", \"text\": \"Le message doit être chiffré en bloc de 64 bits\"}, {\"id\": \"d\", \"text\": \"L'algorithme doit être exécuté sur un processeur quantique\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Claude Shannon a démontré que le masque jetable offre une sécurité inconditionnelle théorique sous ces 4 strictes conditions."
+  },
+  {
+    "ordering": 95,
+    "type": "single_choice",
+    "prompt_markdown": "Quel vecteur d'attaque exploite la conversion et la désérialisation non sécurisée d'objets sérialisés (JSON, XML, Java/Python Pickling) ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'exécution de code arbitraire à distance (RCE) via désérialisation non sécurisée\"}, {\"id\": \"b\", \"text\": \"Une panne d'écran sur le poste client\"}, {\"id\": \"c\", \"text\": \"Un déni de service sur le protocole ARP\"}, {\"id\": \"d\", \"text\": \"Un mot de passe trop court dans Active Directory\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "La désérialisation de flux non fiables peut instancier des classes inattendues et exécuter du code malveillant côté serveur (ex: gadget chains)."
+  },
+  {
+    "ordering": 96,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle mesure permet d'atténuer le risque lié aux attaques par force brute sur un formulaire de connexion web ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"L'instauration d'un rate limiting (limite de requêtes), d'un verrouillage temporaire de compte et d'un CAPTCHA\"}, {\"id\": \"b\", \"text\": \"La désactivation du protocole HTTPS\"}, {\"id\": \"c\", \"text\": \"L'affichage du mot de passe en clair dans l'URL\"}, {\"id\": \"d\", \"text\": \"L'autorisation des mots de passe vides\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Limiter le nombre d'essais consécutifs et temporiser les réponses bloque les dictionnaires automatisés."
+  },
+  {
+    "ordering": 97,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est l'utilité du mécanisme de 'Honeypot' (pot de miel) en cybersécurité ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Attirer les attaquants vers un système leurre pour étudier leurs méthodes sans compromettre la production\"}, {\"id\": \"b\", \"text\": \"Accélérer le débit des requêtes web légitimes\"}, {\"id\": \"c\", \"text\": \"Sauvegarder les bases de données SQL\"}, {\"id\": \"d\", \"text\": \"Chiffrer les clés privées SSH\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Un honeypot est un leurre délibérément vulnérable ou exposé pour détecter précocement les scans et comportements hostiles."
+  },
+  {
+    "ordering": 98,
+    "type": "single_choice",
+    "prompt_markdown": "Quel type de chiffrement moderne permet de réaliser des calculs directement sur des données chiffrées sans jamais avoir à les déchiffrer au préalable ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Le chiffrement homomorphe (FHE)\"}, {\"id\": \"b\", \"text\": \"Le chiffrement AES-CBC\"}, {\"id\": \"c\", \"text\": \"Le chiffrement RSA 4096\"}, {\"id\": \"d\", \"text\": \"Le chiffrement de Vigenère\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Le chiffrement homomorphe permet d'externaliser des calculs dans le cloud en préservant la confidentialité absolue des données manipulées."
+  },
+  {
+    "ordering": 99,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la principale vulnérabilité introduite par la réutilisation d'un 'nonce' (Number used Once) dans le chiffrement AES-GCM ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"La perte totale de confidentialité et d'authenticité permettant de recouvrer la clé d'authentification GHASH\"}, {\"id\": \"b\", \"text\": \"Une augmentation de la latence réseau de 50%\"}, {\"id\": \"c\", \"text\": \"La corruption du système de fichiers hôte\"}, {\"id\": \"d\", \"text\": \"La désactivation automatique du pare-feu\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "Réutiliser le même nonce avec la même clé dans AES-GCM brise catastrophiquement la sécurité du cryptogramme et de l'intégrité."
+  },
+  {
+    "ordering": 100,
+    "type": "single_choice",
+    "prompt_markdown": "Quel est le rôle du protocole 'STARTTLS' dans les communications SMTP ou IMAP ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Négocier à chaud une mise à niveau d'une connexion en texte clair vers une session chiffrée TLS\"}, {\"id\": \"b\", \"text\": \"Démarrer le système d'exploitation à distance\"}, {\"id\": \"c\", \"text\": \"Créer automatiquement un compte utilisateur sur le serveur\"}, {\"id\": \"d\", \"text\": \"Supprimer les pièces jointes volumineuses\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "STARTTLS indique au serveur de passer le canal existant en communication sécurisée chiffrée TLS."
+  }
+]

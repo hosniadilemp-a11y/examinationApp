@@ -1974,7 +1974,7 @@ def get_student_statistics(
 
     """
 
-    fundamental_codes = ["ALGO", "PYTHON_INIT", "CRYPTO", "LINUX_ADMIN"]
+    fundamental_codes = ["PYTHON_PROG", "SYS_EXPLOIT", "CYBER_CRYPTO", "ALGO", "PYTHON_INIT", "CRYPTO", "LINUX_ADMIN"]
 
     all_modules = db.query(Module).all()
 

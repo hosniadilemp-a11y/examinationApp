@@ -148,7 +148,7 @@
                 <span id="dash-level-text">Niveau 1 — Grand Débutant</span>
               </div>
               <span style="font-size: 0.85rem; color: #93c5fd;" id="dash-fund-avg-text">
-                Moyenne 4 Piliers : 0.00 / 20
+                Moyenne Tests de Niveau : 0.00 / 20
               </span>
             </div>
             <div class="level-progress-track">
@@ -1372,18 +1372,37 @@
               Gestion globale des effectifs (Étudiants, Enseignants), des Modules, des Épreuves et Consolidation Multi-Salles.
             </p>
           </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btn-admin-edit-own-account" class="btn btn-secondary" style="padding:8px 14px; font-size:0.9rem; background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#93c5fd; font-weight:600;">
-              🔑 Mon Compte Admin (Login / MDP)
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <div style="display:flex; align-items:center; gap:6px; background:rgba(14,165,233,0.1); border:1px solid rgba(14,165,233,0.3); border-radius:6px; padding:3px 8px;">
+              <span style="font-size:0.85rem; font-weight:600; color:#38bdf8;">Tests Niveau :</span>
+              <select id="select-admin-level-tests-spec" class="input-field" style="padding:4px 8px; font-size:0.85rem; width:auto; height:32px;">
+                <option value="ALL">Toutes Spécialités</option>
+                <option value="DEV-IA">DEV-IA</option>
+                <option value="SYS-ADMIN">SYS-ADMIN</option>
+                <option value="CYBER-SEC">CYBER-SEC</option>
+                <option value="GRP-1">GRP-1</option>
+              </select>
+              <button id="btn-admin-export-level-tests-pdf" class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem; background:rgba(14,165,233,0.2); border-color:#0ea5e9; color:#38bdf8; font-weight:600;">
+                📄 Télécharger PV (PDF)
+              </button>
+            </div>
+            <button id="btn-admin-purge-practice-scores" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; background:rgba(245,158,11,0.15); border-color:#f59e0b; color:#fbbf24; font-weight:600;" title="Réinitialise les notes des tests de niveau pour démarrer une nouvelle campagne">
+              🗑️ Purger Scores Tests Niveau
             </button>
-            <button id="btn-admin-open-class-sheet" class="btn btn-secondary" style="padding:8px 14px; font-size:0.9rem; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7; font-weight:600;">
-              📑 PV par Spécialité & Module
+            <button id="btn-admin-purge-exam-scores" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; background:rgba(239,68,68,0.15); border-color:#ef4444; color:#f87171; font-weight:600;" title="Purger toutes les notes et tentatives d'examen officiel pour recommencer">
+              🗑️ Purger Notes Examens
             </button>
-            <button id="btn-admin-refresh-all" class="btn btn-secondary" style="padding:8px 14px; font-size:0.9rem;">
-              🔄 Actualiser les Données
+            <button id="btn-admin-edit-own-account" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; background:rgba(59,130,246,0.15); border-color:#3b82f6; color:#93c5fd; font-weight:600;">
+              🔑 Mon Compte Admin
             </button>
-            <button id="btn-admin-clear-exams" class="btn btn-secondary" style="padding:8px 14px; font-size:0.9rem; background:rgba(239,68,68,0.15); border-color:#ef4444; color:#f87171;">
-              🗑️ Purger tous les examens & notes
+            <button id="btn-admin-open-class-sheet" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7; font-weight:600;">
+              📑 PV Spécialité & Module
+            </button>
+            <button id="btn-admin-refresh-all" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem;">
+              🔄 Actualiser
+            </button>
+            <button id="btn-admin-clear-exams" class="btn btn-secondary" style="padding:8px 14px; font-size:0.85rem; background:rgba(153,27,27,0.2); border-color:#991b1b; color:#fca5a5;">
+              ⚠️ Purge Totale
             </button>
           </div>
         </div>
@@ -1621,10 +1640,44 @@
 
         <!-- TAB 4 : GESTION DES MODULES ACADÉMIQUES (CRUD) -->
         <div id="admin-tab-modules" class="admin-tab-content" style="display:none;">
+          <!-- SECTION DÉDIÉE : RENOMMAGE DES TESTS DE NIVEAU (24H/24) -->
+          <div style="background:var(--bg-surface); border:1px solid rgba(14,165,233,0.3); border-radius:var(--radius-lg); padding:20px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+              <div>
+                <h3 style="margin:0; font-size:1.15rem; color:#38bdf8; display:flex; align-items:center; gap:8px;">
+                  <span>🎯</span> Intitulés Officiels des Tests de Niveau (Évaluation 24h/24)
+                </h3>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin:4px 0 0 0;">
+                  Personnalisez librement les noms et descriptions des 3 tests de niveau affichés aux étudiants et sur les Procès-Verbaux.
+                </p>
+              </div>
+              <button id="btn-admin-refresh-level-tests" class="btn btn-secondary" style="padding:6px 12px; font-size:0.82rem;">
+                🔄 Actualiser
+              </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="proctor-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:0.88rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--card-border); background:rgba(14,165,233,0.06); color:var(--text-secondary);">
+                    <th style="padding:10px 14px; width:140px;">Code Système</th>
+                    <th style="padding:10px 14px; width:280px;">Intitulé Officiel du Test</th>
+                    <th style="padding:10px 14px;">Description & Compétences</th>
+                    <th style="padding:10px 14px; text-align:center; width:110px;">Questions</th>
+                    <th style="padding:10px 14px; text-align:center; width:140px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-level-tests-table-body">
+                  <!-- Injecté dynamiquement -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div style="background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
               <div>
-                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary);">📚 Modules Fondamentaux & Unités d'Enseignement</h3>
+                <h3 style="margin:0; font-size:1.1rem; color:var(--text-primary);">📚 Tous les Modules & Unités d'Enseignement</h3>
                 <span id="admin-modules-count" style="font-size:0.85rem; color:var(--text-secondary);">0 module(s)</span>
               </div>
               <button id="btn-admin-add-module" class="btn btn-primary" style="padding:7px 14px; font-size:0.85rem;">
@@ -2351,7 +2404,34 @@
     </div>
   </div>
 
-  <!-- MODAL ADMIN : AFFECTATION ENSEIGNANT À UN MODULE -->
+  <!-- MODAL ADMIN : PERSONNALISATION DU NOM D'UN TEST DE NIVEAU -->
+  <div id="modal-edit-level-test" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px; width: 95%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 id="modal-edit-level-test-header" style="margin:0; color:#38bdf8;">✏️ Modifier le Nom du Test de Niveau</h3>
+        <button class="btn btn-secondary modal-close-btn" data-target="modal-edit-level-test" style="padding:4px 8px;">✕</button>
+      </div>
+      <form id="form-edit-level-test">
+        <input type="hidden" id="edit-level-test-code" />
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Code Système :</label>
+          <input type="text" id="edit-level-test-code-display" class="form-control" disabled style="width:100%; opacity:0.75; font-family:monospace; font-weight:700;" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Intitulé Officiel du Test * :</label>
+          <input type="text" id="edit-level-test-title" class="form-control" required placeholder="Ex: Programmation Python & Algorithmique Avancée" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-weight:600; display:block; margin-bottom:4px;">Description / Compétences Évaluées :</label>
+          <textarea id="edit-level-test-desc" class="form-control" rows="3" placeholder="Description courte des compétences..." style="width:100%;"></textarea>
+        </div>
+        <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary modal-close-btn" data-target="modal-edit-level-test">Annuler</button>
+          <button type="submit" class="btn btn-primary" style="background:#0ea5e9; border-color:#0284c7;">💾 Enregistrer le Nouveau Nom</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <div id="modal-admin-assign-module" class="modal-overlay">
     <div class="modal-box" style="max-width: 580px; width: 95%;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -2677,11 +2757,8 @@
         L'affichage est temporairement masqué pour empêcher toute consultation tierce.
       </p>
       <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:14px;">
-        <button id="btn-restore-fullscreen" class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem; font-weight: 700; background: #3b82f6; border-color: #2563eb;">
+        <button id="btn-restore-fullscreen" class="btn btn-primary" style="padding: 12px 28px; font-size: 1.05rem; font-weight: 700; background: #3b82f6; border-color: #2563eb; cursor: pointer;">
           ⛶ Réactiver le Plein Écran
-        </button>
-        <button id="btn-continue-windowed" class="btn btn-secondary" style="padding: 12px 20px; font-size: 0.95rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">
-          Continuer en mode fenêtré
         </button>
       </div>
     </div>

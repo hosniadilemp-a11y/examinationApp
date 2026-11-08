@@ -354,6 +354,31 @@ class ExamMasterApp(ctk.CTk):
         )
         btn_test_open.pack(side="left")
 
+        # Ligne LAN Câblé dédiée (Déblocage Switch/Ethernet)
+        lan_bar = ctk.CTkFrame(hero_inner, fg_color="transparent")
+        lan_bar.pack(fill="x", pady=(8, 0))
+
+        self.lbl_lan_status = ctk.CTkLabel(
+            lan_bar,
+            text="🔌 Réseau Câblé (Ethernet LAN) : Détection...",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            text_color=(COLOR_MUTED_LIGHT, COLOR_MUTED_DARK)
+        )
+        self.lbl_lan_status.pack(side="left")
+
+        btn_unlock_lan = ctk.CTkButton(
+            lan_bar,
+            text="🚀 Débloquer Accès Câblé (LAN)",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            width=210,
+            height=26,
+            corner_radius=4,
+            fg_color=STATUS_GREEN,
+            hover_color=STATUS_GREEN_HOVER,
+            command=self._action_unlock_lan
+        )
+        btn_unlock_lan.pack(side="right")
+
         # 2. Bannière d'activité en direct
         self.activity_banner = ctk.CTkFrame(
             container,
@@ -1150,6 +1175,22 @@ class ExamMasterApp(ctk.CTk):
         self.lbl_hero_ip.configure(text=f"{curr_ip}:8000")
         self.lbl_hero_domain.configure(text=f"http://{self.mdns.hostname}.local:8000")
 
+        # Mise à jour du statut Réseau Câblé (Ethernet LAN)
+        if hasattr(self, 'lbl_lan_status'):
+            eth = self.health_checker.lan_unlocker.get_physical_ethernet_info()
+            if eth["is_connected"]:
+                apipa_note = " ⚠️ [IP APIPA - Switch sans DHCP]" if eth["is_apipa"] else ""
+                cat_note = f" [{eth['category']}]" if eth.get('category') else ""
+                self.lbl_lan_status.configure(
+                    text=f"🔌 Câble Réseau Détecté : {eth['name']} ({eth['ip']}){cat_note}{apipa_note}",
+                    text_color=STATUS_AMBER if eth["is_apipa"] or eth.get("category") == "Public" else STATUS_GREEN
+                )
+            else:
+                self.lbl_lan_status.configure(
+                    text=f"🔌 Carte Ethernet : {eth['name']} (Câble non branché sur le switch)",
+                    text_color=COLOR_MUTED_DARK
+                )
+
         # État Docker
         is_docker_up = d.get("running", False)
         self.docker_is_up = is_docker_up
@@ -1469,6 +1510,23 @@ class ExamMasterApp(ctk.CTk):
             res = self.health_checker.firewall_checker.configure_firewall_rules()
             messagebox.showinfo("Configuration Pare-Feu Windows", res["message"])
             self._refresh_diagnosis()
+        elif action_code == "fix_firewall" or action_code == "unlock_lan":
+            self._action_unlock_lan()
+
+    def _action_unlock_lan(self):
+        """Débloque en 1 clic l'accès câblé pour la salle (Pare-feu, PortProxy, Profil Privé)."""
+        self._append_log("[Réseau Câblé] Déblocage des règles Pare-Feu, PortProxy et profil Privé...")
+        res = self.health_checker.lan_unlocker.unlock_lan_access()
+        if res["success"]:
+            self._append_log(f"[Succès LAN] {res['message']}")
+            messagebox.showinfo(
+                "Accès Réseau Câblé (LAN) Débloqué",
+                f"{res['message']}\n\n- Pare-Feu Windows : Port 8000 (TCP), 5353 (UDP) et Ping autorisés sur profil Public & Privé.\n- Relais PortProxy : Redirection 0.0.0.0:8000 vers Docker activée.\n- Les autres PC de la salle peuvent désormais joindre le serveur."
+            )
+        else:
+            self._append_log(f"[Avertissement LAN] {res['message']}")
+            messagebox.showwarning("Avertissement Déblocage LAN", res["message"])
+        self._refresh_diagnosis()
 
     # =========================================================================
     # CARTOGRAPHIE RÉSEAU & RENOMMAGE (APPROCHE 1)

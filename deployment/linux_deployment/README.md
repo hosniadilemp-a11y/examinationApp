@@ -22,6 +22,16 @@ chmod +x *.sh
 ./stop_server.sh
 ```
 
+### 🚀 Déblocage Réseau Câblé (Switch 100% Ethernet sans Wi-Fi) :
+Si les ordinateurs étudiants ne parviennent pas à joindre le serveur par câble réseau, exécutez avec les droits root :
+```bash
+sudo ./debloquer_acces_lan.sh
+```
+Ce script :
+1. Active le routage IPv4 du noyau Linux (`net.ipv4.ip_forward = 1`).
+2. Ouvre les ports 8000 (TCP FastAPI) et 5353 (UDP mDNS) dans **UFW** et/ou **Firewalld**.
+3. Ajoute les règles `iptables` de FORWARD et INPUT pour autoriser le trafic du commutateur physique vers le bridge Docker.
+
 ---
 
 ## 📦 2. Déploiement Hors-Ligne (Clé USB / Sans Internet)

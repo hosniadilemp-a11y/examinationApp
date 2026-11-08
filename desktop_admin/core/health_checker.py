@@ -1,6 +1,7 @@
 """
 Module de diagnostic de santé, de télémétrie serveur et de résolution d'incidents.
 Surveille CPU, RAM, ports, endpoint API, base de données et Pare-Feu Windows.
+Surveille CPU, RAM, ports, endpoint API, base de données, Pare-Feu Windows et Réseau Câblé LAN.
 Résolution automatisée en 1 clic pour les incidents courants.
 """
 
@@ -12,6 +13,7 @@ import requests
 from typing import Dict, Any, List, Optional
 from desktop_admin.core.docker_manager import DockerManager
 from desktop_admin.core.firewall_checker import FirewallChecker
+from desktop_admin.core.lan_unlocker import LanUnlocker
 
 class HealthChecker:
     def __init__(self, host: str = "127.0.0.1", port: int = 8000, db_port: int = 5432):
@@ -20,6 +22,7 @@ class HealthChecker:
         self.db_port = db_port
         self.docker_mgr = DockerManager()
         self.firewall_checker = FirewallChecker(port=port, mdns_port=5353)
+        self.lan_unlocker = LanUnlocker(port=port, mdns_port=5353)
         self._last_net_io = psutil.net_io_counters()
         self._last_net_time = time.time()
         self._total_requests_tracked = 0
@@ -216,12 +219,15 @@ class HealthChecker:
                 })
 
         # 3. Vérification des ports
+        # 3. Vérification des ports locaux
         port_8000_open = self.check_port_open(self.host, self.port)
         if port_8000_open:
             items.append({
                 "component": "Port 8000 (API)",
+                "component": "Port 8000 (API Local)",
                 "status": "ok",
                 "title": f"Port {self.port} actif et accessible",
+                "title": f"Port {self.port} actif et accessible localement",
                 "detail": f"Le serveur écoute sur http://{self.host}:{self.port}",
                 "solution": "Aucune action requise.",
                 "auto_fixable": False,
@@ -232,6 +238,7 @@ class HealthChecker:
             if p_on_8000:
                 items.append({
                     "component": "Port 8000 (API)",
+                    "component": "Port 8000 (API Local)",
                     "status": "critical",
                     "title": f"Conflit de port sur le port {self.port}",
                     "detail": f"Le processus '{p_on_8000['name']}' (PID {p_on_8000['pid']}) occupe le port de l'examen.",
@@ -242,6 +249,7 @@ class HealthChecker:
             else:
                 items.append({
                     "component": "Port 8000 (API)",
+                    "component": "Port 8000 (API Local)",
                     "status": "warning",
                     "title": f"Le port {self.port} est fermé",
                     "detail": "Le serveur FastAPI n'est pas encore démarré.",
@@ -262,25 +270,51 @@ class HealthChecker:
                 "auto_fixable": False,
                 "action_code": None
             })
+        # 4. Vérification Réseau Câblé & Pare-Feu LAN (NOUVEAU)
+        lan_audit = self.lan_unlocker.audit_lan_status()
+        eth_info = lan_audit["ethernet"]
 
         # 5. Vérification Pare-Feu Windows (Item 8)
         fw = self.firewall_checker.check_firewall_rules()
         if fw.get("needs_fix"):
+        if not lan_audit["all_ok"]:
+            first_issue = lan_audit["issues"][0] if lan_audit["issues"] else "Réglages requis."
             items.append({
                 "component": "Pare-Feu Windows",
+                "component": "Réseau Câblé (Ethernet LAN)",
                 "status": "warning",
                 "title": "Autorisation Pare-Feu recommandée pour la salle",
                 "detail": "Les règles d'ouverture du port 8000 et mDNS 5353 ne sont pas encore enregistrées.",
                 "solution": "Cliquez sur 'Autoriser' pour inscrire les règles d'autorisation dans Windows Defender.",
+                "title": f"Accès réseau câblé bloqué pour les autres postes ({eth_info['name']})",
+                "detail": f"Constat : {first_issue} (IP actuelle : {eth_info['ip']})",
+                "solution": "Cliquez sur 'Débloquer LAN' pour autoriser le Pare-Feu, le relais PortProxy WSL2 et le profil Privé.",
                 "auto_fixable": True,
                 "action_code": "fix_firewall"
+                "action_code": "unlock_lan"
             })
         else:
             items.append({
                 "component": "Pare-Feu Windows",
+                "component": "Réseau Câblé (Ethernet LAN)",
                 "status": "ok",
                 "title": "Ports d'examen autorisés dans le Pare-Feu",
                 "detail": "Port 8000 (TCP) et mDNS 5353 (UDP) autorisés.",
+                "title": f"Accès réseau câblé 100% opérationnel ({eth_info['name']})",
+                "detail": f"IP : {eth_info['ip']} | Pare-Feu, PortProxy 8000 et profil Privé actifs.",
+                "solution": "Les postes étudiants peuvent accéder au serveur via le câble réseau.",
+                "auto_fixable": False,
+                "action_code": None
+            })
+
+        # 5. Base PostgreSQL Port 5432
+        port_5432_open = self.check_port_open(self.host, self.db_port)
+        if port_5432_open:
+            items.append({
+                "component": "Base PostgreSQL (5432)",
+                "status": "ok",
+                "title": "PostgreSQL 16 accessible",
+                "detail": "Connexions prêtes.",
                 "solution": "Aucune action requise.",
                 "auto_fixable": False,
                 "action_code": None

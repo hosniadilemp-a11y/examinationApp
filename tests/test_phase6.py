@@ -170,7 +170,7 @@ def test_practice_history_and_last_4_attempts_and_warnings(client, student_heade
     q_res = client.get("/api/practice/exams/ALGO/questions", headers=student_headers)
     assert q_res.status_code == 200
     questions = q_res.json()["questions"]
-    assert len(questions) == 30
+    assert len(questions) >= 100
 
     # 2. Soumettre 5 tentatives consécutives sur ALGO avec différentes réponses et avertissements
     for i in range(1, 6):

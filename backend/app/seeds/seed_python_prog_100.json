@@ -1,0 +1,942 @@
+[
+  {
+    "ordering": 1,
+    "type": "boolean",
+    "prompt_markdown": "Dans la recherche dichotomique (binaire), la liste ou le tableau d'entrée doit obligatoirement être préalablement trié.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 2,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la complexité asymptotique temporelle dans le pire des cas de l'algorithme du **tri fusion (Merge Sort)** pour un tableau de $n$ éléments ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"O(n)\"}, {\"id\": \"b\", \"text\": \"O(n log n)\"}, {\"id\": \"c\", \"text\": \"O(n\\u00b2)\"}, {\"id\": \"d\", \"text\": \"O(log n)\"}]",
+    "correct_answers_json": "\"b\""
+  },
+  {
+    "ordering": 3,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles sont les conditions indispensables pour qu'une fonction récursive termine correctement sans provoquer de dépassement de pile (*stack overflow*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Pr\\u00e9sence d'au moins un cas de base (condition d'arr\\u00eat)\"}, {\"id\": \"b\", \"text\": \"L'appel r\\u00e9cursif doit converger strictement vers le cas de base\"}, {\"id\": \"c\", \"text\": \"La fonction doit obligatoirement \\u00eatre ex\\u00e9cut\\u00e9e en multithreading\"}, {\"id\": \"d\", \"text\": \"La m\\u00e9moire vive de la machine doit \\u00eatre sup\\u00e9rieure \\u00e0 32 Go\"}]",
+    "correct_answers_json": "[\"a\", \"b\"]"
+  },
+  {
+    "ordering": 4,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel terme désigne la structure de données linéaire fonctionnant selon le principe **Dernier Entré, Premier Sorti (LIFO)** ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"pile\", \"stack\", \"une pile\", \"la pile\"]"
+  },
+  {
+    "ordering": 5,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque structure de données à sa propriété d'accès caractéristique :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Pile\", \"File\", \"Tableau statique\", \"Table de hachage\"], \"right\": [\"LIFO (Last In First Out)\", \"FIFO (First In First Out)\", \"Acc\\u00e8s par index O(1)\", \"Acc\\u00e8s par clef en temps moyen O(1)\"]}",
+    "correct_answers_json": "{\"Pile\": \"LIFO (Last In First Out)\", \"File\": \"FIFO (First In First Out)\", \"Tableau statique\": \"Acc\\u00e8s par index O(1)\", \"Table de hachage\": \"Acc\\u00e8s par clef en temps moyen O(1)\"}"
+  },
+  {
+    "ordering": 6,
+    "type": "boolean",
+    "prompt_markdown": "Question 6 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 7,
+    "type": "single_choice",
+    "prompt_markdown": "Question 7 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 8,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 8 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 9,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 9 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 10,
+    "type": "matching",
+    "prompt_markdown": "Question 10 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 11,
+    "type": "boolean",
+    "prompt_markdown": "Question 11 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 12,
+    "type": "single_choice",
+    "prompt_markdown": "Question 12 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 13,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 13 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 14,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 14 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 15,
+    "type": "matching",
+    "prompt_markdown": "Question 15 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 16,
+    "type": "boolean",
+    "prompt_markdown": "Question 16 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 17,
+    "type": "single_choice",
+    "prompt_markdown": "Question 17 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 18,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 18 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 19,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 19 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 20,
+    "type": "matching",
+    "prompt_markdown": "Question 20 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 21,
+    "type": "boolean",
+    "prompt_markdown": "Question 21 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 22,
+    "type": "single_choice",
+    "prompt_markdown": "Question 22 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 23,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 23 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 24,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 24 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 25,
+    "type": "matching",
+    "prompt_markdown": "Question 25 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 26,
+    "type": "boolean",
+    "prompt_markdown": "Question 26 : Le tri par sélection a toujours une complexité temporelle en O(n²) quel que soit l'état initial du tableau.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 27,
+    "type": "single_choice",
+    "prompt_markdown": "Question 27 : Dans un arbre binaire de recherche (ABR), pour tout nœud $X$ :\n```\n   (X)\n  /   \\\n(G)   (D)\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont strictement inf\\u00e9rieures \\u00e0 la cl\\u00e9 de X\"}, {\"id\": \"b\", \"text\": \"Toutes les cl\\u00e9s du sous-arbre gauche G sont sup\\u00e9rieures \\u00e0 X\"}, {\"id\": \"c\", \"text\": \"Les sous-arbres gauche et droit ont toujours le m\\u00eame nombre de n\\u0153uds\"}, {\"id\": \"d\", \"text\": \"La racine est toujours \\u00e9gale \\u00e0 0\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 28,
+    "type": "multi_choice",
+    "prompt_markdown": "Question 28 : Quels algorithmes parmi les suivants reposent sur le paradigme **Diviser pour régner** (*Divide and Conquer*) ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Tri Fusion (Merge Sort)\"}, {\"id\": \"b\", \"text\": \"Tri Rapide (Quick Sort)\"}, {\"id\": \"c\", \"text\": \"Recherche dichotomique\"}, {\"id\": \"d\", \"text\": \"Tri \\u00e0 bulles na\\u00eff\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 29,
+    "type": "fill_blank",
+    "prompt_markdown": "Question 29 : Quel terme désigne l'algorithme de parcours d'un graphe explorant en premier les sommets voisins les plus proches (parcours en largeur) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"bfs\", \"parcours en largeur\", \"breadth first search\"]"
+  },
+  {
+    "ordering": 30,
+    "type": "matching",
+    "prompt_markdown": "Question 30 : Associez chaque algorithme à sa classe de complexité temporelle optimale :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"Recherche dichotomique\", \"Tri rapide moyen\", \"Tri par insertion pire cas\", \"Recherche s\\u00e9quentielle\"], \"right\": [\"O(log n)\", \"O(n log n)\", \"O(n\\u00b2)\", \"O(n)\"]}",
+    "correct_answers_json": "{\"Recherche dichotomique\": \"O(log n)\", \"Tri rapide moyen\": \"O(n log n)\", \"Tri par insertion pire cas\": \"O(n\\u00b2)\", \"Recherche s\\u00e9quentielle\": \"O(n)\"}"
+  },
+  {
+    "ordering": 31,
+    "type": "boolean",
+    "prompt_markdown": "En Python, les tuples (`tuple`) sont des structures de données mutables que l'on peut modifier après création.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "false"
+  },
+  {
+    "ordering": 32,
+    "type": "single_choice",
+    "prompt_markdown": "Considérez le fragment de code suivant :\n```python\nvaleurs = [1, 2, 3, 4, 5]\nresultat = [x * 2 for x in valeurs if x % 2 == 1]\nprint(resultat)\n```\nQuelle sera la sortie affichée ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"[2, 6, 10]\"}, {\"id\": \"b\", \"text\": \"[4, 8]\"}, {\"id\": \"c\", \"text\": \"[2, 4, 6, 8, 10]\"}, {\"id\": \"d\", \"text\": \"[1, 3, 5]\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 33,
+    "type": "multi_choice",
+    "prompt_markdown": "Quels types de données parmi les suivants sont **immuables** (*immutable*) en Python standard ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"int\"}, {\"id\": \"b\", \"text\": \"str\"}, {\"id\": \"c\", \"text\": \"list\"}, {\"id\": \"d\", \"text\": \"tuple\"}, {\"id\": \"e\", \"text\": \"dict\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"d\"]"
+  },
+  {
+    "ordering": 34,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel mot-clé Python est utilisé pour définir une fonction anonyme en une seule ligne ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"lambda\"]"
+  },
+  {
+    "ordering": 35,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque méthode de liste Python à son effet :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"append(x)\", \"pop()\", \"extend(iterable)\", \"insert(i, x)\"], \"right\": [\"Ajoute un élément à la fin\", \"Retire et renvoie le dernier élément\", \"Ajoute tous les éléments d'un itérable\", \"Insère un élément à la position i\"]}",
+    "correct_answers_json": "{\"append(x)\": \"Ajoute un élément à la fin\", \"pop()\": \"Retire et renvoie le dernier élément\", \"extend(iterable)\": \"Ajoute tous les éléments d'un itérable\", \"insert(i, x)\": \"Insère un élément à la position i\"}"
+  },
+  {
+    "ordering": 36,
+    "type": "boolean",
+    "prompt_markdown": "L'expression `bool([])` évalue à `False` en Python car une liste vide est considérée comme falsy.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 37,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la sortie du code suivant ?\n```python\ns = 'Python'\nprint(s[::-1])\n```",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"'nohtyP'\"}, {\"id\": \"b\", \"text\": \"'Python'\"}, {\"id\": \"c\", \"text\": \"IndexError\"}, {\"id\": \"d\", \"text\": \"'P'\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 38,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles instructions permettent de gérer correctement les exceptions en Python ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"try\"}, {\"id\": \"b\", \"text\": \"except\"}, {\"id\": \"c\", \"text\": \"finally\"}, {\"id\": \"d\", \"text\": \"catch\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 39,
+    "type": "fill_blank",
+    "prompt_markdown": "Quelle fonction intégrée retourne le nombre d'éléments contenus dans une collection (liste, tuple, chaîne) ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"len\", \"len()\"]"
+  },
+  {
+    "ordering": 40,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque mot-clé Python à son utilité dans les boucles :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"break\", \"continue\", \"pass\", \"else (dans une boucle)\"], \"right\": [\"Interrompt immédiatement la boucle\", \"Passe immédiatement à l'itération suivante\", \"Instruction nulle / placeholder\", \"Exécuté si la boucle s'achève sans break\"]}",
+    "correct_answers_json": "{\"break\": \"Interrompt immédiatement la boucle\", \"continue\": \"Passe immédiatement à l'itération suivante\", \"pass\": \"Instruction nulle / placeholder\", \"else (dans une boucle)\": \"Exécuté si la boucle s'achève sans break\"}"
+  },
+  {
+    "ordering": 41,
+    "type": "boolean",
+    "prompt_markdown": "En Python, un nom de variable peut commencer par un chiffre (par exemple `1nom = 'Alice'`).",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "false"
+  },
+  {
+    "ordering": 42,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la valeur de l'expression arithmétique `2 ** 3` en Python ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"6\"}, {\"id\": \"b\", \"text\": \"8\"}, {\"id\": \"c\", \"text\": \"9\"}, {\"id\": \"d\", \"text\": \"5\"}]",
+    "correct_answers_json": "\"b\""
+  },
+  {
+    "ordering": 43,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles collections parmi les suivantes n'autorisent **aucun doublon** en Python standard ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"set\"}, {\"id\": \"b\", \"text\": \"frozenset\"}, {\"id\": \"c\", \"text\": \"list\"}, {\"id\": \"d\", \"text\": \"tuple\"}]",
+    "correct_answers_json": "[\"a\", \"b\"]"
+  },
+  {
+    "ordering": 44,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel mot-clé est utilisé pour déclarer une nouvelle fonction en Python ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"def\"]"
+  },
+  {
+    "ordering": 45,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque fonction intégrée à sa description :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"type(x)\", \"id(x)\", \"str(x)\", \"abs(x)\"], \"right\": [\"Renvoie le type de l'objet\", \"Renvoie l'identifiant mémoire unique\", \"Convertit l'objet en chaîne de caractères\", \"Renvoie la valeur absolue d'un nombre\"]}",
+    "correct_answers_json": "{\"type(x)\": \"Renvoie le type de l'objet\", \"id(x)\": \"Renvoie l'identifiant mémoire unique\", \"str(x)\": \"Convertit l'objet en chaîne de caractères\", \"abs(x)\": \"Renvoie la valeur absolue d'un nombre\"}"
+  },
+  {
+    "ordering": 46,
+    "type": "boolean",
+    "prompt_markdown": "L'opérateur `is` en Python vérifie si deux variables pointent vers le même objet en mémoire, et non si leurs valeurs sont égales.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 47,
+    "type": "single_choice",
+    "prompt_markdown": "Quel est le type retourné par l'expression `type({})` en Python standard ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"<class 'dict'>\"}, {\"id\": \"b\", \"text\": \"<class 'set'>\"}, {\"id\": \"c\", \"text\": \"<class 'list'>\"}, {\"id\": \"d\", \"text\": \"<class 'tuple'>\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 48,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles méthodes parmi les suivantes appartiennent à la classe dictionnaire (`dict`) en Python ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"keys()\"}, {\"id\": \"b\", \"text\": \"values()\"}, {\"id\": \"c\", \"text\": \"items()\"}, {\"id\": \"d\", \"text\": \"push()\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 49,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel mot-clé est employé à l'intérieur d'une fonction pour renvoyer une valeur au code appelant ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"return\"]"
+  },
+  {
+    "ordering": 50,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque mode d'ouverture de fichier à son comportement :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"'r'\", \"'w'\", \"'a'\", \"'r+'\"], \"right\": [\"Lecture seule\", \"Écriture avec écrasement du contenu existant\", \"Écriture en ajout à la fin du fichier\", \"Lecture et écriture simultanées\"]}",
+    "correct_answers_json": "{\"'r'\": \"Lecture seule\", \"'w'\": \"Écriture avec écrasement du contenu existant\", \"'a'\": \"Écriture en ajout à la fin du fichier\", \"'r+'\": \"Lecture et écriture simultanées\"}"
+  },
+  {
+    "ordering": 51,
+    "type": "boolean",
+    "prompt_markdown": "En Python 3, le résultat de la division réelle `7 / 2` est un nombre à virgule flottante (`float`) valant `3.5`.",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 52,
+    "type": "single_choice",
+    "prompt_markdown": "Que retourne l'expression `' - '.join(['A', 'B', 'C'])` ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"'A - B - C'\"}, {\"id\": \"b\", \"text\": \"['A', 'B', 'C']\"}, {\"id\": \"c\", \"text\": \"'A, B, C'\"}, {\"id\": \"d\", \"text\": \"TypeError\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 53,
+    "type": "multi_choice",
+    "prompt_markdown": "Quels mots-clés permettent d'importer des modules ou symboles en Python ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"import\"}, {\"id\": \"b\", \"text\": \"from\"}, {\"id\": \"c\", \"text\": \"as\"}, {\"id\": \"d\", \"text\": \"require\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]"
+  },
+  {
+    "ordering": 54,
+    "type": "fill_blank",
+    "prompt_markdown": "Quelle valeur spéciale représente l'absence d'objet ou la valeur nulle en Python standard ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"None\"]"
+  },
+  {
+    "ordering": 55,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque méthode spéciale dunder à sa fonction :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"__init__\", \"__str__\", \"__len__\", \"__eq__\"], \"right\": [\"Initialisateur / constructeur d'instance\", \"Représentation textuelle conviviale\", \"Calcul de la longueur avec len()\", \"Surcharge de l'opérateur d'égalité ==\"]}",
+    "correct_answers_json": "{\"__init__\": \"Initialisateur / constructeur d'instance\", \"__str__\": \"Représentation textuelle conviviale\", \"__len__\": \"Calcul de la longueur avec len()\", \"__eq__\": \"Surcharge de l'opérateur d'égalité ==\"}"
+  },
+  {
+    "ordering": 56,
+    "type": "boolean",
+    "prompt_markdown": "En Python, une liste peut contenir des éléments hétérogènes (mélangeant entiers, chaînes de caractères et flottants).",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"true\", \"text\": \"Vrai\"}, {\"id\": \"false\", \"text\": \"Faux\"}]",
+    "correct_answers_json": "true"
+  },
+  {
+    "ordering": 57,
+    "type": "single_choice",
+    "prompt_markdown": "Que retourne l'expression `'python'.upper()` en console ?",
+    "points": 1.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"'PYTHON'\"}, {\"id\": \"b\", \"text\": \"'Python'\"}, {\"id\": \"c\", \"text\": \"'python'\"}, {\"id\": \"d\", \"text\": \"AttributeError\"}]",
+    "correct_answers_json": "\"a\""
+  },
+  {
+    "ordering": 58,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles instructions introduisent une boucle d'itération en syntaxe Python standard ?",
+    "points": 2.0,
+    "negative_penalty": 0.5,
+    "options_json": "[{\"id\": \"a\", \"text\": \"for\"}, {\"id\": \"b\", \"text\": \"while\"}, {\"id\": \"c\", \"text\": \"loop\"}, {\"id\": \"d\", \"text\": \"repeat\"}]",
+    "correct_answers_json": "[\"a\", \"b\"]"
+  },
+  {
+    "ordering": 59,
+    "type": "fill_blank",
+    "prompt_markdown": "Quel mot-clé introduit un gestionnaire de contexte assurant par exemple la fermeture automatique des fichiers ?",
+    "points": 1.0,
+    "negative_penalty": 0.0,
+    "options_json": "[]",
+    "correct_answers_json": "[\"with\"]"
+  },
+  {
+    "ordering": 60,
+    "type": "matching",
+    "prompt_markdown": "Associez chaque opérateur arithmétique à sa fonction :",
+    "points": 2.0,
+    "negative_penalty": 0.0,
+    "options_json": "{\"left\": [\"//\", \"%\", \"**\", \"*\"], \"right\": [\"Division entière (quotient)\", \"Modulo (reste de la division)\", \"Élévation à la puissance\", \"Multiplication\"]}",
+    "correct_answers_json": "{\"//\": \"Division entière (quotient)\", \"%\": \"Modulo (reste de la division)\", \"**\": \"Élévation à la puissance\", \"*\": \"Multiplication\"}"
+  },
+  {
+    "ordering": 61,
+    "type": "single_choice",
+    "prompt_markdown": "Comment insère-t-on un commentaire sur une ligne en Python ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"// commentaire\"}, {\"id\": \"b\", \"text\": \"# commentaire\"}, {\"id\": \"c\", \"text\": \"/* commentaire */\"}, {\"id\": \"d\", \"text\": \"<!-- commentaire -->\"}, {\"id\": \"e\", \"text\": \"-- commentaire\"}]",
+    "correct_answers_json": "\"b\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment insère-t-on un commentaire sur une ligne en Python ? »\n\n**Bonne réponse attendue :** « `# commentaire` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `# commentaire` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`// commentaire` (incorrect); `/* commentaire */` (incorrect); `<!-- commentaire -->` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 62,
+    "type": "single_choice",
+    "prompt_markdown": "Quel mot-clé importe un module en Python ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"include\"}, {\"id\": \"b\", \"text\": \"using\"}, {\"id\": \"c\", \"text\": \"import\"}, {\"id\": \"d\", \"text\": \"require\"}, {\"id\": \"e\", \"text\": \"load\"}]",
+    "correct_answers_json": "\"c\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel mot-clé importe un module en Python ? »\n\n**Bonne réponse attendue :** « `import` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `import` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`include` (incorrect); `using` (incorrect); `require` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 63,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la valeur de `type(42)` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"<class 'int'>\"}, {\"id\": \"b\", \"text\": \"<class 'float'>\"}, {\"id\": \"c\", \"text\": \"<class 'str'>\"}, {\"id\": \"d\", \"text\": \"<class 'bool'>\"}, {\"id\": \"e\", \"text\": \"<class 'list'>\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle est la valeur de `type(42)` ? »\n\n**Bonne réponse attendue :** « `<class 'int'>` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `<class 'int'>` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`<class 'float'>` (incorrect); `<class 'str'>` (incorrect); `<class 'bool'>` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 64,
+    "type": "single_choice",
+    "prompt_markdown": "Comment déclare-t-on une variable `x` valant 10 ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"int x = 10\"}, {\"id\": \"b\", \"text\": \"x = 10\"}, {\"id\": \"c\", \"text\": \"var x = 10\"}, {\"id\": \"d\", \"text\": \"x := 10\"}, {\"id\": \"e\", \"text\": \"10 -> x\"}]",
+    "correct_answers_json": "\"b\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment déclare-t-on une variable `x` valant 10 ? »\n\n**Bonne réponse attendue :** « `x = 10` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `x = 10` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`int x = 10` (incorrect); `var x = 10` (incorrect); `x := 10` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 65,
+    "type": "single_choice",
+    "prompt_markdown": "Que fait `len(\"hello\")` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Retourne 4\"}, {\"id\": \"b\", \"text\": \"Retourne 5\"}, {\"id\": \"c\", \"text\": \"Retourne 'hello'\"}, {\"id\": \"d\", \"text\": \"Lève une erreur\"}, {\"id\": \"e\", \"text\": \"Retourne None\"}]",
+    "correct_answers_json": "\"b\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Que fait `len(\"hello\")` ? »\n\n**Bonne réponse attendue :** « `Retourne 5` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `Retourne 5` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`Retourne 4` (incorrect); `Retourne 'hello'` (incorrect); `Lève une erreur` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 66,
+    "type": "single_choice",
+    "prompt_markdown": "Quel opérateur effectue l'exponentiation ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"^\"}, {\"id\": \"b\", \"text\": \"**\"}, {\"id\": \"c\", \"text\": \"^^\"}, {\"id\": \"d\", \"text\": \"exp()\"}, {\"id\": \"e\", \"text\": \"pow\"}]",
+    "correct_answers_json": "\"b\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel opérateur effectue l'exponentiation ? »\n\n**Bonne réponse attendue :** « `**` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `**` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`^` (incorrect); `^^` (incorrect); `exp()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 67,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle fonction convertit un nombre en chaîne ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"str()\"}, {\"id\": \"b\", \"text\": \"int()\"}, {\"id\": \"c\", \"text\": \"float()\"}, {\"id\": \"d\", \"text\": \"repr()\"}, {\"id\": \"e\", \"text\": \"format()\"}]",
+    "correct_answers_json": "[\"a\", \"d\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle fonction convertit un nombre en chaîne ? »\n\n**Bonnes réponses attendues :** « `str()` », « `repr()` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `str()` », « `repr()` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`int()` (incorrect); `float()` (incorrect); `format()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 68,
+    "type": "single_choice",
+    "prompt_markdown": "Comment obtient-on une entrée utilisateur depuis le clavier ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"input()\"}, {\"id\": \"b\", \"text\": \"raw_input()\"}, {\"id\": \"c\", \"text\": \"read()\"}, {\"id\": \"d\", \"text\": \"get()\"}, {\"id\": \"e\", \"text\": \"scan()\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment obtient-on une entrée utilisateur depuis le clavier ? »\n\n**Bonne réponse attendue :** « `input()` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `input()` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`raw_input()` (incorrect); `read()` (incorrect); `get()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 69,
+    "type": "single_choice",
+    "prompt_markdown": "Quel mot-clé arrête l'exécution d'une fonction et renvoie une valeur ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"break\"}, {\"id\": \"b\", \"text\": \"continue\"}, {\"id\": \"c\", \"text\": \"return\"}, {\"id\": \"d\", \"text\": \"yield\"}, {\"id\": \"e\", \"text\": \"exit\"}]",
+    "correct_answers_json": "\"c\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel mot-clé arrête l'exécution d'une fonction et renvoie une valeur ? »\n\n**Bonne réponse attendue :** « `return` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `return` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`break` (incorrect); `continue` (incorrect); `yield` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 70,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle valeur retourne l'expression `3 * 'ab' + 'c'` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"abababc\"}, {\"id\": \"b\", \"text\": \"abababc\"}, {\"id\": \"c\", \"text\": \"3abc\"}, {\"id\": \"d\", \"text\": \"ab3c\"}, {\"id\": \"e\", \"text\": \"Erreur\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle valeur retourne l'expression `3 * 'ab' + 'c'` ? »\n\n**Bonne réponse attendue :** « `abababc` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `abababc` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`abababc` (incorrect); `3abc` (incorrect); `ab3c` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 71,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle(s) syntaxe(s) crée(nt) un tuple d'un seul élément ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"(1)\"}, {\"id\": \"b\", \"text\": \"(1,)\"}, {\"id\": \"c\", \"text\": \"tuple([1])\"}, {\"id\": \"d\", \"text\": \"1,\"}, {\"id\": \"e\", \"text\": \"tuple(1)\"}]",
+    "correct_answers_json": "[\"b\", \"c\", \"d\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle(s) syntaxe(s) crée(nt) un tuple d'un seul élément ? »\n\n**Bonnes réponses attendues :** « `(1,)` », « `tuple([1])` », « `1,` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `(1,)` », « `tuple([1])` », « `1,` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`(1)` (incorrect); `tuple(1)` (incorrect); `(,1)` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 72,
+    "type": "single_choice",
+    "prompt_markdown": "Que fait `list(range(1,10,2))` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"[1,3,5,7,9]\"}, {\"id\": \"b\", \"text\": \"[1,2,3,4,5,6,7,8,9,10]\"}, {\"id\": \"c\", \"text\": \"[1,3,5,7,9,10]\"}, {\"id\": \"d\", \"text\": \"[2,4,6,8,10]\"}, {\"id\": \"e\", \"text\": \"[1,3,5,7]\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Que fait `list(range(1,10,2))` ? »\n\n**Bonne réponse attendue :** « `[1,3,5,7,9]` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `[1,3,5,7,9]` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`[1,2,3,4,5,6,7,8,9,10]` (incorrect); `[1,3,5,7,9,10]` (incorrect); `[2,4,6,8,10]` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 73,
+    "type": "multi_choice",
+    "prompt_markdown": "Comment échapper un caractère spécial (ex. guillemet) dans une chaîne ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"\\\\\\\"\"}, {\"id\": \"b\", \"text\": \"préfixe r\"}, {\"id\": \"c\", \"text\": \"guillemets différents\"}, {\"id\": \"d\", \"text\": \"\\\\\"}, {\"id\": \"e\", \"text\": \"chr(34)\"}]",
+    "correct_answers_json": "[\"a\", \"c\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment échapper un caractère spécial (ex. guillemet) dans une chaîne ? »\n\n**Bonnes réponses attendues :** « `\\\"` », « `guillemets différents` », « `'\"'` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `\\\"` », « `guillemets différents` », « `'\"'` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`préfixe r` (incorrect); `\\` (incorrect); `chr(34)` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 74,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle(s) fonction(s) peut(vent) prendre un nombre variable d'arguments positionnels ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"def f(*args)\"}, {\"id\": \"b\", \"text\": \"def f(args*)\"}, {\"id\": \"c\", \"text\": \"def f(*)\"}, {\"id\": \"d\", \"text\": \"def f(**kwargs)\"}, {\"id\": \"e\", \"text\": \"def f(x, *y)\"}]",
+    "correct_answers_json": "[\"a\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle(s) fonction(s) peut(vent) prendre un nombre variable d'arguments positionnels ? »\n\n**Bonnes réponses attendues :** « `def f(*args)` », « `def f(x, *y)` », « `lambda *x: x` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `def f(*args)` », « `def f(x, *y)` », « `lambda *x: x` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`def f(args*)` (incorrect); `def f(*)` (incorrect); `def f(**kwargs)` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 75,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle est la différence entre `==` et `is` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"== compare les valeurs, is compare les identités\"}, {\"id\": \"b\", \"text\": \"is compare les valeurs, == compare les références\"}, {\"id\": \"c\", \"text\": \"Aucune différence\"}, {\"id\": \"d\", \"text\": \"== ne fonctionne que sur les nombres\"}, {\"id\": \"e\", \"text\": \"is est réservé aux singletons\"}]",
+    "correct_answers_json": "[\"a\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle est la différence entre `==` et `is` ? »\n\n**Bonnes réponses attendues :** « `== compare les valeurs, is compare les identités` », « `is est réservé aux singletons` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `== compare les valeurs, is compare les identités` », « `is est réservé aux singletons` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`is compare les valeurs, == compare les références` (incorrect); `Aucune différence` (incorrect); `== ne fonctionne que sur les nombres` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 76,
+    "type": "single_choice",
+    "prompt_markdown": "Que produit l'expression `[1,2] + [3,4]` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"[1,2,3,4]\"}, {\"id\": \"b\", \"text\": \"[4,6]\"}, {\"id\": \"c\", \"text\": \"[[1,2],[3,4]]\"}, {\"id\": \"d\", \"text\": \"[1,2][3,4]\"}, {\"id\": \"e\", \"text\": \"Erreur\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Que produit l'expression `[1,2] + [3,4]` ? »\n\n**Bonnes réponses attendues :** « `[1,2,3,4]` », « `[1,2,3,4] (une nouvelle liste)` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `[1,2,3,4]` », « `[1,2,3,4] (une nouvelle liste)` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`[4,6]` (incorrect); `[[1,2],[3,4]]` (incorrect); `[1,2][3,4]` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 77,
+    "type": "multi_choice",
+    "prompt_markdown": "Quel est le rôle de la fonction `zip()` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Combiner plusieurs itérables élément par élément\"}, {\"id\": \"b\", \"text\": \"Compresser des fichiers\"}, {\"id\": \"c\", \"text\": \"Créer un itérateur de tuples\"}, {\"id\": \"d\", \"text\": \"Fusionner deux listes en une\"}, {\"id\": \"e\", \"text\": \"Trier deux listes simultanément\"}]",
+    "correct_answers_json": "[\"a\", \"c\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel est le rôle de la fonction `zip()` ? »\n\n**Bonnes réponses attendues :** « `Combiner plusieurs itérables élément par élément` », « `Créer un itérateur de tuples` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `Combiner plusieurs itérables élément par élément` », « `Créer un itérateur de tuples` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`Compresser des fichiers` (incorrect); `Fusionner deux listes en une` (incorrect); `Trier deux listes simultanément` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 78,
+    "type": "multi_choice",
+    "prompt_markdown": "Comment gère-t-on les contextes de ressources (fichier, verrou) de manière pythonique ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"with statement\"}, {\"id\": \"b\", \"text\": \"try/finally\"}, {\"id\": \"c\", \"text\": \"contextlib.contextmanager\"}, {\"id\": \"d\", \"text\": \"open/close manuel\"}, {\"id\": \"e\", \"text\": \"async with\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment gère-t-on les contextes de ressources (fichier, verrou) de manière pythonique ? »\n\n**Bonnes réponses attendues :** « `with statement` », « `try/finally` », « `contextlib.contextmanager` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `with statement` », « `try/finally` », « `contextlib.contextmanager` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`open/close manuel` (incorrect); `async with` (incorrect); `acquire/release` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 79,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle commande exécute un script Python nommé `mon_script.py` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"python mon_script.py\"}, {\"id\": \"b\", \"text\": \"python3 mon_script.py\"}, {\"id\": \"c\", \"text\": \"py mon_script.py\"}, {\"id\": \"d\", \"text\": \"./mon_script.py (si executable avec shebang)\"}, {\"id\": \"e\", \"text\": \"exec mon_script.py\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\", \"d\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle commande exécute un script Python nommé `mon_script.py` ? »\n\n**Bonnes réponses attendues :** « `python mon_script.py` », « `python3 mon_script.py` », « `py mon_script.py` », « `./mon_script.py (si executable avec shebang)` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `python mon_script.py` », « `python3 mon_script.py` », « `py mon_script.py` », « `./mon_script.py (si executable avec shebang)` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`exec mon_script.py` (incorrect); `import mon_script` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 80,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle sera la sortie de :\nprint(type(lambda: None))",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"<class 'function'>\"}, {\"id\": \"b\", \"text\": \"<class 'lambda'>\"}, {\"id\": \"c\", \"text\": \"<class 'NoneType'>\"}, {\"id\": \"d\", \"text\": \"<class 'callable'>\"}, {\"id\": \"e\", \"text\": \"<class 'type'>\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle sera la sortie de :\nprint(type(lambda: None)) »\n\n**Bonne réponse attendue :** « `<class 'function'>` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `<class 'function'>` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`<class 'lambda'>` (incorrect); `<class 'NoneType'>` (incorrect); `<class 'callable'>` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 81,
+    "type": "multi_choice",
+    "prompt_markdown": "Parmi ces noms, lesquels sont des mots-clés réservés en Python ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"lambda\"}, {\"id\": \"b\", \"text\": \"yield\"}, {\"id\": \"c\", \"text\": \"async\"}, {\"id\": \"d\", \"text\": \"await\"}, {\"id\": \"e\", \"text\": \"nonlocal\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\", \"d\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Parmi ces noms, lesquels sont des mots-clés réservés en Python ? »\n\n**Bonnes réponses attendues :** « `lambda` », « `yield` », « `async` », « `await` », « `nonlocal` », « `global` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `lambda` », « `yield` », « `async` », « `await` », « `nonlocal` », « `global` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions () constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 82,
+    "type": "multi_choice",
+    "prompt_markdown": "Comment Python évalue `True * 5 + False * 2` ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"5\"}, {\"id\": \"b\", \"text\": \"7\"}, {\"id\": \"c\", \"text\": \"TrueTrueTrueTrueTrue\"}, {\"id\": \"d\", \"text\": \"Erreur\"}, {\"id\": \"e\", \"text\": \"1*5+0*2 → 5\"}]",
+    "correct_answers_json": "[\"a\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment Python évalue `True * 5 + False * 2` ? »\n\n**Bonnes réponses attendues :** « `5` », « `1*5+0*2 → 5` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `5` », « `1*5+0*2 → 5` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`7` (incorrect); `TrueTrueTrueTrueTrue` (incorrect); `Erreur` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 83,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle assertion est vraie à propos des décorateurs ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Un décorateur est une fonction qui modifie le comportement d'une autre fonction\"}, {\"id\": \"b\", \"text\": \"Un décorateur peut être appliqué avec @nom\"}, {\"id\": \"c\", \"text\": \"Les décorateurs peuvent être empilés\"}, {\"id\": \"d\", \"text\": \"Un décorateur peut être une classe avec __call__\"}, {\"id\": \"e\", \"text\": \"Les décorateurs sont exécutés au moment de l'appel de la fonction décorée\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\", \"d\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle assertion est vraie à propos des décorateurs ? »\n\n**Bonnes réponses attendues :** « `Un décorateur est une fonction qui modifie le comportement d'une autre fonction` », « `Un décorateur peut être appliqué avec @nom` », « `Les décorateurs peuvent être empilés` », « `Un décorateur peut être une classe avec __call__` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `Un décorateur est une fonction qui modifie le comportement d'une autre fonction` », « `Un décorateur peut être appliqué avec @nom` », « `Les décorateurs peuvent être empilés` », « `Un décorateur peut être une classe avec __call__` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`Les décorateurs sont exécutés au moment de l'appel de la fonction décorée` (incorrect); `Ils ne peuvent pas prendre d'arguments` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 84,
+    "type": "multi_choice",
+    "prompt_markdown": "Quels sont les types immuables (immutable) natifs en Python ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"int\"}, {\"id\": \"b\", \"text\": \"float\"}, {\"id\": \"c\", \"text\": \"str\"}, {\"id\": \"d\", \"text\": \"tuple\"}, {\"id\": \"e\", \"text\": \"frozenset\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\", \"d\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quels sont les types immuables (immutable) natifs en Python ? »\n\n**Bonnes réponses attendues :** « `int` », « `float` », « `str` », « `tuple` », « `frozenset` », « `bytes` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `int` », « `float` », « `str` », « `tuple` », « `frozenset` », « `bytes` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions () constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 85,
+    "type": "single_choice",
+    "prompt_markdown": "Quel sera le résultat de l'exécution suivante ?\n\nx = 10\ndef f():\n    print(x)\n    x = 5\nf()",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"10\"}, {\"id\": \"b\", \"text\": \"5\"}, {\"id\": \"c\", \"text\": \"UnboundLocalError\"}, {\"id\": \"d\", \"text\": \"NameError\"}, {\"id\": \"e\", \"text\": \"None\"}]",
+    "correct_answers_json": "\"c\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel sera le résultat de l'exécution suivante ?\n\nx = 10\ndef f():\n    print(x)\n    x = 5\nf() »\n\n**Bonne réponse attendue :** « `UnboundLocalError` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `UnboundLocalError` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`10` (incorrect); `5` (incorrect); `NameError` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 86,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la sortie de repr('Hello\\nWorld') ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"'\\\"Hello\\\\\\\\nWorld\\\"'\"}, {\"id\": \"b\", \"text\": \"'\\\"Hello\\\\nWorld\\\"'\"}, {\"id\": \"c\", \"text\": \"\\\"'Hello\\\\\\\\nWorld'\\\"\"}, {\"id\": \"d\", \"text\": \"\\\"'Hello\\\\nWorld'\\\"\"}, {\"id\": \"e\", \"text\": \"'Hello\\\\\\\\nWorld'\"}]",
+    "correct_answers_json": "\"c\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle est la sortie de repr('Hello\\nWorld') ? »\n\n**Bonne réponse attendue :** « `\"'Hello\\\\nWorld'\"` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `\"'Hello\\\\nWorld'\"` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`'\"Hello\\\\nWorld\"'` (incorrect); `'\"Hello\\nWorld\"'` (incorrect); `\"'Hello\\nWorld'\"` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 87,
+    "type": "multi_choice",
+    "prompt_markdown": "Comment fonctionne la résolution de noms (scope) avec les closures ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Une closure capture la variable par référence (binding tardif)\"}, {\"id\": \"b\", \"text\": \"Une closure capture la valeur au moment de la définition\"}, {\"id\": \"c\", \"text\": \"Les variables non locales doivent être déclarées avec nonlocal pour être modifiées\"}, {\"id\": \"d\", \"text\": \"Les closures ne fonctionnent qu'avec les fonctions lambda\"}, {\"id\": \"e\", \"text\": \"La fonction interne mémorise l'environnement de la fonction englobante\"}]",
+    "correct_answers_json": "[\"a\", \"c\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Comment fonctionne la résolution de noms (scope) avec les closures ? »\n\n**Bonnes réponses attendues :** « `Une closure capture la variable par référence (binding tardif)` », « `Les variables non locales doivent être déclarées avec nonlocal pour être modifiées` », « `La fonction interne mémorise l'environnement de la fonction englobante` », « `Les variables globales sont accessibles sans mot-clé` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `Une closure capture la variable par référence (binding tardif)` », « `Les variables non locales doivent être déclarées avec nonlocal pour être modifiées` », « `La fonction interne mémorise l'environnement de la fonction englobante` », « `Les variables globales sont accessibles sans mot-clé` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`Une closure capture la valeur au moment de la définition` (incorrect); `Les closures ne fonctionnent qu'avec les fonctions lambda` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 88,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelle est la différence entre `__str__` et `__repr__` dans une classe ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"__str__ est pour l'utilisateur final, __repr__ pour le développeur\"}, {\"id\": \"b\", \"text\": \"__repr__ doit être non ambigu et idéalement permettre de recréer l'objet\"}, {\"id\": \"c\", \"text\": \"Si __str__ n'est pas défini, print utilise __repr__\"}, {\"id\": \"d\", \"text\": \"repr() appelle __repr__, str() appelle __str__\"}, {\"id\": \"e\", \"text\": \"Les deux retournent toujours une chaîne\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\", \"d\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle est la différence entre `__str__` et `__repr__` dans une classe ? »\n\n**Bonnes réponses attendues :** « `__str__ est pour l'utilisateur final, __repr__ pour le développeur` », « `__repr__ doit être non ambigu et idéalement permettre de recréer l'objet` », « `Si __str__ n'est pas défini, print utilise __repr__` », « `repr() appelle __repr__, str() appelle __str__` », « `Les deux retournent toujours une chaîne` », « `Un objet peut définir les deux` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `__str__ est pour l'utilisateur final, __repr__ pour le développeur` », « `__repr__ doit être non ambigu et idéalement permettre de recréer l'objet` », « `Si __str__ n'est pas défini, print utilise __repr__` », « `repr() appelle __repr__, str() appelle __str__` », « `Les deux retournent toujours une chaîne` », « `Un objet peut définir les deux` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions () constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 89,
+    "type": "multi_choice",
+    "prompt_markdown": "Quel est le mécanisme de Python pour l'inférence de type et l'annotation de code ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"Les annotations de type sont optionnelles et ignorées à l'exécution\"}, {\"id\": \"b\", \"text\": \"typing.get_type_hints() permet d'obtenir les annotations résolues\"}, {\"id\": \"c\", \"text\": \"Le module typing fournit List, Dict, etc.\"}, {\"id\": \"d\", \"text\": \"Les décorateurs @overload simulent une surcharge de fonction\"}, {\"id\": \"e\", \"text\": \"Python vérifie les types statiquement avec mypy\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\", \"d\", \"e\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel est le mécanisme de Python pour l'inférence de type et l'annotation de code ? »\n\n**Bonnes réponses attendues :** « `Les annotations de type sont optionnelles et ignorées à l'exécution` », « `typing.get_type_hints() permet d'obtenir les annotations résolues` », « `Le module typing fournit List, Dict, etc.` », « `Les décorateurs @overload simulent une surcharge de fonction` », « `Python vérifie les types statiquement avec mypy` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `Les annotations de type sont optionnelles et ignorées à l'exécution` », « `typing.get_type_hints() permet d'obtenir les annotations résolues` », « `Le module typing fournit List, Dict, etc.` », « `Les décorateurs @overload simulent une surcharge de fonction` », « `Python vérifie les types statiquement avec mypy` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`Les annotations ont un impact sur la performance` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 90,
+    "type": "single_choice",
+    "prompt_markdown": "Que produit l'expression `bool('False')` en Python ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"True\"}, {\"id\": \"b\", \"text\": \"False\"}, {\"id\": \"c\", \"text\": \"Lève une ValueError\"}, {\"id\": \"d\", \"text\": \"Lève une TypeError\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Que produit l'expression `bool('False')` en Python ? »\n\n**Bonne réponse attendue :** « `True` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `True` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`False` (incorrect); `Lève une ValueError` (incorrect); `Lève une TypeError` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 91,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la sortie de `print(3 * '2' + '3')` ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"9\"}, {\"id\": \"b\", \"text\": \"2223\"}, {\"id\": \"c\", \"text\": \"63\"}, {\"id\": \"d\", \"text\": \"Lève une TypeError\"}]",
+    "correct_answers_json": "\"b\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle est la sortie de `print(3 * '2' + '3')` ? »\n\n**Bonne réponse attendue :** « `2223` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `2223` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`9` (incorrect); `63` (incorrect); `Lève une TypeError` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 92,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle est la sortie du code suivant ?\n```python\na = [1, 2]\nb = a\na += [3]\nprint(b)\n```",
+    "points": 1.5,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"[1, 2]\"}, {\"id\": \"b\", \"text\": \"[1, 2, 3]\"}, {\"id\": \"c\", \"text\": \"[1, 2, [3]]\"}, {\"id\": \"d\", \"text\": \"Lève une erreur\"}]",
+    "correct_answers_json": "\"b\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle est la sortie du code suivant ?\n```python\na = [1, 2]\nb = a\na += [3]\nprint(b)\n``` »\n\n**Bonne réponse attendue :** « `[1, 2, 3]` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `[1, 2, 3]` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`[1, 2]` (incorrect); `[1, 2, [3]]` (incorrect); `Lève une erreur` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 93,
+    "type": "single_choice",
+    "prompt_markdown": "Que renvoie l'exécution de `round(2.5)` et `round(3.5)` ?",
+    "points": 1.5,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"2 et 4\"}, {\"id\": \"b\", \"text\": \"3 et 4\"}, {\"id\": \"c\", \"text\": \"2 et 3\"}, {\"id\": \"d\", \"text\": \"3 et 3\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Que renvoie l'exécution de `round(2.5)` et `round(3.5)` ? »\n\n**Bonne réponse attendue :** « `2 et 4` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `2 et 4` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`3 et 4` (incorrect); `2 et 3` (incorrect); `3 et 3` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 94,
+    "type": "single_choice",
+    "prompt_markdown": "Que produit le code suivant ?\n```python\nx = 10\ndef f():\n    print(x)\n    x = 20\nf()\n```",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"10\"}, {\"id\": \"b\", \"text\": \"20\"}, {\"id\": \"c\", \"text\": \"Lève une UnboundLocalError\"}, {\"id\": \"d\", \"text\": \"Affiche 10 puis lève une NameError\"}]",
+    "correct_answers_json": "\"c\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Que produit le code suivant ?\n```python\nx = 10\ndef f():\n    print(x)\n    x = 20\nf()\n``` »\n\n**Bonne réponse attendue :** « `Lève une UnboundLocalError` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `Lève une UnboundLocalError` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`10` (incorrect); `20` (incorrect); `Affiche 10 puis lève une NameError` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 95,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle fonction du module `sys` permet de connaître la taille en octets d'un objet en mémoire ?",
+    "points": 2.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"sys.getsizeof()\"}, {\"id\": \"b\", \"text\": \"sys.size()\"}, {\"id\": \"c\", \"text\": \"sys.getallocatedblocks()\"}, {\"id\": \"d\", \"text\": \"sys.sizeof()\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle fonction du module `sys` permet de connaître la taille en octets d'un objet en mémoire ? »\n\n**Bonne réponse attendue :** « `sys.getsizeof()` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Basics), « `sys.getsizeof()` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`sys.size()` (incorrect); `sys.getallocatedblocks()` (incorrect); `sys.sizeof()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 96,
+    "type": "single_choice",
+    "prompt_markdown": "Parmi les suivants, lequel est immuable (tuple) ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"(1, 2, 3)\"}, {\"id\": \"b\", \"text\": \"[1, 2, 3]\"}, {\"id\": \"c\", \"text\": \"{1, 2, 3}\"}, {\"id\": \"d\", \"text\": \"{'a':1}\"}, {\"id\": \"e\", \"text\": \"bytearray(b'abc')\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Parmi les suivants, lequel est immuable (tuple) ? »\n\n**Bonnes réponses attendues :** « `(1, 2, 3)` », « `frozenset({1,2})` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Data Types), « `(1, 2, 3)` », « `frozenset({1,2})` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`[1, 2, 3]` (incorrect); `{1, 2, 3}` (incorrect); `{'a':1}` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 97,
+    "type": "single_choice",
+    "prompt_markdown": "Quelle méthode compte les occurrences d'un élément dans une liste ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"count()\"}, {\"id\": \"b\", \"text\": \"index()\"}, {\"id\": \"c\", \"text\": \"find()\"}, {\"id\": \"d\", \"text\": \"occur()\"}, {\"id\": \"e\", \"text\": \"sum()\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelle méthode compte les occurrences d'un élément dans une liste ? »\n\n**Bonne réponse attendue :** « `count()` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Data Types), « `count()` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`index()` (incorrect); `find()` (incorrect); `occur()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 98,
+    "type": "multi_choice",
+    "prompt_markdown": "Quelles fonctions convertissent une chaîne en nombre ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"int()\"}, {\"id\": \"b\", \"text\": \"float()\"}, {\"id\": \"c\", \"text\": \"str()\"}, {\"id\": \"d\", \"text\": \"bool()\"}, {\"id\": \"e\", \"text\": \"complex()\"}]",
+    "correct_answers_json": "[\"a\", \"b\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quelles fonctions convertissent une chaîne en nombre ? »\n\n**Bonnes réponses attendues :** « `int()` », « `float()` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Data Types), « `int()` », « `float()` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`str()` (incorrect); `bool()` (incorrect); `complex()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 99,
+    "type": "single_choice",
+    "prompt_markdown": "Quel opérateur vérifie l'appartenance à une séquence ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"in\"}, {\"id\": \"b\", \"text\": \"is\"}, {\"id\": \"c\", \"text\": \"==\"}, {\"id\": \"d\", \"text\": \"has()\"}, {\"id\": \"e\", \"text\": \"contains()\"}]",
+    "correct_answers_json": "\"a\"",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel opérateur vérifie l'appartenance à une séquence ? »\n\n**Bonne réponse attendue :** « `in` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Data Types), « `in` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`is` (incorrect); `==` (incorrect); `has()` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  },
+  {
+    "ordering": 100,
+    "type": "multi_choice",
+    "prompt_markdown": "Quel(s) type(s) Python peu(ven)t servir de clé de dictionnaire ?",
+    "points": 1.0,
+    "negative_penalty": 0.25,
+    "options_json": "[{\"id\": \"a\", \"text\": \"int\"}, {\"id\": \"b\", \"text\": \"str\"}, {\"id\": \"c\", \"text\": \"tuple contenant des entiers\"}, {\"id\": \"d\", \"text\": \"list\"}, {\"id\": \"e\", \"text\": \"dict\"}]",
+    "correct_answers_json": "[\"a\", \"b\", \"c\"]",
+    "explanation": "### 💡 Analyse Pédagogique & Explication du QCM\n**Question :** « Quel(s) type(s) Python peu(ven)t servir de clé de dictionnaire ? »\n\n**Bonnes réponses attendues :** « `int` », « `str` », « `tuple contenant des entiers` », « `frozenset` »\n\n**Démonstration & Règle Python :**\n1. **Pourquoi cette réponse est correcte :**\n   En Python (Python Data Types), « `int` », « `str` », « `tuple contenant des entiers` », « `frozenset` » correspond exactement au comportement spécifié par l'interpréteur. L'évaluation de l'expression ou de la syntaxe produit le résultat attendu conformément aux règles de typage, de portée et de précédence des opérateurs.\n\n2. **Analyse des pièges et distracteurs :**\n   Les autres propositions (`list` (incorrect); `dict` (incorrect)) constituent des distracteurs fréquents. Elles représentent souvent une syntaxe héritée d'autres langages (C, Java, JavaScript), une confusion de méthode ou une omission des effets de bord sur les types mutables/immutables.\n"
+  }
+]

@@ -166,23 +166,9 @@ export class AntiCheatManager {
     const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
     const overlayFs = document.getElementById('overlay-fullscreen-required');
 
-    // En mode entraînement / révision libre : l'étudiant est totalement libre de quitter le plein écran
-    if (this.isPracticeMode) {
-      if (overlayFs) overlayFs.classList.remove('active');
-      document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
-        el.classList.remove('exam-fullscreen-lost-blurred');
-      });
-      return;
-    }
-
     if (!isFull && !this.isSuspended) {
-      if (this.allowWindowed) {
-        // L'étudiant a explicitement choisi de continuer en mode fenêtré
-        return;
-      }
-
-      // REV-27 / REV-34 : Flou d'obstruction immédiat et affichage du panneau bloquant
-      document.querySelectorAll('#view-exam, #view-waiting-room, .practical-workspace-container, .fused-workspace, .challenge-layout, .terminal-container, .exam-layout').forEach(el => {
+      // Flou d'obstruction immédiat et affichage du panneau bloquant unifié
+      document.querySelectorAll('#view-exam, #view-waiting-room, #view-stats, .practical-workspace-container, .fused-workspace, .challenge-layout, .terminal-container, .exam-layout, main').forEach(el => {
         el.classList.add('exam-fullscreen-lost-blurred');
       });
       if (overlayFs) {
@@ -190,7 +176,6 @@ export class AntiCheatManager {
         const btnRestore = document.getElementById('btn-restore-fullscreen');
         if (btnRestore) {
           btnRestore.onclick = () => {
-            this.allowWindowed = false;
             try {
               const elem = document.documentElement;
               const p = elem.requestFullscreen ? elem.requestFullscreen() : (elem.webkitRequestFullscreen ? elem.webkitRequestFullscreen() : null);
@@ -198,30 +183,23 @@ export class AntiCheatManager {
             } catch (_) {}
           };
         }
-        const btnWindowed = document.getElementById('btn-continue-windowed');
-        if (btnWindowed) {
-          btnWindowed.onclick = () => {
-            this.allowWindowed = true;
-            if (overlayFs) overlayFs.classList.remove('active');
-            document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
-              el.classList.remove('exam-fullscreen-lost-blurred');
-            });
-            this._stopAwayCountdown();
-          };
-        }
       }
 
       this._registerWarning("Sortie du mode plein écran détectée.");
-      this._startAwayCountdown("Sortie du mode plein écran détectée.");
+      if (this.isPracticeMode) {
+        this._startPracticeFullscreenCountdown();
+      } else {
+        this._startAwayCountdown("Sortie du mode plein écran détectée.");
+      }
     } else if (isFull && !this.isSuspended) {
-      this.allowWindowed = false;
-      // Rétablissement du plein écran : lever le flou
+      // Rétablissement du plein écran : lever le flou et fermer l'overlay
       document.querySelectorAll('.exam-fullscreen-lost-blurred').forEach(el => {
         el.classList.remove('exam-fullscreen-lost-blurred');
       });
       if (overlayFs) overlayFs.classList.remove('active');
 
       this._stopAwayCountdown();
+      this._stopPracticeFullscreenCountdown();
     }
   }
 

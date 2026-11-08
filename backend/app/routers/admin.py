@@ -15,8 +15,10 @@ from backend.app.services.document_export import (
     generate_student_bulletin_docx,
     generate_bulk_bulletins_zip,
     generate_speciality_results_pdf,
-    generate_speciality_results_docx
+    generate_speciality_results_docx,
+    generate_level_tests_speciality_pdf
 )
+from backend.app.services.training_service import get_level, get_level_title
 from backend.app.services.item_analysis import (
     calculate_exam_item_analysis,
     generate_item_analysis_csv
@@ -336,16 +338,31 @@ def _build_student_bulletin(st: User, db: Session) -> dict:
     p_attempts = db.query(PracticeAttempt).filter(PracticeAttempt.user_id == st.id).all()
     
     pillar_configs = [
+        ("PYTHON_PROG", "Programmation Python & Algorithmique"),
+        ("SYS_EXPLOIT", "Systèmes d'Exploitation (Linux & Shell)"),
+        ("CYBER_CRYPTO", "Cybersécurité & Cryptographie"),
         ("ALGO", "Algorithmique Fondamentale"),
         ("PYTHON_INIT", "Programmation Python"),
         ("CRYPTO", "Cryptographie & Réseau"),
         ("LINUX_ADMIN", "Administration Linux")
     ]
+
+    alias_map = {
+        "PYTHON_PROG": ["PYTHON_PROG", "ALGO", "PYTHON_INIT"],
+        "SYS_EXPLOIT": ["SYS_EXPLOIT", "LINUX_ADMIN"],
+        "CYBER_CRYPTO": ["CYBER_CRYPTO", "CRYPTO"],
+        "ALGO": ["ALGO", "PYTHON_PROG"],
+        "PYTHON_INIT": ["PYTHON_INIT", "PYTHON_PROG"],
+        "LINUX_ADMIN": ["LINUX_ADMIN", "SYS_EXPLOIT"],
+        "CRYPTO": ["CRYPTO", "CYBER_CRYPTO"]
+    }
     
     fundamentals = {}
     f_scores = []
+    primary_codes = {"PYTHON_PROG", "SYS_EXPLOIT", "CYBER_CRYPTO"}
     for code, title in pillar_configs:
-        matching = [p.grade_20 for p in p_attempts if p.module_code == code]
+        codes_to_match = alias_map.get(code, [code])
+        matching = [p.grade_20 for p in p_attempts if p.module_code in codes_to_match]
         best_score = round(max(matching), 2) if matching else None
         fundamentals[code] = {
             "module_code": code,
@@ -354,7 +371,7 @@ def _build_student_bulletin(st: User, db: Session) -> dict:
             "percentage": round((best_score / 20.0) * 100, 1) if best_score is not None else 0.0,
             "completed": best_score is not None
         }
-        if best_score is not None:
+        if best_score is not None and code in primary_codes:
             f_scores.append(best_score)
             
     fundamentals_avg = round(sum(f_scores) / len(f_scores), 2) if f_scores else None
@@ -875,5 +892,189 @@ def clear_all_exams_and_scores(
             "student_answers_deleted": ans_count,
             "questions_deleted": q_count,
             "practice_attempts_deleted": prac_count
+        }
+    }
+
+@router.get("/level-tests/export-pdf")
+def export_level_tests_pdf(
+    speciality: Optional[str] = Query(None, description="Code spécialité ou 'ALL'"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Exporte le Procès-Verbal officiel des Tests de Niveau (Python & Algo, Systèmes d'Exploitation, Cybersécurité & Crypto)
+    pour l'ensemble des étudiants ou filtré par spécialité (group_id).
+    """
+    query = db.query(User).filter(User.role == "student", User.is_active == True)
+    if speciality and speciality.upper() != "ALL":
+        query = query.filter(User.group_id == speciality)
+    students = query.order_by(User.group_id.asc(), User.full_name.asc()).all()
+
+    students_data = []
+    for s in students:
+        # Attempts for 3 modules
+        py_attempts = db.query(PracticeAttempt).filter(
+            PracticeAttempt.user_id == s.id,
+            PracticeAttempt.module_code.in_(["PYTHON_PROG", "ALGO", "PYTHON_INIT"])
+        ).order_by(PracticeAttempt.created_at.desc()).all()
+
+        sys_attempts = db.query(PracticeAttempt).filter(
+            PracticeAttempt.user_id == s.id,
+            PracticeAttempt.module_code.in_(["SYS_EXPLOIT", "LINUX_ADMIN"])
+        ).order_by(PracticeAttempt.created_at.desc()).all()
+
+        cyb_attempts = db.query(PracticeAttempt).filter(
+            PracticeAttempt.user_id == s.id,
+            PracticeAttempt.module_code.in_(["CYBER_CRYPTO", "CRYPTO"])
+        ).order_by(PracticeAttempt.created_at.desc()).all()
+
+        py_score = max([a.grade_20 for a in py_attempts]) if py_attempts else None
+        sys_score = max([a.grade_20 for a in sys_attempts]) if sys_attempts else None
+        cyb_score = max([a.grade_20 for a in cyb_attempts]) if cyb_attempts else None
+
+        valid_scores = [sc for sc in [py_score, sys_score, cyb_score] if sc is not None]
+        avg_score = round(sum(valid_scores) / len(valid_scores), 2) if valid_scores else None
+        lvl = get_level(avg_score if avg_score is not None else 0.0)
+        lvl_title = get_level_title(lvl)
+
+        students_data.append({
+            "student_id": s.id,
+            "username": s.username,
+            "full_name": s.full_name,
+            "speciality": s.group_id or "—",
+            "python_prog_score": py_score,
+            "sys_exploit_score": sys_score,
+            "cyber_crypto_score": cyb_score,
+            "average_score": avg_score,
+            "level": lvl,
+            "level_title": lvl_title,
+            "passed": avg_score is not None and avg_score >= 14.0
+        })
+
+    pdf_bytes = generate_level_tests_speciality_pdf(speciality_code=speciality, students_data=students_data)
+    filename = f"pv_tests_niveau_{speciality or 'toutes_specialites'}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@router.post("/purge-practice-scores")
+def purge_practice_scores(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Purge l'intégralité des scores et tentatives de Tests de Niveau (PracticeAttempt).
+    Permet aux étudiants de réinitialiser complètement leurs scores pour repartir sur une nouvelle campagne.
+    Ne supprime aucun compte utilisateur, module ou question.
+    """
+    deleted = db.query(PracticeAttempt).delete()
+    db.commit()
+    return {
+        "success": True,
+        "message": f"Scores des tests de niveau purgés avec succès ({deleted} tentatives supprimées).",
+        "deleted_count": deleted
+    }
+
+@router.post("/purge-exam-scores")
+def purge_exam_scores(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Purge toutes les notes, copies et tentatives d'examen officiel (StudentAnswer, StudentAttempt, SecurityEvent)
+    sans supprimer les examens, modules ou banques de questions.
+    Permet de relancer une nouvelle session d'examen à zéro.
+    """
+    from backend.app.models import StudentAnswer, StudentAttempt, ExamSession
+
+    ans_count = db.query(StudentAnswer).delete()
+    att_count = db.query(StudentAttempt).delete()
+
+    sessions = db.query(ExamSession).all()
+    for sess in sessions:
+        sess.status = "completed"
+    
+    db.commit()
+    return {
+        "success": True,
+        "message": f"Scores des examens officiels purgés avec succès ({att_count} tentatives et {ans_count} réponses réinitialisées).",
+        "deleted_attempts": att_count,
+        "deleted_answers": ans_count
+    }
+
+from pydantic import BaseModel
+
+class LevelTestRenamePayload(BaseModel):
+    title: str
+    description: Optional[str] = None
+
+@router.get("/level-tests/configs")
+def list_level_tests_configs(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Retourne la configuration actuelle des 3 tests de niveau avec leurs intitulés éditables."""
+    from backend.app.routers.practice import PRACTICE_MODULES_CONFIG, _resolve_module_config
+    results = []
+    for m in PRACTICE_MODULES_CONFIG:
+        resolved = _resolve_module_config(m["code"], db) or m
+        results.append({
+            "code": m["code"],
+            "title": resolved["title"],
+            "description": resolved["desc"],
+            "total_questions": 100,
+            "question_count": 100
+        })
+    return results
+
+@router.put("/level-tests/{module_code}")
+def update_level_test_name(
+    module_code: str,
+    payload: LevelTestRenamePayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Permet au super administrateur de modifier l'intitulé et la description d'un test de niveau."""
+    from backend.app.routers.practice import _resolve_module_config, LEGACY_MODULE_MAP
+    clean_code = module_code.upper().strip()
+    clean_code = LEGACY_MODULE_MAP.get(clean_code, clean_code)
+
+    cfg = _resolve_module_config(clean_code)
+    if not cfg:
+        raise HTTPException(status_code=404, detail=f"Test de niveau '{module_code}' inconnu.")
+
+    new_title = payload.title.strip()
+    if not new_title:
+        raise HTTPException(status_code=400, detail="L'intitulé du test ne peut pas être vide.")
+
+    mod = db.query(Module).filter(Module.code == clean_code).first()
+    if not mod:
+        mod = Module(
+            code=clean_code,
+            title=new_title,
+            description=payload.description.strip() if payload.description else cfg["desc"]
+        )
+        db.add(mod)
+    else:
+        mod.title = new_title
+        if payload.description is not None:
+            mod.description = payload.description.strip()
+
+    db.commit()
+    db.refresh(mod)
+
+    return {
+        "success": True,
+        "message": f"Intitulé du test '{clean_code}' mis à jour avec succès : {new_title}",
+        "code": mod.code,
+        "title": mod.title,
+        "description": mod.description,
+        "config": {
+            "code": mod.code,
+            "title": mod.title,
+            "description": mod.description,
+            "total_questions": 100
         }
     }

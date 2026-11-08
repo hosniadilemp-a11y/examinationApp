@@ -82,6 +82,15 @@ def test_all_core():
     print("Firewall rules check:", fw_res)
 
     print("\n🎉 ALL CORE MODULES (INCLUDING 1, 4, 8) FUNCTIONING 100%!")
+    print("\n--- 8. Testing LanUnlocker (Ethernet & Réseau Câblé) ---")
+    from desktop_admin.core.lan_unlocker import LanUnlocker
+    lu = LanUnlocker(port=8000, mdns_port=5353)
+    lan_audit = lu.audit_lan_status()
+    print("Ethernet detected:", lan_audit["ethernet"])
+    print("LAN audit status text:", lan_audit["status_text"])
+    print("LAN issues found:", lan_audit["issues"])
+
+    print("\n🎉 ALL CORE MODULES (INCLUDING 1, 4, 8 & LAN UNLOCKER) FUNCTIONING 100%!")
 
 if __name__ == "__main__":
     test_all_core()

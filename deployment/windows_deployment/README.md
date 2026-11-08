@@ -14,6 +14,11 @@ Double-cliquez directement sur :
 > Le serveur FastAPI et la base PostgreSQL 16 démarrent immédiatement.  
 > 👉 Accès local : **http://localhost:8000** ou **http://exam.local:8000**
 
+### 🚀 Déblocage Réseau Câblé (Switch 100% Ethernet sans Wi-Fi) :
+Si les ordinateurs étudiants ne parviennent pas à joindre le serveur par câble réseau, faites un clic droit sur :
+👉 [**`debloquer_acces_lan.bat`**](./debloquer_acces_lan.bat) > **"Exécuter en tant qu'administrateur"**
+*(Ce script ouvre le pare-feu sur tous les profils de réseau, bascule l'interface en mode Privé et crée le pont PortProxy WSL2).*
+
 ### Pour arrêter le serveur :
 Double-cliquez sur :
 👉 [**`stop_server.bat`**](./stop_server.bat)
